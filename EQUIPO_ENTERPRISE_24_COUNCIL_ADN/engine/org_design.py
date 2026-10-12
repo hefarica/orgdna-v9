@@ -36,6 +36,9 @@ PROFILE_TOKEN_BUDGET = 3_200
 # con el presupuesto de salida COMPLETO, y si un perfil truncara igual, el modelo
 # CONTINUA exactamente donde corto (continuacion por agente, ver continuation_policy).
 AUTO_MAX_BATCH_PROFILES = 1
+# Fan-out paralelo del gang: maximo de solicitudes simultaneas en vuelo. El tope
+# existe por el rate-limit del proveedor, no por presupuesto de salida.
+MAX_CONCURRENCY = 8
 # Continuaciones por agente cuando su respuesta trunca: el texto cortado se envia de
 # vuelta como mensaje del asistente y el modelo prosigue literal hasta cerrar el JSON.
 CONTINUATIONS_PER_AGENT = 3
@@ -519,9 +522,10 @@ def _split_request(request, data, ctx):
     return halves
 
 
-def _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context=None, profiles_per_request=None, response_mode="json_object"):
+def _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context=None, profiles_per_request=None, response_mode="json_object", concurrency=1):
     max_output_tokens = p._bounded_int(max_output_tokens, 3_424, MAX_OUTPUT_TOKENS, "max_output_tokens")
     max_requests = p._bounded_int(max_requests, 1, MAX_REQUESTS, "max_requests")
+    concurrency = p._bounded_int(concurrency, 1, MAX_CONCURRENCY, "concurrency")
     if profiles_per_request is not None:
         profiles_per_request = p._bounded_int(profiles_per_request, 1, MAX_AGENTS, "profiles_per_request")
     if response_mode not in ("json_object", "text"):
@@ -589,7 +593,8 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
                                  "note": "Un lote cuya respuesta trunque se reemite partido en dos. Cada reemision es una solicitud facturada mas; el total de solicitudes NUNCA supera este techo aprobado. Un lote de un solo perfil que trunca no se parte: es un perfil demasiado grande y se reporta como tal."},
                 "continuation_policy": {"allowed": True, "per_agent": CONTINUATIONS_PER_AGENT,
                                         "request_ceiling": max_requests,
-                                        "note": "Un agente cuya respuesta trunque CONTINUA donde corto: el texto emitido se reenvia como mensaje del asistente y el modelo prosigue literal hasta cerrar su JSON. Cada continuacion es una solicitud facturada mas, dentro del mismo techo aprobado."}}
+                                        "note": "Un agente cuya respuesta trunque CONTINUA donde corto: el texto emitido se reenvia como mensaje del asistente y el modelo prosigue literal hasta cerrar su JSON. Cada continuacion es una solicitud facturada mas, dentro del mismo techo aprobado."},
+                 "concurrency": concurrency}
     consent = dict(manifest, operation="design_organization", payload_sha256=_digest(manifest),
                    payload_bytes=total_bytes, estimated_input_tokens=sum(r["estimated_input_tokens"] for r in requests),
                    token_estimate_method="UTF-8 bytes / 3, aproximación no garantizada; evidencia común y paquetes dirigidos revisables por lote",
@@ -619,9 +624,9 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
 
 
 def prepare_design_consent(summary, provider, model, config, max_output_tokens=DEFAULT_OUTPUT_TOKENS,
-                           model_metadata=None, max_requests=MAX_REQUESTS, revision_context=None, profiles_per_request=None, response_mode="json_object"):
+                           model_metadata=None, max_requests=MAX_REQUESTS, revision_context=None, profiles_per_request=None, response_mode="json_object", concurrency=1):
     """Exact static request previews and aggregate budget; performs no I/O."""
-    return _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context, profiles_per_request, response_mode)[2]
+    return _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context, profiles_per_request, response_mode, concurrency)[2]
 
 
 def _validate_profile_shape(value, allowed_paths, slot):
@@ -811,19 +816,19 @@ def _analysis(data, profiles, provider, model, warnings):
 
 def design_with_llm(summary, provider, model, config, api_key, consent,
                     max_output_tokens=DEFAULT_OUTPUT_TOKENS, model_metadata=None, max_requests=MAX_REQUESTS,
-                    transport=None, cancel_event=None, progress_callback=None, revision_context=None, profiles_per_request=None, response_mode="json_object"):
+                    transport=None, cancel_event=None, progress_callback=None, revision_context=None, profiles_per_request=None, response_mode="json_object", concurrency=1):
     """Execute the exact approved batch plan once, or fail with no partial design.
 
     Consent is consumed before the first paid request, including uncertain HTTP
     failures. A new run requires a new preview/approval. Callbacks receive only
     bounded progress metadata and must not mutate execution inputs.
     """
-    data, route, expected = _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context, profiles_per_request, response_mode)
+    data, route, expected = _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context, profiles_per_request, response_mode, concurrency)
     if not isinstance(consent, dict) or any(consent.get(key) is not True for key in ("confirmed", "data_reviewed", "budget_acknowledged")):
         raise p.ConsentRequired("Revisa todos los lotes y confirma el contenido, proveedor/modelo y presupuesto antes de diseñar.")
     for key in ("operation", "schema_version", "endpoint", "provider", "model", "agent_count", "config_digest",
                 "payload_sha256", "request_hashes", "requested_max_output_tokens", "max_output_tokens",
-                "max_requests", "request_limit", "split_policy", "continuation_policy", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
+                "max_requests", "request_limit", "split_policy", "continuation_policy", "concurrency", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
                 "profiles_per_request", "effective_profiles_per_request", "response_mode",
                 "source_kind", "source_provenance", "evidence_refs", "coverage", "evidence_distribution",
                 "preview", "project_preview", "requests"):
@@ -862,41 +867,33 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
     consent["_consumed"] = True
     try:
         split_ctx = expected.get("_split_ctx")
+        paralelismo = expected.get("concurrency", 1)
         queue = list(expected["requests"])
         next_index = len(queue)
-        while queue:
-            request = queue.pop(0)
-            audit["batch_index"] = request["index"]
-            cancelled()
-            progress("designing")
-            cancelled()
-            audit["requests"] += 1  # Billing outcome can remain unknown on failure.
-            receipt = {"index": request["index"], "endpoint": request["endpoint"], "provider": route["name"],
-                       "model": model, "payload_sha256": request["payload_sha256"],
-                       "max_output_tokens": request["max_output_tokens"], "status": "billing_outcome_unknown",
-                       "usage": _usage({}), "latency_ms": None, "response_id_sha256": None,
-                       "http_status": None, "error_code": None}
-            audit["receipts"].append(receipt)
-            progress("request_starting")
-            cancelled()
+
+        def _enviar(request, receipt):
+            """Envia UNA solicitud y deja el recibo al dia (latencia, uso, id)."""
             started = time.monotonic()
-            response = None
             try:
-                response = p._request("POST", request["endpoint"], api_key, payload=request["payload"],
-                                      transport=transport, max_bytes=MAX_RESPONSE_BYTES, timeout=REQUEST_TIMEOUT_SECONDS)
+                return p._request("POST", request["endpoint"], api_key, payload=request["payload"],
+                                  transport=transport, max_bytes=MAX_RESPONSE_BYTES, timeout=REQUEST_TIMEOUT_SECONDS)
             except p.HTTPFailure as exc:
                 receipt["http_status"] = exc.status if type(exc.status) is int and 100 <= exc.status <= 599 else None
                 receipt["error_code"] = exc.provider_error_code
                 raise
             finally:
                 receipt["latency_ms"] = max(0, round((time.monotonic() - started) * 1000))
+
+        def _registrar(request, receipt, response):
             receipt["status"] = "response_received_not_yet_validated"
             receipt["usage"] = _usage(response)
             response_id = response.get("id")
             if isinstance(response_id, str) and len(response_id) <= 4096:
                 receipt["response_id_sha256"] = hashlib.sha256(response_id.encode("utf-8")).hexdigest()
-            progress("response_received")
-            cancelled()
+
+        def procesar(request, receipt, response):
+            """Parsea UNA respuesta. True = validada; False = se encalo la continuacion."""
+            nonlocal next_index
             try:
                 # Un agente continuado acumula el texto emitido: el JSON final es la
                 # concatenacion literal de todos los fragmentos facturados.
@@ -909,27 +906,21 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
                 diagnostic = getattr(exc, "diagnostic", None)
                 code = diagnostic.get("code") if isinstance(diagnostic, dict) else None
                 # AUTO-SPLIT: un lote de varios perfiles que trunca se parte en dos
-                # y se reemite. Cada reemision es una solicitud facturada mas, dentro
-                # del techo aprobado (split_policy.request_ceiling).
+                # y se reemite dentro del techo aprobado (split_policy).
                 if code == "output_truncated" and len(request["slots"]) >= 2 and isinstance(split_ctx, dict) \
                         and audit["requests"] + 1 <= expected["request_limit"]:
                     halves = _split_request(request, data, split_ctx)
                     receipt["status"] = "split_reissued"
                     audit["splits"] += 1
-                    # Con splits el contador visible pasa del planificado al TECHO real
-                    # aprobado, para que el progreso nunca muestre 9 de 3.
                     audit["max_requests"] = expected["request_limit"]
                     for half in reversed(halves):
                         next_index += 1
                         half["index"] = next_index
                         queue.insert(0, half)
                     progress("splitting_batch")
-                    continue
-                # CONTINUACION POR AGENTE (el lote murio: un agente = una solicitud).
-                # Un UNICO perfil que trunca no se abandona ni se recorta: el texto ya
-                # emitido se reenvia como mensaje del asistente y el modelo prosigue
-                # literal hasta cerrar su JSON. Cada continuacion es una solicitud
-                # facturada mas, dentro del mismo techo aprobado.
+                    return False
+                # CONTINUACION POR AGENTE: el texto cortado se reenvia como mensaje
+                # del asistente y el modelo prosigue literal hasta cerrar su JSON.
                 if code == "output_truncated" and len(request["slots"]) == 1:
                     used = request.get("_continuations", 0)
                     if used < CONTINUATIONS_PER_AGENT and audit["requests"] + 1 <= expected["request_limit"]:
@@ -955,7 +946,7 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
                             receipt["status"] = "continued_truncated"
                             queue.insert(0, request2)
                             progress("continuing_agent")
-                            continue
+                            return False
                 raise
             if isinstance(api_key, str) and api_key in p._dump(response):
                 _invalid("sensitive_output")
@@ -967,7 +958,69 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
             audit["completed_requests"] += 1
             audit["completed_profiles"] = len(profiles)
             receipt["status"] = "validated"
-            progress("validating_batch")
+            return True
+
+        def _olas():
+            """FAN-OUT por olas: hasta `paralelismo` solicitudes vuelan JUNTAS y el
+            parseo es secuencial — map devuelve en ORDEN DE ENTRADA, asi que los
+            recibos quedan en orden de despacho aunque las respuestas lleguen
+            desordenadas. Las continuaciones y splits de esta ola vuelan en la
+            siguiente: cada agente sigue siendo secuencial consigo mismo."""
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=paralelismo) as pool:
+                while queue:
+                    cancelled()
+                    ola = []
+                    for request in list(queue):
+                        audit["requests"] += 1  # Billing outcome can remain unknown on failure.
+                        receipt = {"index": request["index"], "endpoint": request["endpoint"], "provider": route["name"],
+                                   "model": model, "payload_sha256": request["payload_sha256"],
+                                   "max_output_tokens": request["max_output_tokens"], "status": "billing_outcome_unknown",
+                                   "usage": _usage({}), "latency_ms": None, "response_id_sha256": None,
+                                   "http_status": None, "error_code": None}
+                        audit["receipts"].append(receipt)
+                        audit["batch_index"] = request["index"]
+                        ola.append((request, receipt))
+                    queue.clear()
+                    progress("designing")
+                    progress("request_starting")
+
+                    def _vuelo(par):
+                        request, receipt = par
+                        response = _enviar(request, receipt)
+                        _registrar(request, receipt, response)
+                        return response
+
+                    respuestas = list(pool.map(_vuelo, ola))
+                    progress("response_received")
+                    cancelled()
+                    for (request, receipt), response in zip(ola, respuestas):
+                        if procesar(request, receipt, response):
+                            progress("validating_batch")
+
+        if isinstance(paralelismo, int) and paralelismo >= 2:
+            _olas()
+        while queue:
+            request = queue.pop(0)
+            audit["batch_index"] = request["index"]
+            cancelled()
+            progress("designing")
+            cancelled()
+            audit["requests"] += 1  # Billing outcome can remain unknown on failure.
+            receipt = {"index": request["index"], "endpoint": request["endpoint"], "provider": route["name"],
+                       "model": model, "payload_sha256": request["payload_sha256"],
+                       "max_output_tokens": request["max_output_tokens"], "status": "billing_outcome_unknown",
+                       "usage": _usage({}), "latency_ms": None, "response_id_sha256": None,
+                       "http_status": None, "error_code": None}
+            audit["receipts"].append(receipt)
+            progress("request_starting")
+            cancelled()
+            response = _enviar(request, receipt)
+            _registrar(request, receipt, response)
+            progress("response_received")
+            cancelled()
+            if procesar(request, receipt, response):
+                progress("validating_batch")
         cancelled()
         if len(profiles) != expected["agent_count"]:
             _invalid("invalid_count", "profile_specs")

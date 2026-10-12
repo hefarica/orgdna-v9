@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 63249,
-      "sha256": "55f98058754f108a387bd10c5572ead65fbc6558b351c8862f506a43a39b75bf"
+      "bytes": 64658,
+      "sha256": "21c7ce7bd2257db679be6a0c9e3b0b509511c5ba12dff06121144e7c0f3b1cd1"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83926,
-      "sha256": "03fbc08f9e2ad86360883bd59e2cbb5f5bd6a283b69b8c27cdb6b21c069f64c2"
+      "bytes": 83950,
+      "sha256": "49ba64c4f4c44d37306079ad4405a418d62c70107471f281db326762db0072ba"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -751,8 +751,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 75971,
-      "sha256": "cc6a9389b61e2931dbaf4610c37ca06bd9536ecd9243562023b1db0ba5c00771"
+      "bytes": 78717,
+      "sha256": "770840a708ccf7257884396fb9f44fe8ffd2738ac28083b3df3c1ed11267f733"
     },
     {
       "path": "engine/organization_design.py",
@@ -1433,6 +1433,11 @@
       "path": "tests_gang_assembly.py",
       "bytes": 15078,
       "sha256": "54bb281bdaa54153ce540d2c80c1b2c85e8c0da839a8edb4ec83eb668ca18345"
+    },
+    {
+      "path": "tests_gang_fanout.py",
+      "bytes": 10204,
+      "sha256": "54f5f4c81b174168bae3d27d88266c47c43d389cf29a82afc15337d492d2019e"
     },
     {
       "path": "tests_gang_fitness.py",

@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 269 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 332 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (331 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 270 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 333 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (332 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `332` |
-| `file_count` que reportará `validate_imports_portable.py` | `333` (incluye el propio manifiesto) |
-| Allowlist | `269` entradas |
+| Entradas del manifiesto | `333` |
+| `file_count` que reportará `validate_imports_portable.py` | `334` (incluye el propio manifiesto) |
+| Allowlist | `270` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 332 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **330** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 333 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **331** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 332
-MANIFIESTO_SHA256_SIN_ESPEJO 548ac4842b5c5f5e6352d918b49d668e7436f67b55bc7cf48028ff87eb020543
+MANIFIESTO_FILE_COUNT 333
+MANIFIESTO_SHA256_SIN_ESPEJO 1d285b708fdba4c1ef7055e8b73d1ee34ef7a96224db6fd3d730c5f0075337bf
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -843,6 +843,22 @@ el prepare es no-op, y reintentar lo commiteado es gratis. Los 4 escenarios fals
 prepare y commit -> reanudado SIN duplicar; lease vencida -> adoptada; lease viva de otro -> nada reanudado;
 epoch alto -> revalidado antes de publicar. El tick es EXPLICITO (sin demonio): el producto es offline y
 dirigido por panel; montar la operacion continua es decision del operador.
+
+**Fan-out paralelo (P3-XIV): A cerrado — el gang vuela en olas, con la base intacta.**
+`design_with_llm(concurrency=K)` (1..8) despacha por OLAS: hasta K solicitudes vuelan juntas en un pool y el
+parseo es SECUENCIAL — `pool.map` devuelve en orden de entrada, asi que los recibos quedan en orden de
+despacho (deterministas) aunque las respuestas lleguen desordenadas. Las continuaciones y splits de una ola
+vuelan en la SIGUIENTE: cada agente sigue siendo secuencial consigo mismo y su texto acumulado no se cruza.
+La concurrencia SE DECLARA en el consentimiento (clave pineada): el operador aprueba cuantas solicitudes
+vuelan a la vez antes de pagar. El bucle secuencial se refactorizo en closures compartidas (_enviar,
+procesar) y quedo byte-equivalente: 79 tests de diseno en verde sin tocarlos.
+
+Falsificacion (5/5 + CLI en vivo): A1 doce agentes con cuatro en paralelo -> pico 4/4 en vuelo, recibos
+1..12 en orden; A2 DOS agentes truncan A LA VEZ -> ambos continuan en la ola siguiente y validan, sin
+contaminacion del _raw; A3 cancelacion en plena ola -> DesignCancelled sin olas nuevas; A4 INVARIANTE BASE:
+con transporte determinista, la corrida paralela produce los MISMOS recibos, el MISMO orden de perfiles y el
+mismo usage que la secuencial (identidad del plan excluida: declara la concurrencia, difiere por diseno);
+A5 el tope nunca se pisa (pico <= K, medido con instrumentacion en vuelo).
 
 ---
 
