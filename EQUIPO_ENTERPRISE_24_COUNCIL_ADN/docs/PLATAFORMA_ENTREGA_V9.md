@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 264 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 328 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (327 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 267 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 330 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (329 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `328` |
-| `file_count` que reportará `validate_imports_portable.py` | `328` (incluye el propio manifiesto) |
-| Allowlist | `264` entradas |
+| Entradas del manifiesto | `330` |
+| `file_count` que reportará `validate_imports_portable.py` | `331` (incluye el propio manifiesto) |
+| Allowlist | `267` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 328 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **326** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 330 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **328** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 328
-MANIFIESTO_SHA256_SIN_ESPEJO ddc07a15cc8f902a4e2f349a9df06325978b8e939a36dca0547f2fed934924e4
+MANIFIESTO_FILE_COUNT 330
+MANIFIESTO_SHA256_SIN_ESPEJO de4afb6c4308828f0c70b62b3873c3ffbc76e0f02148ad0d5442816232b9ff74
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -819,6 +819,18 @@ y continuaciones, con ponderacion 0.60/0.20/0.15/0.05. Es la metrica que la evol
 una generacion contra otra — y el campo `continuando` pesa poco A PROPOSITO: preferimos un gang que se
 continua antes que uno recortado. La promocion canary es `comparar(actual, base)`: solo sube si supera a la
 base. `runtime_verified: False` — el fitness mide coste y exito, nunca acredita calidad del contenido.
+
+**Servicios montados (P3-XII): la superficie C existe y los 3 escenarios pasan en vivo.**
+`engine/gang_services.py` monta cada objetivo como PROCESO HTTP real (`ServidorGang` en puerto efimero) con
+la superficie completa: `/health /dna /prepare /commit /abort /compensate /dna/rollback`. Token = clave de
+contenido = determinista (repetir es no-op). **Fencing por epoch**: un epoch menor que el del nodo se
+rechaza como obsoleto — el anti split-brain — y compensate/rollback SUBEN el epoch, de modo que el reintento
+de un coordinador viejo no puede commitear por encima. El transporte es polimorfico: memoria (tests), HTTP
+(procesos reales), y el coordinador no cambia. Los 3 escenarios falsificados EN VIVO contra 3 procesos:
+crash en prepare -> abort sin residuo; crash en commit -> compensacion de los commiteados; divergencia
+forzada -> rollback total con el nodo divergente REPORTADO. El escenario 3 del CLI cazo el fencing en vivo:
+las compensaciones subieron el epoch de los nodos y el coordinador viejo fue rechazado hasta revalidarse.
+Recibos invariantes: la secuencia de transaccion con 1 servicio es IDENTICA a la de 3 montados.
 
 ---
 

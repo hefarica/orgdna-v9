@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 60967,
-      "sha256": "34d5a88d8f14dac64d3be152d32c2aaf9b5f5a74b8bb496d9d9946f4512c60a8"
+      "bytes": 62112,
+      "sha256": "0139865d5691126125b7a12ed31dad83442185f637660e0cf597914a332de0d8"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83812,
-      "sha256": "89b78c0aa61223da01b61dd92f7aaa00a5b511d427ca6426ff9816afef4afcca"
+      "bytes": 83869,
+      "sha256": "80e43e069efc5d5f2494f7333b652adc2b05de48dac616fbb1066b147f9f65cc"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -668,6 +668,11 @@
       "path": "engine/gang_registry.py",
       "bytes": 8108,
       "sha256": "3c40c431b9c777a83c934a3cc86f12c803239eac80e3472a859d5107f7d8af72"
+    },
+    {
+      "path": "engine/gang_services.py",
+      "bytes": 11708,
+      "sha256": "048b3041ef93ff370b39cffed356839b10ada39d51db69aea5d7e24b811bfae8"
     },
     {
       "path": "engine/generation_pipeline.py",
@@ -1430,6 +1435,11 @@
       "sha256": "f9cce8ffe70e4e29d2aaa07986fa90ffba7a203c04386d61bbffff2050dee0c3"
     },
     {
+      "path": "tests_gang_services.py",
+      "bytes": 15097,
+      "sha256": "89e3babd3e7e7a1ceea8183a22f669762090aae822c03de11350f223e902c6a8"
+    },
+    {
       "path": "tests_generation_diagnostics.py",
       "bytes": 4729,
       "sha256": "4e74d9527835047b36d67202e0d3e2ac6ee91c97df328811f524466f04e0b8fd"
@@ -1517,7 +1527,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "29c81bcd98dddcd181ca73e027b2aa9ce2ab2f043e5b2d42cea2f2b58e304a3d"
+      "sha256": "d4d5bfa0a02cf7d94a46d53e8f9fda0e9c6ccc5c8c4225e7f46195eb50bc0548"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",
