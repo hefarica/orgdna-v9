@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 257 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 320 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (319 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 259 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 322 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (321 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `320` |
-| `file_count` que reportará `validate_imports_portable.py` | `321` (incluye el propio manifiesto) |
-| Allowlist | `257` entradas |
+| Entradas del manifiesto | `322` |
+| `file_count` que reportará `validate_imports_portable.py` | `323` (incluye el propio manifiesto) |
+| Allowlist | `259` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 320 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **318** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 322 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **320** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 320
-MANIFIESTO_SHA256_SIN_ESPEJO 12e887acc88aa64e3fd9bd6845438e600f269a6250f15ce8285c40f5b802bee6
+MANIFIESTO_FILE_COUNT 322
+MANIFIESTO_SHA256_SIN_ESPEJO 29850b39ae46618e49d604b1e939e89625ea36b06098929f21346875b61cd320
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -676,6 +676,65 @@ que su caso se pone rojo:
 `runtime_verified: False`, `executed_here: False`, y un `failed` bloquea a sus descendientes hasta que una
 **decision explicita** los reabra. Los puertos reales (`dispatch`, `acquire`, `release`) los pone el llamador,
 que **todavia no existe**.
+
+---
+
+## 9-nonies. El ciguenal: orquestador sobre puertos reales (P3‑H)
+
+**`engine/orchestrator.py`** conduce el bucle que faltaba. El scheduler DECIDE; el orquestador CONDUCE. Aqui
+viven las aristas que no existian.
+
+**Puertos REALES cableados, no dobles:**
+
+| Puerto | Origen real |
+|---|---|
+| `gate_ready` | `readiness_gate.evaluate` — herramientas del catalogo + allow/deny |
+| `acquire` / `release` | `coordination.CoordinationStore` — tickets reales, con `expected_version` |
+| `dispatch` | **se inyecta.** No hay runtime en este arbol y **no se inventa uno** |
+| `poll` | se inyecta; sin runtime, `None` |
+
+**Terminacion por PROGRESO, no por contador.** Si un tick no cambia el run y quedan nodos sin terminar, el
+bucle para y el resultado es `NO_PROGRESS`. Asi un despacho que no avanza no puede girar en vacio.
+
+**Distincion que importa:** que el runtime no exista **no es un fallo del nodo**. `DispatchUnavailable` deja el
+nodo `pending` y registra el motivo; s**olo un error real** de despacho marca `failed` y bloquea descendientes.
+«No se pudo empezar» y «fallo» son dos estados distintos, y el orquestador no los confunde.
+
+### Defectos que la ejecucion encontro
+
+| # | Defecto | Evidencia |
+|---|---|---|
+| O1 | El ticket de `coordination` se identifica por la clave **`id`**, no `lease_id` | `KeyError: 'lease_id'` en el ciclo completo |
+| O2 | `lease-release` exige **`task_id`** para TODAS las acciones, y el puerto solo recibe el lease | `CoordinationError: task_id: texto obligatorio no valido` |
+| O3 | **Mi propio metodo de falsificacion tenia un agujero:** reverti `except DispatchUnavailable` por `except ValueError`, pero `DispatchUnavailable` ES subclase de `ValueError`, asi que la captura seguia funcionando y el invariante no se eliminaba | el arnes lo dijo: `NO DETECTADO <-- vacuo` |
+
+**O3 es el hallazgo mas util:** un arnes de falsificacion que informa «NO DETECTADO» en vez de dar por bueno un
+caso vacuo es lo que impide que la suite se vuelva decorativa.
+
+### Falsificacion del ciguenal, ejecutada
+
+| Invariante revertida | Casos que la detectan |
+|---|---|
+| sin runtime el nodo NO falla | `test_no_runtime_does_not_mark_nodes_failed`, `test_default_dispatch_refuses_...` |
+| terminacion por progreso | `test_stalled_poll_stops_by_progress_not_by_spinning` |
+| la puerta es la real | `test_missing_tool_closes_the_gate_...`, `test_denied_tool_closes_the_gate` |
+| el lease se localiza por la clave correcta | `test_round_trip_against_the_real_store`, `test_write_node_needs_a_lease_before_dispatch` |
+
+**Las cuatro se detectan.** Y se hereda **sin adornos** lo que `coordination` declara de si mismo:
+`filesystem_lock_enforced: False`, `dsh_enforced: False`, `enforcement: local_coordination_only` — coordina
+clientes que colaboran, no impide que un editor externo escriba.
+
+| Medicion | Resultado |
+|---|---|
+| `tests_orchestrator.py` (23 casos) | **23/23 OK** |
+| `tests_scheduler.py` (27 casos) | **27/27 OK** |
+
+### El estado REAL, sin adornos
+
+`orch.drive(run, gate_ready=..., now=...)` **con el despacho por defecto** termina en `NO_PROGRESS` con
+`passed: 0`, `pending: 2`, `not_run: 1` — y el evento `DISPATCH_UNAVAILABLE` **cita el stub real**
+(`CAPABILITY_UNAVAILABLE` en `dsh_connection.py:303-304`). El ciguenal **existe y gira**; lo que no existe es
+el runtime al que despachar. Esa es la frontera, y no se cruza simulando.
 
 ---
 

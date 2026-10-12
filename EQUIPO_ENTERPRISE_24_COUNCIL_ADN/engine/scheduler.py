@@ -48,6 +48,15 @@ class InvalidRunError(SchedulerError):
     """El Run o el grafo recibido no cumple lo que la funcion exige."""
 
 
+class DispatchUnavailable(SchedulerError):
+    """El puerto NO puede despachar porque no hay runtime. NO es un fallo del nodo.
+
+    Distincion deliberada: si el runtime no existe, no se ha intentado nada, asi que
+    el nodo NO pasa a 'failed' — se queda 'pending' y se registra el motivo. Marcarlo
+    'failed' afirmaria que algo fallo, y no fallo: no se pudo empezar.
+    """
+
+
 def _dump(value):
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
 
@@ -354,7 +363,24 @@ def step(run, *, dispatch, gate_ready, now):
                 changes[task_id] = node.evolved(state="pending")
             events.append(("LEASE_REQUIRED", task_id, "nodo con capacidad de escritura sin lease: no se despacha"))
             continue
-        receipt = dispatch(task_id, node.agent_ref, node.lease_id)
+        try:
+            receipt = dispatch(task_id, node.agent_ref, node.lease_id)
+        except DispatchUnavailable as exc:
+            # No hay runtime: no se ha intentado nada. El nodo no falla, espera.
+            if node.state == "not_run":
+                changes[task_id] = node.evolved(state="pending")
+            events.append(("DISPATCH_UNAVAILABLE", task_id, str(exc)[:300]))
+            continue
+        except Exception as exc:                                        # noqa: BLE001
+            # Error real de despacho: falla el nodo y se bloquean sus descendientes.
+            changes[task_id] = node.evolved(state="failed", started_at=now, ended_at=now,
+                                            attempt=node.attempt + 1)
+            for other in descendants(run, task_id):
+                row = run.node(other)
+                if row.state not in TERMINAL_STATES:
+                    changes[other] = row.evolved(state="blocked", ended_at=now)
+            events.append(("DISPATCH_FAILED", task_id, "%s: %s" % (type(exc).__name__, exc)))
+            continue
         changes[task_id] = node.evolved(state="running", started_at=now, attempt=node.attempt + 1)
         events.append(("DISPATCHED", task_id, "" if receipt is None else _dump(receipt)[:400]))
         slots -= 1
