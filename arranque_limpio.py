@@ -212,15 +212,72 @@ def verify_seal():
 
 # ---------------------------------------------------------------- proceso
 
+def terminate_process(pid):
+    """Termina un PID probando varias vías, de la mas directa a la mas indirecta.
+
+    Medido en este host: `taskkill /PID N /F` responde "Acceso denegado" mientras
+    que TerminateProcess (lo que hace Stop-Process) SI termina el mismo PID, con el
+    mismo usuario y la misma integridad. No se sabe por que taskkill falla aqui; lo
+    que se sabe es que la via directa funciona, asi que va primero.
+
+    Devuelve (ok, detalle). El detalle incluye el motivo COMPLETO, no su encabezado:
+    el error de taskkill ocupa dos lineas y quedarse con la primera ocultaba el
+    "Motivo: Acceso denegado", que es justo lo que hacia falta saber.
+    """
+    reasons = []
+
+    # 1) Via directa: TerminateProcess sobre un handle con PROCESS_TERMINATE.
+    if os.name == 'nt':
+        try:
+            import ctypes
+            PROCESS_TERMINATE = 0x0001
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.OpenProcess(PROCESS_TERMINATE, False, int(pid))
+            if handle:
+                try:
+                    if kernel32.TerminateProcess(handle, 1):
+                        return True, 'terminada (TerminateProcess)'
+                    reasons.append('TerminateProcess fallo (error %d)' % kernel32.GetLastError())
+                finally:
+                    kernel32.CloseHandle(handle)
+            else:
+                reasons.append('OpenProcess denego el acceso (error %d)' % kernel32.GetLastError())
+        except Exception as exc:
+            reasons.append('ctypes: %s' % exc)
+
+    # 2) taskkill.
+    status, out = run(['taskkill', '/PID', str(pid), '/F'], timeout=60)
+    if status == 0:
+        return True, 'terminada (taskkill)'
+    reasons.append('taskkill: ' + ' '.join(out.split()))
+
+    # 3) PowerShell Stop-Process.
+    status, out = run(['powershell', '-NoProfile', '-NonInteractive', '-Command',
+                       'Stop-Process -Id %d -Force' % int(pid)], timeout=60)
+    if status == 0:
+        return True, 'terminada (Stop-Process)'
+    reasons.append('Stop-Process: ' + ' '.join(out.split()))
+
+    return False, ' | '.join(reasons)
+
+
+def port_is_free(port):
+    """True si nada escucha ya en ese puerto (incluido algo que no sea nuestra app)."""
+    for candidate, _pid in listening_ports():
+        if candidate == port:
+            return False
+    return True
+
+
 def stop_instance(pid, port):
-    status, out = run(['taskkill', '/PID', str(pid), '/T', '/F'], timeout=60)
-    if status != 0:
-        return False, out.splitlines()[0] if out else 'taskkill fallo'
+    ok, detail = terminate_process(pid)
+    if not ok:
+        return False, detail
     for _ in range(40):
         if instance_identity(port, timeout=0.4) is None:
-            return True, 'detenida'
+            return True, detail
         time.sleep(0.25)
-    return False, 'el puerto %d sigue respondiendo' % port
+    return False, detail + ' | el puerto %d sigue respondiendo' % port
 
 
 def launch(port, extra=()):
@@ -239,14 +296,33 @@ def launch(port, extra=()):
     return True, 'lanzado'
 
 
-def wait_ready(port, want_build, seconds=45):
+def pid_for_port(port):
+    for candidate, pid in listening_ports():
+        if candidate == port:
+            return pid
+    return None
+
+
+def wait_ready(port, want_build, known_pids=(), seconds=45):
+    """Espera a que aparezca una instancia con el build esperado.
+
+    Con --port 0 engine.launcher elige un puerto libre, asi que la instancia nueva
+    se descubre por su IDENTIDAD y por no estar entre los PIDs previos, nunca por el
+    numero de puerto. Devuelve (fila, puerto_real) o (None, port).
+    """
     deadline = time.time() + seconds
     while time.time() < deadline:
-        row = instance_identity(port, timeout=0.8)
-        if row is not None:
-            return row
+        if port:
+            row = instance_identity(port, timeout=0.8)
+            pid = pid_for_port(port)
+            if row is not None and pid is not None and pid not in known_pids:
+                return dict(row, pid=pid), port
+        else:
+            for row in find_running():
+                if row['build'] == want_build and row['pid'] not in known_pids:
+                    return row, row['port']
         time.sleep(0.5)
-    return None
+    return None, port
 
 
 def main():
@@ -371,10 +447,11 @@ def main():
         return 0
 
     # ---- 7. Parada + arranque ---------------------------------------------
-    # OJO: `args.port or ...` seria un error, porque --port 0 es legitimo (pide un
-    # puerto libre) y 0 es falsy: se ignoraria en silencio.
     port = args.port if args.port is not None else (
         stale[0]['port'] if stale else (current[0]['port'] if current else DEFAULT_PORT))
+    known_pids = {row['pid'] for row in running}
+    stop_failures = []
+
     if stale:
         step(6, 'Parada de la instancia obsoleta')
         say('  AVISO: los recibos de generacion viven EN MEMORIA hasta Guardar proyecto.')
@@ -391,30 +468,44 @@ def main():
                 return 1
         for row in stale:
             ok, detail = stop_instance(row['pid'], row['port'])
-            say('  pid %d           : %s' % (row['pid'], detail))
+            say('  pid %-7d       : %s' % (row['pid'], detail))
             if not ok:
-                say('  FALLO: no pude detenerla. Cierrala a mano y repite.')
-                return 4
+                stop_failures.append(row)
     else:
         step(6, 'Parada')
         say('  nada que detener')
+
+    # Cerrar era OPCIONAL. Si una instancia obsoleta sigue viva y ocupa el puerto
+    # deseado, NO se aborta: se arranca en un puerto libre. Lo que importa es servir
+    # el codigo nuevo, no liberar el puerto viejo.
+    if port and not port_is_free(port):
+        say('  puerto %d sigue ocupado: se arranca en un puerto libre' % port)
+        port = 0
 
     step(7, 'Arranque')
     ok, detail = launch(port, reenviar)
     if not ok:
         say('  FALLO al lanzar: %s' % detail)
         return 4
-    say('  lanzado en       : puerto %s' % (port if port else 'libre (--port 0)'))
+    say('  lanzado en       : %s' % ('puerto %d' % port if port else 'un puerto libre (--port 0)'))
 
-    row = wait_ready(port, want)
+    row, real_port = wait_ready(port, want, known_pids)
     if row is None:
         say('  FALLO: el panel no respondio en 45 s. Revisa la ventana del lanzador.')
         return 4
+    port = real_port
 
     matches = row.get('build') == want
     say('  build servido    : %s' % str(row.get('build'))[:16])
     say('  build en disco   : %s' % want[:16])
     say()
+    if stop_failures:
+        say('  AVISO: %d instancia(s) siguen vivas con codigo VIEJO en %s.'
+            % (len(stop_failures), ', '.join(str(r['port']) for r in stop_failures)))
+        say('         No pude cerrarlas (ver el motivo arriba). Libera esos puertos desde')
+        say('         el Administrador de tareas, o ejecuta este lanzador como Administrador.')
+        say('         La instancia NUEVA ya esta sirviendo el codigo nuevo.')
+        say()
     if matches:
         say('RESULTADO: OK — el panel sirve el codigo NUEVO.')
         say('  panel: http://127.0.0.1:%d' % port)
