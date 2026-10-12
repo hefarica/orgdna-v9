@@ -10,9 +10,11 @@ from __future__ import annotations
 if __package__:
     from .limits import MAX_AGENTS
     from . import model_resolver
+    from . import gang_assembly, gang_registry
 else:
     from limits import MAX_AGENTS
     import model_resolver
+    import gang_assembly, gang_registry
 
 import argparse
 import ctypes
@@ -525,6 +527,8 @@ class BridgeState:
         self.receipts = []
         self.secret_store = credential_store or WindowsSecretStore()
         self.credentials = {}
+        self.gang_registry = gang_registry.GangRegistry()
+        self._last_gang_artifact = None
         self._sensitive_values = set()
         self.persisted = False
         self.provider_module = provider_module
@@ -803,6 +807,29 @@ class BridgeState:
                      'identidad autenticada ni rentabilidad.'),
         }
 
+    def _gang_public(self):
+        """Ensamblado del gang (sobre la organizacion actual) y registro de despliegue.
+
+        El ensamblado es calculo local sellado: valida invariantes, resuelve la
+        jerarquia, ordena topologicamente y sella con SHA-256. El registro declara
+        la verdad: los servicios NO estan montados y solo se registran hashes.
+        """
+        ensamblado, sha = None, None
+        if self.organization is not None:
+            try:
+                artifact, sha = gang_assembly.assemble(self.organization, previous=self._last_gang_artifact)
+                self._last_gang_artifact = artifact
+                manifest = artifact['manifest']
+                ensamblado = {'schema_version': artifact['schema_version'],
+                              'total': manifest['total'], 'version': manifest['version'],
+                              'sha256': sha, 'changelog': manifest['changelog'],
+                              'orden': artifact['orden'][:12], 'orden_total': len(artifact['orden']),
+                              'contrato': artifact['contrato']}
+            except gang_assembly.AssemblyError as exc:
+                ensamblado = {'error': exc.code, 'detail': str(exc)}
+        return {'ensamblado': ensamblado, 'servicios': self.gang_registry.snapshot(),
+                'sync': self.gang_registry.sync_verdict(sha)}
+
     def public(self):
         with self.lock:
             self.remember_current_design()
@@ -821,6 +848,7 @@ class BridgeState:
                 'credentials_configured': sorted(self.credentials), 'credentials_persisted': self.persisted,
                 'project': self.project, 'records_version': self.records_version,
                 'coordination': self.coordination_store.public(), 'tool_catalog': self.tool_catalog(),
+'gang': self._gang_public(),
                 'scoreboard': build_scoreboard(self.organization, self.records) if self.organization else {'rows': [], 'evidence_status': 'manual_records_not_runtime_verified'},
                 'generation_stale': self.generation_stale, 'has_manual_edits': self.has_manual_edits, **self.records,
                 'capabilities': {'agents_runtime': False, 'excel_com': os.name == 'nt', 'dpapi': os.name == 'nt', 'network_on_start': False, 'local_coordination': True, 'filesystem_lock_enforced': False, 'dsh_enforced': False, 'reviewer_identity_verified': False},
@@ -1268,6 +1296,15 @@ class BridgeState:
                         self.receipt('discover-models', 'warning',
                                      'El catálogo automático no pudo consultarse (%s); la clave sigue preparada: usa el botón de catálogo.' % str(exc)[:160])
                         return self.public()
+            elif action == 'gang-publish':
+                if self.organization is None:
+                    raise BridgeError('Genera primero un diseño del gang para ensamblar y publicar.')
+                artifact, sha = gang_assembly.assemble(self.organization, previous=self._last_gang_artifact)
+                self._last_gang_artifact = artifact
+                resultado = self.gang_registry.publish_atomic(sha)
+                self.receipt(action, 'success',
+                             'Artefacto %s registrado de forma atómica en los %d objetivos. Los servicios no están montados en este árbol: se registra el hash del artefacto, no se ejecuta nada.'
+                             % (sha[:12], resultado['objetivos']))
             elif action == 'forget-credentials':
                 self.secret_store.delete()
                 self.credentials.clear()

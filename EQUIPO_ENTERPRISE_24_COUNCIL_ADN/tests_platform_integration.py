@@ -359,7 +359,7 @@ class AllowlistIsLiteralTests(unittest.TestCase):
     def test_every_engine_module_in_the_delivery_is_allowlisted(self):
         modules = {'engine/' + path.name for path in (SUITE_ROOT / 'engine').glob('*.py')}
         self.assertEqual(sorted(modules - set(bundle.RUNTIME_ALLOWLIST)), [])
-        self.assertEqual(len(modules), 60, 'el numero de modulos de engine/ cambia sin revision')
+        self.assertEqual(len(modules), 62, 'el numero de modulos de engine/ cambia sin revision')
 
     def test_platform_modules_tests_and_documents_are_allowlisted(self):
         allowlist = set(bundle.RUNTIME_ALLOWLIST)

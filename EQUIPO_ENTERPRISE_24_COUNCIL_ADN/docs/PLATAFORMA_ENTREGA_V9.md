@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 259 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 322 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (321 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 262 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 325 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (324 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `322` |
-| `file_count` que reportará `validate_imports_portable.py` | `323` (incluye el propio manifiesto) |
-| Allowlist | `259` entradas |
+| Entradas del manifiesto | `325` |
+| `file_count` que reportará `validate_imports_portable.py` | `326` (incluye el propio manifiesto) |
+| Allowlist | `262` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 322 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **320** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 325 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **323** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 322
-MANIFIESTO_SHA256_SIN_ESPEJO f66b93a534d0aafbcf3c0396191173cfac7ba305279859c607ee656790d6b4bc
+MANIFIESTO_FILE_COUNT 325
+MANIFIESTO_SHA256_SIN_ESPEJO 37a4ca0a2121fd04b332c436875faa0a7b0be79c20f679f75d4efba371b14a52
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -770,6 +770,37 @@ salida cabe con margen.
 Los recibos del intento truncado se conservan: 20 915 entrada / 15 420 salida, SHA-256
 de la solicitud y del ID de respuesta registrados. El coste real lo factura el
 proveedor: consulta su consumo antes de autorizar otro intento.
+
+---
+
+## 9-tredecies. Ensamblado del gang y registro de despliegue (P3‑N)
+
+**`engine/gang_assembly.py`** convierte el gang en un artefacto: valida los invariantes (N exacto, ids
+unicos, slots 1..N, jefes reales), **rechaza ciclos y huerfanos** (un agente al que nadie supervisa desde la
+raiz no se publica), ordena topologicamente (el jefe antes que su gente, desempate determinista por slot) y
+**sella con SHA-256**, con version y changelog (+/−/~) contra el artefacto anterior. Idempotente: re-ensamblar
+el mismo gang devuelve el mismo sello; la version solo sube cuando el gang cambia.
+
+**`engine/gang_registry.py`** es el libro de despliegue de los 3 objetivos (`cordi`, `agent-team`, `team`):
+publicacion **atomica con rollback** (los tres o ninguno) y veredicto de sincronia honesto — `SYNCED` solo
+cuando los tres registran exactamente el mismo SHA-256. **Los servicios no estan montados en este arbol**
+(preflight BLOCKED) y el registro no lo disimula: `mounted: False` siempre, con nota explicita. Se registra el
+hash del artefacto; cuando el runtime aterrice, este libro ya es la fuente de verdad.
+
+**Integracion:** el bridge expone `gang` en el estado (ensamblado sellado + servicios + sync) y la accion
+`gang-publish` registra el artefacto en los 3 objetivos de forma atomica. El panel anade la seccion
+"Ensamblado del gang": hash, total, version, diff, orden, los 3 servicios con su hash y el pill de
+sincronia, con el boton de registro atomico.
+
+| Medicion | Resultado |
+|---|---|
+| `tests_gang_assembly.py` (17 + 5 bridge) | **22/22 OK** |
+| Invariantes falsificadas | ciclo, huerfano, desconectado, ids duplicados, N inconsistente, slots incompletos |
+| Registro falsificado | publicacion atomica con rollback ante servicio caido; SYNCED/STALE/DIVERGED/EMPTY |
+| Adaptador contra organizaciones REALES del producto | 1, 4, 12 y 32 agentes ensamblan y sellan |
+
+**Defecto propio encontrado ejecutando:** la primera version del ensamblado re-sellaba el mismo gang con otro
+hash (la version subia en cada ensamblado). Corregido con idempotencia: mismo gang, mismo sello.
 
 ---
 

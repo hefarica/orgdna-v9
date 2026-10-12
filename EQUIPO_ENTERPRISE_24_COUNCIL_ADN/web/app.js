@@ -445,7 +445,38 @@ function updateGenerationControls(transient=false){
 }
 function generationMessage(text,kind='',jobId=null){message(text,kind);generationNoticeOwned=true;generationNoticeJobId=jobId;}
 
-// --- Gang de agentes: el panel en vivo -------------------------------------
+// --- Servicios y ensamblado: el libro de despliegue del gang -----------------
+function renderGangServices(gang){
+  const wrap=$('#gang-services');if(!wrap)return;
+  if(!gang){wrap.hidden=true;return;}
+  wrap.hidden=false;
+  const ens=gang.ensamblado,pill=$('#gang-sync-pill'),sync=gang.sync||{};
+  const color=sync.code==='SYNCED'?'#2e9e5b':sync.code==='DIVERGED'?'#d33':'#f59e0b';
+  pill.textContent=(sync.label||sync.code||'').toUpperCase();pill.style.color=color;
+  const facts=$('#gang-assembly-facts');facts.replaceChildren();
+  const addFact=(k,v)=>{const dt=document.createElement('dt');dt.textContent=k;const dd=document.createElement('dd');dd.textContent=v;facts.append(dt,dd);};
+  const btn=$('#gang-publish');
+  if(!ens){addFact('Ensamblado','—');btn.disabled=true;}
+  else if(ens.error){addFact('Ensamblado','RECHAZADO: '+ens.error);addFact('Detalle',ens.detail||'');btn.disabled=true;}
+  else{
+    const cl=ens.changelog||{};
+    addFact('Artefacto',(ens.sha256||'').slice(0,16)+'…');
+    addFact('Gang',ens.total+' agentes · versión '+ens.version);
+    addFact('Orden','jefe antes que subordinado · '+ens.orden_total+' en la cadena');
+    addFact('Cambios vs anterior','+'+((cl.added||[]).length)+' · −'+((cl.removed||[]).length)+' · ~'+((cl.changed||[]).length));
+    btn.disabled=false;
+  }
+  const grid=$('#gang-services-grid');grid.replaceChildren();
+  (gang.servicios||[]).forEach(s=>{
+    const chip=document.createElement('div');chip.className='gang-chip '+(s.recorded_sha256?'gang-listo':'gang-cola');
+    const id=document.createElement('div');id.className='gang-id';id.textContent=s.id;
+    const st=document.createElement('div');st.className='gang-st';
+    st.textContent=s.recorded_sha256?String(s.recorded_sha256).slice(0,8):'sin despliegue';
+    const mount=document.createElement('div');mount.className='gang-st';mount.textContent='no montado';
+    chip.append(id,st,mount);grid.append(chip);
+  });
+}
+
 // Un agente = una solicitud, asi que el indice de cada recibo ES el agente.
 // Estados: cola -> construyendo -> (continuando -> construyendo)* -> listo | fallo.
 function renderGangGrid(job){
@@ -505,6 +536,9 @@ function renderGeneration(){
     $('#generation-status-text').textContent=(generationTerminal.has(job.status)?'Intento finalizado':job.message||stageLabels[job.stage]||job.stage||'')+(job.max_requests?' · Iniciadas: '+generationRequestCount(job.sent_requests)+' · Completadas: '+generationRequestCount(job.completed_requests)+' / '+job.max_requests:'')+(generationReviewStale?' La configuración cambió. Cancela y prepara un plan nuevo.':'')+(job.potentially_billed?' Puede haber cargos por solicitudes enviadas.':'');
     renderGangGrid(job);
   }
+  renderGangServices(state?.gang);
+  const gangPublishBtn=$('#gang-publish');
+  if(gangPublishBtn&&!gangPublishBtn.dataset.wired){gangPublishBtn.dataset.wired='1';gangPublishBtn.onclick=()=>{if(busy||generationActive())return;action('gang-publish',{},'Artefacto registrado en los 3 objetivos.');};}
   if(pending?.job_id&&job?.status==='awaiting_consent'){
     const fingerprint=[pending.job_id,pending.approval_id,pending.payload_sha256,pending.coverage_sha256,pending.config_version].join(':');if(generationConsentId!==fingerprint){$('#generation-consent').checked=false;generationConsentId=fingerprint;}
     $('#generation-partial-notice').hidden=!pending.partial_inventory_required;
