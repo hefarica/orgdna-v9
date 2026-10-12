@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 39622,
-      "sha256": "5a73f37fea155b8bc0eb514bfe1a73cec127db70b9815a755fe808527c7d98dc"
+      "bytes": 42837,
+      "sha256": "d29722b9b67df5f8e2ab3b67170d0c0525d10a9f251fd27884933eb1d433fdc5"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -541,8 +541,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83082,
-      "sha256": "4260bfc6d5f56355be0aa10c4f78eb2b88312a88e9349e7ac4a8c71b0b373736"
+      "bytes": 83204,
+      "sha256": "bb1cba60ca619cdf0a8ec071e2230af3ce4bcc454d8304aa480ae514a7e4f6e7"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -573,6 +573,11 @@
       "path": "engine/connector_gateway.py",
       "bytes": 31877,
       "sha256": "5918369ee114e5ebeb0eee213e7be16cfc9ebdc39fcb22a59d889c04154a6aa7"
+    },
+    {
+      "path": "engine/context_compiler.py",
+      "bytes": 10405,
+      "sha256": "af6d6e0f76b84bb43270caa54132b8b87b40896ed9bea6e11c6f95ad10429131"
     },
     {
       "path": "engine/coordination.py",
@@ -648,6 +653,11 @@
       "path": "engine/improvement.py",
       "bytes": 11934,
       "sha256": "e430b9a3b93ca1ace71dbf9af0be989382440cc624cc737866316505606b5422"
+    },
+    {
+      "path": "engine/improvement_loop.py",
+      "bytes": 9687,
+      "sha256": "bfbb7a6dfbfd66bc1f1ced90c0d90b827f8bfef58a2a16f21885bf484e124aa6"
     },
     {
       "path": "engine/integration_recommendations.py",
@@ -1310,6 +1320,11 @@
       "sha256": "172f9f0160d4bed6db091c6193c93ba2429bc94357cf81a8cfbfcb1ef4a24499"
     },
     {
+      "path": "tests_context_compiler.py",
+      "bytes": 7087,
+      "sha256": "676f114416cc07715bfd7db1a5ff1d53c941003a6abeb8cdb603357b2cd64784"
+    },
+    {
       "path": "tests_dsh_launcher.py",
       "bytes": 11536,
       "sha256": "bf1cf7da40d2f33f3b3578f930e0d517b5f1db7e0a10e6c2bb725fe52099b9cd"
@@ -1348,6 +1363,11 @@
       "path": "tests_improvement.py",
       "bytes": 6729,
       "sha256": "bf70c2005a09e1e7e0bbe02d9007a354cd7a8478ef1fa8eeb1fe036fea2225bb"
+    },
+    {
+      "path": "tests_improvement_loop.py",
+      "bytes": 7529,
+      "sha256": "a2d008e3e7ae9613c2f05dcab640bcd12a57a51d5a0d1fe724ab3f77738fdb52"
     },
     {
       "path": "tests_integration_tools.py",
@@ -1397,7 +1417,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "269c18da37c910b26b5afcc1559c72f24e99d9fc57bde20e718aaf30eac395ee"
+      "sha256": "44d6dee3eff454e4d2b19958428c1839486bce17bc6c1f5614a9211d435b2644"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",

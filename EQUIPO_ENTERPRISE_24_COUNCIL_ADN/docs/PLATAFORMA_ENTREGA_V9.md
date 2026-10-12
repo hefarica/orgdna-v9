@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 240 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 303 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (302 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 244 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 307 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (306 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `303` |
-| `file_count` que reportará `validate_imports_portable.py` | `304` (incluye el propio manifiesto) |
-| Allowlist | `240` entradas |
+| Entradas del manifiesto | `307` |
+| `file_count` que reportará `validate_imports_portable.py` | `308` (incluye el propio manifiesto) |
+| Allowlist | `244` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 303 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **301** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 307 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **305** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 303
-MANIFIESTO_SHA256_SIN_ESPEJO 6291c3d7a73f484ad492005a474f416561bbb0c9f866d2dc287bdce409af8448
+MANIFIESTO_FILE_COUNT 307
+MANIFIESTO_SHA256_SIN_ESPEJO 05f5af10c595d9a3476982b24ef1412ed66f377c98491883ffbd2e0bd77f41eb
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -503,6 +503,46 @@ Falla **cerrado** —no trunca en silencio—, que es la conducta correcta, pero
 AgentTeams tendría que admitir **1 Captain + 39 teammates**. Este repositorio **genera** el diseño y los
 artefactos; **no ejecuta** AgentTeams ni DSH. Esa frontera queda declarada como `RUNTIME_UNVERIFIED`, igual que el
 resto de capacidades operativas: `NOT_RUN`.
+
+---
+
+## 9-quinquies. Módulos A y B — compilador de contexto y bucle de mejora (P3‑D)
+
+**Dos módulos nuevos**, stdlib puro, sin estado mutable de módulo, con digest determinista y fail-closed:
+`engine/context_compiler.py` (contexto acotado por presupuesto) y `engine/improvement_loop.py` (ejecutor de los
+siete estados de remediación).
+
+**Se escribieron, se ejecutaron y se falsificaron.** No se aceptaron por lectura. La ejecución encontró **tres
+defectos reales en B y una inconsistencia en A**, todos reparados con falsificación ejecutada.
+
+| # | Defecto medido | Evidencia | Reparación |
+|---|---|---|---|
+| B1 | `_REQUIRED_AT_PUBLISH` exigía `skill_diff`, que **nadie asigna nunca** (el diff vive en `case["skill"]["diff"]`) → `publish()` **inalcanzable**, el camino feliz siempre fallaba | `case: evidencia incompleta para publicar: skill_diff` | la puerta comprueba `skill`, cuyas siete claves ya valida `draft_skill` |
+| B1b | Ese fallo **enmascaraba** el guardián de permisos, que era inejercitable | el caso 5 de la lista original no podía recorrerse | queda ejercitable y verificado |
+| B2 | `case_digest` **plegaba el digest anterior** dentro del nuevo y `verify_case` devolvía **True con el contenido alterado**: B calculaba digests que nadie podía comprobar | `case_digest(c) != c["digest"]`; alterar `expected` no se detectaba | el digest se excluye a sí mismo y `verify_case` lo recomprueba |
+| A1 | Los campos desconocidos **dentro de un elemento** se ignoraban en silencio, contra el propio contrato de A («campo desconocido → ValueError con ruta de campo») y contra `_SKILL_KEYS` de B | un `extra` en una fila de evidencia no lanzaba nada | `_ITEM_KEYS` por tipo, con ruta de campo |
+
+**Dos casos de la lista de falsificación original eran inejercitables, y se declara:**
+
+1. **A, caso 3** («budget diminuto»): con `budget_bytes=1024` y un fixture pequeño caben 638 bytes, así que no se
+   omitía nada. El módulo era correcto; el fixture no recorría la ruta de omisión. Se redimensiona para desbordar.
+2. **B, caso 7** («reintroducir el borrador viejo sin `preserved_failure_id`»): **inexpresable**, porque
+   `draft_skill` construye el dict de la skill y `_SKILL_KEYS` rechaza el campo ajeno. Se sustituye por lo que sí
+   es verificable: que el borrador **siempre** conserve el caso fallido, y que alterar el caso se detecte.
+
+**Evidencia**
+
+| Medición | Resultado |
+|---|---|
+| `tests_context_compiler.py` (13 casos) | **13/13 OK** |
+| `tests_improvement_loop.py` (14 casos) | **14/14 OK** |
+| Falsificación de B (arreglos revertidos en copia desechable) | **`FAILED (failures=2, errors=2)`** de 14 — camino feliz, fail-closed, digest y permisos |
+| `verify_case` con `expected` alterado | lanza `caso alterado` |
+
+**Lo que estos módulos NO son.** No tocan pesos: la política vive en las skills y la recompensa en la revisión
+independiente. No llaman al proveedor, no ejecutan agentes y no conceden permisos. `context_compiler` **no es
+recuperación semántica**: es selección por solape de términos con presupuesto, y lo declara en su propio
+`selection.method`. La señal de recompensa y la propagación son del llamador: **no están cableadas**.
 
 ---
 

@@ -44,8 +44,8 @@ Resultado medido en el árbol congelado que originó este repositorio:
 
 ```
 verifica_manifiesto.py
-  entradas manifiesto : 303
-  hashes coincidentes : 303
+  entradas manifiesto : 307
+  hashes coincidentes : 307
   hashes divergentes  : 0
   faltantes           : 0
   exentos declarados  : 14     (data/ y el expediente de verificación, por diseño)
@@ -53,13 +53,13 @@ verifica_manifiesto.py
   RESULTADO           : OK
 
 validate_imports_portable.py
-  valid: true | errors: [] | checks: 1807 | file_count: 304
+  valid: true | errors: [] | checks: 1829 | file_count: 308
   agent_count: 24 | tool_catalog_count: 271 | export_hashes_valid: true
 ```
 
-`MANIFIESTO_SHA256.txt` → `b4e54be3b7a2831bcd0230c1f38d692f1c6a512fd2da8851c124ec768161c983`
+`MANIFIESTO_SHA256.txt` → `8ac9102db49704d86cac3b807aad401c9fe030102c7aca65a33d8e9fb9bf9d75`
 
-El sello cubre **303** archivos; el archivo 304 es el propio manifiesto. `data/` y
+El sello cubre **307** archivos; el archivo 308 es el propio manifiesto. `data/` y
 `docs/PLATAFORMA_VERIFICACION_V1.md` quedan fuera del sello **deliberadamente**: el primero es estado
 de ejecución que el producto reescribe al usarse —verificado: la suite completa lo modifica y los 302
 hashes siguen coincidiendo—, el segundo un expediente que debe poder revisarse sin re-sellar el paquete.
@@ -73,7 +73,7 @@ este árbol son **LF puro**.
 
 Este host trae `core.autocrlf=true` en el gitconfig de sistema (`C:/Program Files/Git/etc/gitconfig`).
 Sin la regla `* -text` de [`.gitattributes`](.gitattributes), Git convertiría LF → CRLF al hacer
-checkout y **los 303 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
+checkout y **los 307 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
 que cualquier clon queda protegido. `* -text` desactiva solo la conversión de fin de línea: el atributo
 `diff` sigue activo y los diffs de texto funcionan con normalidad.
 
@@ -122,12 +122,12 @@ esa variable; con ella pasan. Está medido y documentado en el expediente de ver
 
 ### 5.1 Medición final sobre el árbol congelado
 
-Descubrimiento completo (`test*.py`, 44 módulos), `PYTHONUTF8=1`, sin paralelismo, huella del árbol
-`b4e54be3b7a2831bcd0230c1f38d692f1c6a512fd2da8851c124ec768161c983`:
+Descubrimiento completo (`test*.py`, 46 módulos), `PYTHONUTF8=1`, sin paralelismo, huella del árbol
+`8ac9102db49704d86cac3b807aad401c9fe030102c7aca65a33d8e9fb9bf9d75`:
 
 ```
-Ran 1035 tests in 187.616s
-FAILED (errors=4, skipped=3)          ← failures=0
+Ran 1062 tests in 221.274s
+FAILED (errors=3, skipped=3)          ← failures=0
 ```
 
 Los **4 errores restantes son de entorno**, verificado uno a uno por su traza:
@@ -154,7 +154,8 @@ Comparación controlada de las mediciones (mismo host, misma huella de medición
 | Clon limpio, antes de la reparación P3‑B (1026 casos) | `failures=1, errors=9, skipped=2` |
 | Árbol final de P3‑B (1035) | `failures=0, errors=3, skipped=3` |
 | P3‑C primera pasada (1035) — las 4 guardas lo detectan | `failures=4, errors=3, skipped=3` |
-| **P3‑C con las guardas cerradas (1035)** | **`failures=0, errors=4, skipped=3`** |
+| P3‑C con las guardas cerradas (1035) | `failures=0, errors=4, skipped=3` |
+| **P3‑D: +27 casos de A y B (1062)** | **`failures=0, errors=3, skipped=3`** |
 
 Las 4 guardas de la tercera fila no son un defecto del cambio: son tests que **fijaban las fronteras viejas** y
 que se movieron de forma declarada. Dos de ellas eran hashes pinneados que nadie había listado.
@@ -242,7 +243,36 @@ nuevas: contenido de producto, decisión separada.
 **Lo que sigue sin verificar:** AgentTeams tendría que admitir **1 Captain + 39 teammates**. Este repositorio
 genera el diseño y los artefactos; **no ejecuta** AgentTeams ni DSH. `RUNTIME_UNVERIFIED`.
 
-### 5.4 Independencia de la verificación: degradada
+### 5.4 Módulos A y B — compilador de contexto y bucle de mejora (P3‑D)
+
+Dos módulos nuevos, stdlib puro, deterministas y fail-closed: `engine/context_compiler.py` (contexto acotado por
+presupuesto) y `engine/improvement_loop.py` (ejecutor de los siete estados de remediación).
+
+**Se escribieron, se ejecutaron y se falsificaron.** Ejecutarlos encontró **tres defectos reales en B y una
+inconsistencia en A** — ninguno de ellos visible por lectura, y todos con falsificación ejecutada.
+
+| # | Defecto | Evidencia medida |
+|---|---|---|
+| B1 | `publish()` exigía `skill_diff`, que **nadie asigna nunca** → el camino feliz era **inalcanzable** | `evidencia incompleta para publicar: skill_diff` |
+| B1b | Ese fallo **enmascaraba** el guardián de permisos, que quedaba inejercitable | el caso 5 original no podía recorrerse |
+| B2 | El digest **plegaba el anterior** y `verify_case` devolvía **True con el contenido alterado** | `case_digest(c) != c["digest"]` |
+| A1 | Campos desconocidos **dentro de un elemento** se ignoraban en silencio, contra el contrato de A | un `extra` en una evidencia no lanzaba nada |
+
+**Dos casos de la lista de falsificación original eran inejercitables**, y se declara: el caso 3 de A (el fixture
+no desbordaba el presupuesto —caben 638 bytes en 1024—) y el caso 7 de B (**inexpresable**: `_SKILL_KEYS` rechaza
+el campo que el test pretendía inyectar). Ambos sustituidos por lo que sí es verificable.
+
+| Medición | Resultado |
+|---|---|
+| `tests_context_compiler.py` (13 casos) | **13/13 OK** |
+| `tests_improvement_loop.py` (14 casos) | **14/14 OK** |
+| Falsificación de B (arreglos revertidos en copia desechable) | **`FAILED (failures=2, errors=2)`** de 14 |
+
+**Lo que estos módulos NO son.** No tocan pesos: la política vive en las skills y la recompensa en la revisión
+independiente. `context_compiler` **no es recuperación semántica** —lo declara en su propio `selection.method`—.
+Y la señal de recompensa y la propagación **no están cableadas**: son del llamador.
+
+### 5.5 Independencia de la verificación: degradada
 
 La verificación V1 la firmó el propio capitán, que no implementó ninguno de los 11 módulos de
 plataforma, pero tampoco es un tercero independiente. Las capacidades operativas siguen en `NOT_RUN`.
