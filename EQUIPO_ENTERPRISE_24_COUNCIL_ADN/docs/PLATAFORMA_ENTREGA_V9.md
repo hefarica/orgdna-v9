@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 262 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 325 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (324 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 263 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 326 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (325 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `325` |
-| `file_count` que reportará `validate_imports_portable.py` | `326` (incluye el propio manifiesto) |
-| Allowlist | `262` entradas |
+| Entradas del manifiesto | `326` |
+| `file_count` que reportará `validate_imports_portable.py` | `327` (incluye el propio manifiesto) |
+| Allowlist | `263` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 325 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **323** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 326 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **324** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 325
-MANIFIESTO_SHA256_SIN_ESPEJO 37a4ca0a2121fd04b332c436875faa0a7b0be79c20f679f75d4efba371b14a52
+MANIFIESTO_FILE_COUNT 326
+MANIFIESTO_SHA256_SIN_ESPEJO 209e0362b1a8a34fa7db2eeabd1188c6059b127810df79af74a416c54732689f
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -801,6 +801,17 @@ sincronia, con el boton de registro atomico.
 
 **Defecto propio encontrado ejecutando:** la primera version del ensamblado re-sellaba el mismo gang con otro
 hash (la version subia en cada ensamblado). Corregido con idempotencia: mismo gang, mismo sello.
+
+**2PC idempotente con journal en disco (P3-Ñ).** El registro evoluciona a coordinador de dos fases: la
+clave de publicacion es el SHA-256 del artefacto (clave de contenido) y **reintentar es un no-op** que no
+toca ningun servicio. Fase 1 (prepare): un objetivo que falla aborta a los ya montados. Fase 2 (commit): un
+objetivo que falla obliga a **compensar** lo ya commiteado — nunca queda un servicio adelantado. Cada
+transicion queda en `engine/gang_journal.py` (JSONL append-only, fsync por linea): un crash a mitad de
+commit se resuelve al reanudar — lo commiteado sobrevive, lo que quedo `staged` se **aborta por replay**
+(fail-closed: nunca se supone exito de un commit que no llego). El bridge cuelga el journal en disco junto al
+proyecto (`_gang_journal.jsonl`) y el panel gana la **auditoria de publicacion**: versiones commiteadas,
+abortos y rollbacks con su marca de tiempo. El transporte es un puerto polimorfico `transport(op, objetivo,
+sha)` — HTTP, IPC o memoria implementan la misma interfaz y el coordinador no cambia.
 
 ---
 

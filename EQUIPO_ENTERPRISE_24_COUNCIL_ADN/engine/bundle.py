@@ -197,7 +197,7 @@ RUNTIME_ALLOWLIST = (
     'engine/context_compiler.py', 'engine/improvement_loop.py',
     'engine/agent_kinds.py', 'engine/operational_gate.py', 'engine/readiness_gate.py',
     'engine/model_resolver.py', 'engine/scheduler.py', 'engine/orchestrator.py',
-    'engine/gang_assembly.py', 'engine/gang_registry.py',
+    'engine/gang_assembly.py', 'engine/gang_registry.py', 'engine/gang_journal.py',
     'engine/playbooks.py', 'engine/agent_dossier.py', 'engine/instruction_contract.py',
     'engine/remediation_wiring.py',
     'tests_platform_task_graph.py', 'tests_platform_registry_evidence.py',

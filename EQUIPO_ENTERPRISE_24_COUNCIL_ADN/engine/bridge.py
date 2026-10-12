@@ -10,11 +10,13 @@ from __future__ import annotations
 if __package__:
     from .limits import MAX_AGENTS
     from . import model_resolver
-    from . import gang_assembly, gang_registry
+    from . import gang_assembly, gang_journal
+    from . import gang_registry as _gang_registry_module
 else:
     from limits import MAX_AGENTS
     import model_resolver
-    import gang_assembly, gang_registry
+    import gang_assembly, gang_journal
+    import gang_registry as _gang_registry_module
 
 import argparse
 import ctypes
@@ -495,7 +497,7 @@ def sheet_payload(organization, catalog, receipts):
 
 
 class BridgeState:
-    def __init__(self, workbook=None, credential_store=None, provider_module=None, project_store=None, coordination_store=None):
+    def __init__(self, workbook=None, credential_store=None, provider_module=None, project_store=None, coordination_store=None, gang_registry=None):
         self.lock = threading.RLock()
         self.csrf = secrets.token_urlsafe(32)
         self.cookie = secrets.token_urlsafe(32)
@@ -527,7 +529,8 @@ class BridgeState:
         self.receipts = []
         self.secret_store = credential_store or WindowsSecretStore()
         self.credentials = {}
-        self.gang_registry = gang_registry.GangRegistry()
+        self.gang_registry = gang_registry or _gang_registry_module.GangRegistry(
+            journal=gang_journal.Journal(self.project_store.root / '_gang_journal.jsonl'))
         self._last_gang_artifact = None
         self._sensitive_values = set()
         self.persisted = False
@@ -828,7 +831,8 @@ class BridgeState:
             except gang_assembly.AssemblyError as exc:
                 ensamblado = {'error': exc.code, 'detail': str(exc)}
         return {'ensamblado': ensamblado, 'servicios': self.gang_registry.snapshot(),
-                'sync': self.gang_registry.sync_verdict(sha)}
+                'sync': self.gang_registry.sync_verdict(sha),
+                'auditoria': self.gang_registry.history()[-12:]}
 
     def public(self):
         with self.lock:
@@ -1303,8 +1307,9 @@ class BridgeState:
                 self._last_gang_artifact = artifact
                 resultado = self.gang_registry.publish_atomic(sha)
                 self.receipt(action, 'success',
-                             'Artefacto %s registrado de forma atómica en los %d objetivos. Los servicios no están montados en este árbol: se registra el hash del artefacto, no se ejecuta nada.'
-                             % (sha[:12], resultado['objetivos']))
+                             'Artefacto %s registrado de forma atómica en los %d objetivos%s. Los servicios no están montados en este árbol: se registra el hash del artefacto, no se ejecuta nada.'
+                             % (sha[:12], resultado['objetivos'],
+                                ' — idempotente: ya estaba registrado, no se tocó nada' if resultado.get('idempotente') else ''))
             elif action == 'forget-credentials':
                 self.secret_store.delete()
                 self.credentials.clear()

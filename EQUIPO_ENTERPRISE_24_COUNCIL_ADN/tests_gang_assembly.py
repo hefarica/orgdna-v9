@@ -178,13 +178,129 @@ class AdapterTests(unittest.TestCase):
                 self.assertRegex(sha, r"^[0-9a-f]{64}$")
 
 
+class JournalTests(unittest.TestCase):
+    """El journal en disco sobrevive al crash y el replay resuelve lo en duda."""
+
+    def test_lo_commiteado_sobrevive_al_reinicio(self):
+        import tempfile, os
+        from engine import gang_journal as gj
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "journal.jsonl")
+            j1 = gj.Journal(path)
+            j1.record("a" * 64, gj.STAGED)
+            j1.record("a" * 64, gj.COMMITTED)
+            # "crash": nueva instancia sobre el mismo archivo
+            j2 = gj.Journal(path)
+            self.assertEqual(j2.get("a" * 64)["estado"], gj.COMMITTED)
+
+    def test_lo_staged_al_crash_se_aborta_por_replay(self):
+        import tempfile, os
+        from engine import gang_journal as gj
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "journal.jsonl")
+            gj.Journal(path).record("b" * 64, gj.STAGED)
+            j2 = gj.Journal(path)
+            estado = j2.get("b" * 64)["estado"]
+            self.assertEqual(estado, gj.ABORTED_BY_REPLAY,
+                             "fail-closed: nunca se supone exito de un commit que no llego")
+
+    def test_el_historial_es_completo_y_auditable(self):
+        from engine import gang_journal as gj
+        j = gj.Journal()
+        j.record("c" * 64, gj.STAGED); j.record("c" * 64, gj.COMMITTED)
+        self.assertEqual([e["estado"] for e in j.history()], [gj.STAGED, gj.COMMITTED])
+
+
+class TwoPhaseCommitTests(unittest.TestCase):
+    """2PC: prepare falla -> abort; commit falla -> compensacion; retry -> no-op."""
+
+    def test_la_idempotencia_no_toca_servicios(self):
+        llamadas = []
+        reg = gr.GangRegistry(transport=lambda op, t, sha: llamadas.append((op, t)))
+        primera = reg.publish_atomic("d" * 64)
+        segunda = reg.publish_atomic("d" * 64)
+        self.assertFalse(primera["idempotente"])
+        self.assertTrue(segunda["idempotente"])
+        self.assertEqual(len(llamadas), 6, "3 objetivos x 2 fases, UNA sola vez: el retry es no-op")
+
+    def test_commit_fallido_compensa_lo_commiteado(self):
+        operaciones = []
+        def transporte(op, target, sha):
+            operaciones.append((op, target))
+            if op == "commit" and target == "team":
+                raise RuntimeError("team cayo en el commit")
+        reg = gr.GangRegistry(transport=transporte)
+        with self.assertRaises(gr.RegistryError) as caught:
+            reg.publish_atomic("e" * 64)
+        self.assertIn("compensados", str(caught.exception))
+        # cordi y agent-team commitearon y fueron COMPENSADOS; team nunca commiteo
+        self.assertIn(("commit", "cordi"), operaciones)
+        self.assertIn(("compensate", "cordi"), operaciones)
+        self.assertIn(("compensate", "agent-team"), operaciones)
+        self.assertNotIn(("compensate", "team"), operaciones)
+        # el registro quedo como estaba: ningun hash en ningun objetivo
+        self.assertTrue(all(f["recorded_sha256"] is None for f in reg.snapshot()))
+        # el journal dejo escrita la transaccion con rollback
+        estados = [e["estado"] for e in reg.history()]
+        self.assertIn("rolled_back", estados)
+
+    def test_prepare_fallido_aborta_a_los_montados(self):
+        operaciones = []
+        def transporte(op, target, sha):
+            operaciones.append((op, target))
+            if op == "prepare" and target == "agent-team":
+                raise RuntimeError("agent-team no responde al prepare")
+        reg = gr.GangRegistry(transport=transporte)
+        with self.assertRaises(gr.RegistryError):
+            reg.publish_atomic("f" * 64)
+        self.assertIn(("abort", "cordi"), operaciones, "cordi ya estaba montado: se aborta")
+        self.assertNotIn(("commit", "cordi"), operaciones, "nada llego a commitear")
+        estados = [e["estado"] for e in reg.history()]
+        self.assertIn("aborted", estados)
+
+    def test_el_retry_tras_rollback_si_publica(self):
+        fallo = {"activo": True}
+        def transporte(op, target, sha):
+            if op == "commit" and target == "team" and fallo["activo"]:
+                raise RuntimeError("team cayo")
+        reg = gr.GangRegistry(transport=transporte)
+        with self.assertRaises(gr.RegistryError):
+            reg.publish_atomic("9" * 64)
+        fallo["activo"] = False
+        reg.publish_atomic("9" * 64)
+        self.assertEqual(reg.sync_verdict("9" * 64)["code"], "SYNCED")
+        # la auditoria cuenta las dos publicaciones: la fallida y la buena
+        estados = [e["estado"] for e in reg.history()]
+        self.assertIn("rolled_back", estados)
+        self.assertIn("committed", estados)
+
+    def test_un_registro_nuevo_reanuda_su_estado_del_journal(self):
+        """Un coordinador que reanuda con journal en disco NO da EMPTY para lo ya
+        commiteado: reconstruye el hash registrado desde el propio journal."""
+        import tempfile, os
+        from engine import gang_journal as gj
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "journal.jsonl")
+            primero = gr.GangRegistry(journal=gj.Journal(path))
+            primero.publish_atomic("7" * 64)
+            # "reinicio": registro nuevo sobre el mismo journal en disco
+            segundo = gr.GangRegistry(journal=gj.Journal(path))
+            self.assertEqual(segundo.sync_verdict("7" * 64)["code"], "SYNCED",
+                             "el estado se reanuda del journal, no se pierde")
+            # y el reintento es no-op (idempotente) sin tocar servicios
+            res = segundo.publish_atomic("7" * 64)
+            self.assertTrue(res["idempotente"])
+
+
 class BridgeIntegrationTests(unittest.TestCase):
     """El bridge expone el gang en el estado y publica atomicamente."""
 
     def setUp(self):
         from engine import bridge
         self.bridge = bridge
-        self.state = bridge.BridgeState()
+        # Journal en MEMORIA: los tests de bridge son hermeticos y no dependen del
+        # orden ni del journal persistente del paquete.
+        self.state = bridge.BridgeState(gang_registry=gr.GangRegistry())
 
     def test_el_estado_expone_el_gang_sin_organizacion(self):
         gang = self.state.public()['gang']

@@ -475,6 +475,20 @@ function renderGangServices(gang){
     const mount=document.createElement('div');mount.className='gang-st';mount.textContent='no montado';
     chip.append(id,st,mount);grid.append(chip);
   });
+  // Auditoria: historial de publicaciones — versiones commiteadas, abortos y rollbacks.
+  const audit=$('#gang-audit');
+  if(audit){
+    audit.replaceChildren();
+    const filas=(gang.auditoria||[]).slice().reverse();
+    if(!filas.length){const p=document.createElement('p');p.className='helper';p.textContent='Sin publicaciones todavía.';audit.append(p);}
+    else filas.forEach(e=>{
+      const p=document.createElement('p');p.className='helper';
+      const color=e.estado==='committed'?'#2e9e5b':e.estado==='staged'?'#f59e0b':'#d33';
+      const b=document.createElement('strong');b.style.color=color;b.textContent=e.estado;
+      p.append(String(e.clave||'').slice(0,8)+' · ',b,' · '+(e.ts||'')+(e.detalle?' — '+e.detalle:''));
+      audit.append(p);
+    });
+  }
 }
 
 // Un agente = una solicitud, asi que el indice de cada recibo ES el agente.
