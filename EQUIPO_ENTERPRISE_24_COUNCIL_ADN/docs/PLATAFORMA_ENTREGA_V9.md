@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 267 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 330 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (329 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 269 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 332 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (331 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `330` |
-| `file_count` que reportará `validate_imports_portable.py` | `331` (incluye el propio manifiesto) |
-| Allowlist | `267` entradas |
+| Entradas del manifiesto | `332` |
+| `file_count` que reportará `validate_imports_portable.py` | `333` (incluye el propio manifiesto) |
+| Allowlist | `269` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 330 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **328** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 332 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **330** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 330
-MANIFIESTO_SHA256_SIN_ESPEJO de4afb6c4308828f0c70b62b3873c3ffbc76e0f02148ad0d5442816232b9ff74
+MANIFIESTO_FILE_COUNT 332
+MANIFIESTO_SHA256_SIN_ESPEJO 548ac4842b5c5f5e6352d918b49d668e7436f67b55bc7cf48028ff87eb020543
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -831,6 +831,18 @@ crash en prepare -> abort sin residuo; crash en commit -> compensacion de los co
 forzada -> rollback total con el nodo divergente REPORTADO. El escenario 3 del CLI cazo el fencing en vivo:
 las compensaciones subieron el epoch de los nodos y el coordinador viejo fue rechazado hasta revalidarse.
 Recibos invariantes: la secuencia de transaccion con 1 servicio es IDENTICA a la de 3 montados.
+
+**El supervisor (P3-XIII): B cerrado — adopta huerfanos, revalida y reanuda sin duplicar.**
+`engine/gang_supervisor.py` es el tick: (1) **lease** — la supervision la tiene quien sostiene el lease del
+CoordinationStore real (TTL 60-3600 s, reloj inyectable); un lease VIVO de otro supervisor detiene el tick
+entero (anti split-brain); un lease VENCIDO se ADOPTA: eso es el huerfano. (2) **Revalidacion** — antes de
+publicar, sondea la salud de los nodos y adopta el MAXIMO epoch: un coordinador que reinicia no puede
+commitear por encima de una compensacion. (3) **Reanudacion** — lo que quedo en duda (staged al morir,
+aborted_by_replay al cargar) se RE-PUBLICA con la MISMA clave de contenido: si los nodos ya lo tenian montado
+el prepare es no-op, y reintentar lo commiteado es gratis. Los 4 escenarios falsificados en vivo: crash entre
+prepare y commit -> reanudado SIN duplicar; lease vencida -> adoptada; lease viva de otro -> nada reanudado;
+epoch alto -> revalidado antes de publicar. El tick es EXPLICITO (sin demonio): el producto es offline y
+dirigido por panel; montar la operacion continua es decision del operador.
 
 ---
 

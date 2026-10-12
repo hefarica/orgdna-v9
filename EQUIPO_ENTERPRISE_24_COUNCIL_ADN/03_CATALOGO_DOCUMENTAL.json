@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 62112,
-      "sha256": "0139865d5691126125b7a12ed31dad83442185f637660e0cf597914a332de0d8"
+      "bytes": 63249,
+      "sha256": "55f98058754f108a387bd10c5572ead65fbc6558b351c8862f506a43a39b75bf"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83869,
-      "sha256": "80e43e069efc5d5f2494f7333b652adc2b05de48dac616fbb1066b147f9f65cc"
+      "bytes": 83926,
+      "sha256": "03fbc08f9e2ad86360883bd59e2cbb5f5bd6a283b69b8c27cdb6b21c069f64c2"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -661,8 +661,8 @@
     },
     {
       "path": "engine/gang_journal.py",
-      "bytes": 4043,
-      "sha256": "ce5e70550b94eeda9beb080b0f6acc11be0d63e194181cba6648258c47149fad"
+      "bytes": 4278,
+      "sha256": "4ade4498924f44589339d5758c5968314719bdde6c6f1d4d3c4da8ab66f945b9"
     },
     {
       "path": "engine/gang_registry.py",
@@ -673,6 +673,11 @@
       "path": "engine/gang_services.py",
       "bytes": 11708,
       "sha256": "048b3041ef93ff370b39cffed356839b10ada39d51db69aea5d7e24b811bfae8"
+    },
+    {
+      "path": "engine/gang_supervisor.py",
+      "bytes": 8468,
+      "sha256": "49a204cb73a632e14dac4b7a97fdc125b8f40a99f47c416343994ec1a895af49"
     },
     {
       "path": "engine/generation_pipeline.py",
@@ -1440,6 +1445,11 @@
       "sha256": "89e3babd3e7e7a1ceea8183a22f669762090aae822c03de11350f223e902c6a8"
     },
     {
+      "path": "tests_gang_supervisor.py",
+      "bytes": 12347,
+      "sha256": "b3f115ce6d32f0ea6708bf2c318c366b55d1d348b90ac0ea4d18fb629ea4b428"
+    },
+    {
       "path": "tests_generation_diagnostics.py",
       "bytes": 4729,
       "sha256": "4e74d9527835047b36d67202e0d3e2ac6ee91c97df328811f524466f04e0b8fd"
@@ -1527,7 +1537,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "d4d5bfa0a02cf7d94a46d53e8f9fda0e9c6ccc5c8c4225e7f46195eb50bc0548"
+      "sha256": "0ed74d148457c97b3d592a0efbca537fb96b8c37756cc1c403db30dae6ebfa41"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",

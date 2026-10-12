@@ -58,7 +58,10 @@ class Journal:
                 except ValueError:
                     raise JournalError("journal: linea %d no es JSON valido." % numero) from None
                 clave, estado = row.get("clave"), row.get("estado")
-                if not isinstance(clave, str) or estado not in (STAGED, COMMITTED, ABORTED, ROLLED_BACK):
+                # ABORTED_BY_REPLAY tambien viaja en disco: lo escribe el propio
+                # replay al resolver lo que quedo en duda, y un load posterior debe
+                # poder releerlo sin atragantarse.
+                if not isinstance(clave, str) or estado not in (STAGED, COMMITTED, ABORTED, ROLLED_BACK, ABORTED_BY_REPLAY):
                     raise JournalError("journal: linea %d con transicion no reconocida." % numero)
                 self._entries[clave] = row
                 self._log.append(row)
