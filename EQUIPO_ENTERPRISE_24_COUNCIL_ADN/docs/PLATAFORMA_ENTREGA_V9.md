@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 255 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 318 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (317 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 257 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 320 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (319 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `318` |
-| `file_count` que reportará `validate_imports_portable.py` | `319` (incluye el propio manifiesto) |
-| Allowlist | `255` entradas |
+| Entradas del manifiesto | `320` |
+| `file_count` que reportará `validate_imports_portable.py` | `321` (incluye el propio manifiesto) |
+| Allowlist | `257` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 318 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **316** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 320 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **318** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 318
-MANIFIESTO_SHA256_SIN_ESPEJO b1cc2f6702f0db8da3e5e84a95a010f359a8b2c548bbf17b5f0e5d5275cd2430
+MANIFIESTO_FILE_COUNT 320
+MANIFIESTO_SHA256_SIN_ESPEJO 12e887acc88aa64e3fd9bd6845438e600f269a6250f15ce8285c40f5b802bee6
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -626,6 +626,56 @@ Para `deepseek` el proveedor tiene `discovery=True`, de modo que la rama manual 
 | `tests_v8_models_receipts.py` (19 casos) | **19/19 OK** |
 | `DeepSeek-V41-Flash` | **rechazado**, y el error nombra `deepseek-flash` |
 | `DeepSeek-V41`, `deepseek`, `gpt-4`, `INVENTED` | `unknown` — no se inventa coincidencia |
+
+---
+
+## 9-octies. Scheduler: el latido que faltaba (P3‑G)
+
+**`engine/scheduler.py`** recorre un `TaskGraph` validado y decide QUE nodo puede lanzarse. **No ejecuta**: todo
+contacto con el host entra por PUERTOS inyectados, asi que la suite entera es offline. Es el primer modulo del
+arbol con estado, y por eso el mas vigilado.
+
+**Estados con significado que no se solapa.** `not_run` = declarado y NUNCA evaluado; `pending` = evaluado y
+esperando; `running`, `passed`, `failed`, `blocked`. `not_run` **jamas** pasa a `passed`: `complete` exige
+`running`. El invariante rector es fail-closed: si la puerta de preflight no esta en verde, **cero
+lanzamientos** y el run queda **intacto**.
+
+**Lo que la ejecucion encontro, y que la lectura no daba:**
+
+| # | Defecto | Como se delato |
+|---|---|---|
+| S1 | `ready_tasks` llamaba a la comprobacion de PUERTO sobre el `Run`, que no es invocable | 14 errores en la primera pasada |
+| S2 | `acquire_for` **no comprobaba `write_capable`** en absoluto: el guardian del invariante I6 faltaba en el lado del lease | el caso de contrato lo exigio |
+| S3 | El orden de `ready_tasks` salia del **orden de insercion del mapeo**, no de un orden topologico determinista: rompia el invariante I1 | **lo delato F9**, que existe exactamente para eso |
+
+**El adaptador no inventa campos.** `depends_on` y `autonomy_level` se leen del contrato v1, y la capacidad de
+escritura se decide con la **misma constante del grafo** (`WRITE_CAPABLE_AUTONOMY_LEVELS`), nunca con una lista
+propia que pudiera divergir. Verificado en vivo: `execute-approved` **exige `approved=True` al construir el
+grafo** y sin ese flag no se construye.
+
+**Falsificacion del conjunto, ejecutada.** Se revirtio cada invariante en una copia desechable y se comprobo
+que su caso se pone rojo:
+
+| Invariante revertida | Caso que la detecta |
+|---|---|
+| I4 tope de concurrencia | `test_F1_concurrency_cap_is_respected` |
+| I5 dependencia debe estar `passed` | `test_F2_dependency_must_be_passed_not_running` |
+| I6 lease antes de escribir | `test_F5_write_node_without_lease_is_not_dispatched` |
+| I7 `not_run` no puede pasar a `passed` | `test_not_run_can_never_reach_passed_without_running` |
+| I8 el hash ignora timestamps | `test_F7_run_hash_ignores_volatile_timestamps` |
+| I1 orden canonico determinista | `test_F9_ready_order_is_deterministic_under_permutation` |
+
+**Las seis se detectan.** Un test que no falla al quitar su invariante no prueba nada.
+
+| Medicion | Resultado |
+|---|---|
+| `tests_scheduler.py` (27 casos: 10 falsificadores + contrato + adaptador + meta) | **27/27 OK** |
+| Adaptador contra un `TaskGraph` **real** | OK — orden cruzado contra el propio `topological_order` del grafo |
+
+**Lo que el scheduler NO hace.** No despacha de verdad, no instala, no acredita runtime y no reintenta solo:
+`runtime_verified: False`, `executed_here: False`, y un `failed` bloquea a sus descendientes hasta que una
+**decision explicita** los reabra. Los puertos reales (`dispatch`, `acquire`, `release`) los pone el llamador,
+que **todavia no existe**.
 
 ---
 

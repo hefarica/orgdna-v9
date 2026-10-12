@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 48684,
-      "sha256": "af804a6a576bdee40d31ad8e45bc3f5f02b8371b728b8f85240b08d623ae5380"
+      "bytes": 51747,
+      "sha256": "2c4371faecc969a1bd9785655b05a90eb072fb3057b89b1703bc7355ed859a73"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83551,
-      "sha256": "034c6b7b87165f46d0212cd728d817294d4656eb96f905a58fe5dac6fdfaf9f5"
+      "bytes": 83596,
+      "sha256": "8c7fcd3c86efbfc775ca797aab281ed96758dac072989c6333603d7beb06ed82"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -778,6 +778,11 @@
       "path": "engine/resource_workflows_adapter.py",
       "bytes": 17946,
       "sha256": "35a8673ea879d8ab6476bd183e6752ea9edc5c7da154cce48ece1549428c3000"
+    },
+    {
+      "path": "engine/scheduler.py",
+      "bytes": 19408,
+      "sha256": "4f3a74246c754e55fc34e3fdf2be413247afe6f13f283dae8cee63405dff9458"
     },
     {
       "path": "engine/task_graph.py",
@@ -1472,7 +1477,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "69393661f3fe087b5b43a53387e30c8cbca671246de377fc187742dc905ac2de"
+      "sha256": "993fae722dbcc6c70c54630685d6b5e514745f166de357c18c457d33a4a93bf1"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",
@@ -1528,6 +1533,11 @@
       "path": "tests_resource_workflows_adapter.py",
       "bytes": 7545,
       "sha256": "a46e800613226ce89d8983a13d47816e527be6e358ea6c094520106beff83003"
+    },
+    {
+      "path": "tests_scheduler.py",
+      "bytes": 15423,
+      "sha256": "443b9f39c5c6ca85f3eaac5154aefb4ad7b2afd0d10ba22b95fb7780506e3e3f"
     },
     {
       "path": "tests_v8_evidence.py",
