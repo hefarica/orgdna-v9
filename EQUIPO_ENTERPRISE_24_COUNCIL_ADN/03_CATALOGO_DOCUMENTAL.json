@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 55137,
-      "sha256": "1e8914dd8bc6a58ab9413c473338acd3b62b8fd59a25e185a35de895598d4f05"
+      "bytes": 55828,
+      "sha256": "8c7e81b7401586a769c57a4f888e2bc67630b1870828c6465c4b383cd5a87d6d"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -546,8 +546,8 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 114833,
-      "sha256": "1d026fbdfa35f5007527772fc13106b31ac1e215a2d06cd3665d2e2a9d797fc7"
+      "bytes": 116021,
+      "sha256": "6d4ebc299eca4607d0294091c952d4fc57ba56cfe3f088e7bb1257a52a5afff9"
     },
     {
       "path": "engine/bundle.py",
@@ -1591,8 +1591,8 @@
     },
     {
       "path": "web/app.js",
-      "bytes": 220351,
-      "sha256": "efdccd01b22475d2a65c38637a96e159c4ab7027289417b2481098607d71bfa9"
+      "bytes": 220370,
+      "sha256": "7820da55a985f010848d55aaf93df1cd95b44c41b0965948b1bdf40bd7465288"
     },
     {
       "path": "web/index.html",

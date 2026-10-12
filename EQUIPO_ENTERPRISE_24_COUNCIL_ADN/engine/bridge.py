@@ -1256,6 +1256,18 @@ class BridgeState:
                     self.secret_store.save(self.credentials)
                     self.persisted = True
                 self.receipt(action, 'success', 'Clave preparada en memoria.' if not body.get('persist') else 'Claves guardadas con DPAPI para este usuario de Windows.')
+                # Con la clave en memoria, cargar el catálogo del proveedor en el acto.
+                # El operador lo pidió explícitamente: pega la clave y los modelos cargan
+                # solos, sin adivinar IDs. La llamada es de METADATOS (listar modelos),
+                # no de diseño ni de inferencia. Si falla, la clave SIGUE guardada: se
+                # degrada a aviso y el botón manual queda disponible.
+                if body.get('auto_discover') is True and load_providers().provider_config(PROVIDER_ROUTES[provider]).get('discovery') is True:
+                    try:
+                        return self.execute('discover-models', {'confirmed': True, 'auto': True})
+                    except BridgeError as exc:
+                        self.receipt('discover-models', 'warning',
+                                     'El catálogo automático no pudo consultarse (%s); la clave sigue preparada: usa el botón de catálogo.' % str(exc)[:160])
+                        return self.public()
             elif action == 'forget-credentials':
                 self.secret_store.delete()
                 self.credentials.clear()
@@ -1333,6 +1345,7 @@ class BridgeState:
             elif action == 'discover-models':
                 if body.get('confirmed') is not True:
                     raise BridgeError('Confirma que deseas consultar el catálogo del proveedor.')
+                auto = body.get('auto') is True
                 provider = self.config['provider']
                 if PROVIDER_ROUTES[provider] != 'zai' and not self.credentials.get(provider):
                     raise BridgeError('Introduce primero la clave de este proveedor para consultar su catálogo real.')
@@ -1361,7 +1374,8 @@ class BridgeState:
                         if row.get('available') is True:
                             self._record_model_account(dict(self.config, model=row['model']))
                 self.receipt(action, 'success' if live else 'warning',
-                    f'Catálogo {"de cuenta consultado" if live else "de referencia, sin verificar cuenta"}: {len(models)} modelos. No demuestra precio ni calidad.',
+                    f'Catálogo {"de cuenta consultado" if live else "de referencia, sin verificar cuenta"}: {len(models)} modelos. No demuestra precio ni calidad.'
+                    + (' Consulta AUTOMÁTICA al guardar la clave: solo lista modelos, no llama a diseño.' if auto else ''),
                     source=result.get('source'), provider=provider, warnings=result.get('warnings', []))
                 if self.organization is not None:
                     previous_organization = self.organization

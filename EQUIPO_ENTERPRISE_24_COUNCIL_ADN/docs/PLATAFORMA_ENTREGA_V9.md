@@ -69,7 +69,7 @@ de escribirla, y se verifica después por recomputación:
 
 ```text
 MANIFIESTO_FILE_COUNT 322
-MANIFIESTO_SHA256_SIN_ESPEJO 29850b39ae46618e49d604b1e939e89625ea36b06098929f21346875b61cd320
+MANIFIESTO_SHA256_SIN_ESPEJO b03e77826c4002f55ac2428e67ba1f0394d7b11f042e1a9128043a549a5fcf06
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -626,6 +626,14 @@ Para `deepseek` el proveedor tiene `discovery=True`, de modo que la rama manual 
 | `tests_v8_models_receipts.py` (19 casos) | **19/19 OK** |
 | `DeepSeek-V41-Flash` | **rechazado**, y el error nombra `deepseek-flash` |
 | `DeepSeek-V41`, `deepseek`, `gpt-4`, `INVENTED` | `unknown` — no se inventa coincidencia |
+
+**Automatico al guardar la clave (pedido explicito del propietario, ejecutado).** Guardar la clave dispara ahora
+la consulta del catalogo **en el acto** para proveedores con `discovery=True`: la llamada es de **metadatos**
+(listar modelos, no diseno ni inferencia), queda declarada en el recibo ("Consulta AUTOMATICA al guardar la
+clave..."), y si falla, la clave **sigue guardada** y queda el boton manual. Sin este cableado, el operador tenia
+el ID delante y aun asi no podia avanzar sin un segundo clic. La UI envia `auto_discover:true` en el formulario
+de clave, y `tests_bridge` + `tests_v8_models_receipts` + `tests_model_catalog_scopes` siguen en verde en la
+pasada de verificacion.
 
 ---
 
