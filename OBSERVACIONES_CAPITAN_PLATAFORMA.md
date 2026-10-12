@@ -643,3 +643,47 @@ escuadrones encadenados. El mensaje pasa a decir la verdad: escuadrón plano de 
    `qa_v7...RecoveryHttpIndependent` con `WinError 10053`. Repetido en aislamiento: **1/12 en el árbol previo a
    P3‑C y 3/12 en el actual**. Ambos fallan, así que el mecanismo es preexistente; **la diferencia de tasa no
    queda establecida** (Fisher exacto, p ≈ 0,59 con n=12). Queda como cuestión abierta, no como «sin diferencia».
+
+---
+
+## O-26 · P3‑E — cinco defectos de ejecución en la capa de agentes, y uno era un crash
+
+Nueve archivos nuevos (7 módulos + 2 suites). El autor de las propuestas **declaró explícitamente que no los
+había ejecutado**; ejecutarlos encontró **cinco defectos**, ninguno visible por lectura.
+
+| # | Defecto | Por qué importa |
+|---|---|---|
+| **D1** | `readiness_gate`: el switch era un **dict literal**. En Python el literal se evalúa **entero** antes de indexar, así que `item["gap"]` se calculaba aunque el código fuera `tool_missing_from_catalog` → `KeyError` | **La puerta fallaba exactamente cuando tenía que bloquear.** Sólo funcionaba sin bloqueos, que es cuando no sirve para nada |
+| **D2** | `instruction_contract`: `reconcile` sólo sabía reparar `got` de tipo `str`. Un `2` **número JSON** frente al `2.0` fijado caía al `else` y se declaraba **irreparable** | El caso 5 de la lista de falsificación **no podía pasar**: `2 == 2.0` es cierto, pero `type(2) is not type(2.0)` |
+| **D3** | `agent_kinds`: con el catálogo vacío la preset salía **vacía y en silencio** | El caso 2 («nunca lista vacía») era **falso**. Lo correcto es que el vacío sea **visible**: se declara en `capability_gaps` |
+| **D4** | `agent_dossier`: `to_context_items(limit=64)` añade `relaciones` y `omitidos`, así que devolvía **66** elementos y `context_compiler` los **rechazaba** | **La llamada por defecto no podía alimentar a su consumidor.** Cruce de contratos entre dos módulos del mismo autor |
+| **D5** | `remediation_wiring`: la instrucción de cableado usa una clave de idempotencia **estable** con `expected_revision` **leída en vivo** | `capability_library._cached` compara la clave contra el request completo, que incluye la revisión. Tras el primer import la revisión cambia, y **el reintento del mismo caso lanza** `Clave idempotente reutilizada para otra solicitud` — **exactamente el escenario para el que existe la idempotencia** |
+
+### Verificación de anclajes (lo que el autor SÍ acertó)
+
+Comprobado contra el árbol, uno por uno: `ROLE_NAMES` = **30**, `EXTRA_PRESETS` = **6**, `dna.KNOWN_ROLES` =
+**32** frozenset, fallback de preset = **3** herramientas, `SOURCE_TYPES` incluye `user_authored`,
+`import_items(items, expected_revision, idempotency_key)` con **nombres idénticos** a los del adaptador, y la
+lista blanca de 9 claves de `import_items:219` coincide **exactamente** con lo que produce `library_item`. La
+afirmación «son dos adaptadores y no una llamada» es **un adaptador** y una proyección trivial.
+
+### Corrección de una predicción
+
+El autor predijo que el preflight del playbook Betfair saldría **bloqueado**. **No lo sale**: los seis
+`tool_needs` existen en el catálogo real (271 herramientas), `unknown_in_catalog` = `[]`.
+
+### Evidencia
+
+| Medición | Resultado |
+|---|---|
+| `tests_agent_layer_contracts.py` | **32/32 OK** |
+| `tests_instruction_and_wiring.py` | **25/25 OK** |
+| Falsificación: los 5 arreglos revertidos en copia desechable | **`FAILED (failures=2, errors=8)`** de 57, cada defecto delatado por su caso nombrado |
+| `import_items(**plan)` sobre SQLite real | **OK**, revisión 0→1; reimportar → `item_count` sigue 1 |
+| Inmutabilidad contra la biblioteca real | lanza `Los registros son inmutables…` |
+
+### Lo que sigue sin estar cableado, y no se declara hecho
+
+El llamador que dispara el bucle en producción **no existe**: `publish() → biblioteca → contexto` está
+verificado **contra los componentes reales**, pero nada lo invoca. La señal de recompensa sigue fuera. Nada de
+esto toca pesos, instala, activa ni ejecuta un agente: `RUNTIME_UNVERIFIED` y `NOT_RUN` no se mueven.

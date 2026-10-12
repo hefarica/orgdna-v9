@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 244 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 307 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (306 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 253 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 316 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (315 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `307` |
-| `file_count` que reportará `validate_imports_portable.py` | `308` (incluye el propio manifiesto) |
-| Allowlist | `244` entradas |
+| Entradas del manifiesto | `316` |
+| `file_count` que reportará `validate_imports_portable.py` | `317` (incluye el propio manifiesto) |
+| Allowlist | `253` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 307 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **305** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 316 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **314** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 307
-MANIFIESTO_SHA256_SIN_ESPEJO 05f5af10c595d9a3476982b24ef1412ed66f377c98491883ffbd2e0bd77f41eb
+MANIFIESTO_FILE_COUNT 316
+MANIFIESTO_SHA256_SIN_ESPEJO 4617980645ea58b0f930077f17612075f8650715d4fcda75b7b74b6b0d85bbf7
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -543,6 +543,43 @@ defectos reales en B y una inconsistencia en A**, todos reparados con falsificac
 independiente. No llaman al proveedor, no ejecutan agentes y no conceden permisos. `context_compiler` **no es
 recuperación semántica**: es selección por solape de términos con presupuesto, y lo declara en su propio
 `selection.method`. La señal de recompensa y la propagación son del llamador: **no están cableadas**.
+
+---
+
+## 9-sexies. Capa de agentes, contrato de instrucción y cableado (P3‑E)
+
+**Nueve archivos** (7 módulos + 2 suites), stdlib puro, deterministas y fail-closed: `agent_kinds`,
+`operational_gate`, `readiness_gate`, `playbooks`, `agent_dossier`, `instruction_contract` y
+`remediation_wiring`.
+
+**Se escribieron, se ejecutaron y se falsificaron.** La ejecución encontró **cinco defectos reales** que la
+lectura no daba, y **uno de ellos era un crash en el peor sitio posible**.
+
+| # | Defecto medido | Evidencia | Reparación |
+|---|---|---|---|
+| D1 | `readiness_gate`: el switch era un **dict literal**, que se evalúa ENTERO antes de indexar, así que `item["gap"]` reventaba con `KeyError` en el **primer bloqueo de herramienta** | la puerta fallaba **exactamente cuando tenía que bloquear** | `if/elif` con `raise` en código desconocido |
+| D2 | `instruction_contract`: `reconcile` sólo reparaba `got` de tipo `str`, así que un `2` **número JSON** frente al `2.0` fijado se declaraba **irreparable** | el caso 5 de la lista original no podía pasar | la rama numérica acepta `int`/`float`/`str`, con guarda de `bool` |
+| D3 | `agent_kinds`: con el catálogo vacío la preset salía **vacía y en silencio** | el caso 2 («nunca lista vacía») era falso; lo correcto es que sea **visible** | la lista vacía se declara en `capability_gaps` |
+| D4 | `agent_dossier`: `to_context_items(limit=64)` producía **66** elementos de memoria (64 + relaciones + omitidos) y `context_compiler` los **rechazaba** | la llamada por defecto **no podía alimentar a su consumidor** | `MAX_ENTRIES_IN_CONTEXT = 64 − 2`, y el default cabe exacto |
+| D5 | `remediation_wiring`: clave de idempotencia **estable** con `expected_revision` leída **en vivo** | el reintento del mismo caso lanzaba `Clave idempotente reutilizada para otra solicitud` — **justo el escenario para el que existe la idempotencia** | `replay_key()` incluye la revisión; la idempotencia real la da el `item_id` determinista |
+
+**Corrección de una predicción:** los seis `tool_needs` del playbook **sí existen** en el catálogo real (271
+herramientas), así que `unknown_in_catalog` es `[]` y el preflight **no** sale bloqueado por nombres.
+
+**Evidencia**
+
+| Medición | Resultado |
+|---|---|
+| `tests_agent_layer_contracts.py` (32 casos) | **32/32 OK** |
+| `tests_instruction_and_wiring.py` (25 casos) | **25/25 OK** |
+| Falsificación: los 5 arreglos revertidos en copia desechable | **`FAILED (failures=2, errors=8)`** de 57 — los cinco defectos, delatados por su caso nombrado |
+| `import_items(**plan)` contra **SQLite real** | **OK**, revisión 0→1; reimportar el mismo caso → **item_count sigue 1** |
+| Inmutabilidad contra la **biblioteca real** | lanza `Los registros son inmutables; importar una nueva versión con otro ID.` |
+
+**Lo que sigue sin estar cableado.** `publish() → biblioteca → contexto` está **verificado contra los
+componentes reales**, pero el llamador que lo invoca en producción **no existe**: no hay punto de entrada que
+dispare el bucle. La señal de recompensa sigue fuera. Nada de esto toca pesos, instala, activa ni ejecuta un
+agente: `RUNTIME_UNVERIFIED` y `NOT_RUN` no se mueven.
 
 ---
 

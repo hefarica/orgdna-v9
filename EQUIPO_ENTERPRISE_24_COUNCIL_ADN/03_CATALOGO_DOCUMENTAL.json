@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 42837,
-      "sha256": "d29722b9b67df5f8e2ab3b67170d0c0525d10a9f251fd27884933eb1d433fdc5"
+      "bytes": 46041,
+      "sha256": "3ccaa0dda5c1cb71bb66e1d83597248c76f075b5748e6f9e6ece6aa789ee228f"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -515,6 +515,16 @@
       "sha256": "ebfb837041295a14644a565755ff53830228504fc68f8f00945cb934176d46e3"
     },
     {
+      "path": "engine/agent_dossier.py",
+      "bytes": 6771,
+      "sha256": "3b4cde0768c2338396d9dd3ee61a26e12c8041c1d666c2e6840a58b35b925252"
+    },
+    {
+      "path": "engine/agent_kinds.py",
+      "bytes": 7160,
+      "sha256": "d20981d78d7cf1a36905f03598495a6642ce2429219b2517ee49af38bf94e464"
+    },
+    {
       "path": "engine/agent_registry.py",
       "bytes": 41935,
       "sha256": "5d8854f00f9e50baf4e5a17b412cb88de5377a31c104a4c42ce8d25b4d66bc18"
@@ -541,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83204,
-      "sha256": "bb1cba60ca619cdf0a8ec071e2230af3ce4bcc454d8304aa480ae514a7e4f6e7"
+      "bytes": 83488,
+      "sha256": "042e45a4d8db85f46a89eef26ae468baa6bd8190b7c568bf56b866f4766580d9"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -660,6 +670,11 @@
       "sha256": "bfbb7a6dfbfd66bc1f1ced90c0d90b827f8bfef58a2a16f21885bf484e124aa6"
     },
     {
+      "path": "engine/instruction_contract.py",
+      "bytes": 11312,
+      "sha256": "05297090122180d6f273daa4cb84cd35bab8815ab3afab559e60fb4147625848"
+    },
+    {
       "path": "engine/integration_recommendations.py",
       "bytes": 15388,
       "sha256": "dd32e294e0119bd2149a8428b6d3a829651babe2d8bddb62b674b6f7cc4ca563"
@@ -690,6 +705,11 @@
       "sha256": "3ea4b2771ecf01a0dd5cd31304012b9791aafa954562eb0e941add615f41876a"
     },
     {
+      "path": "engine/operational_gate.py",
+      "bytes": 1638,
+      "sha256": "e5871fbfe1f1c4bb4de22b30fc1ede69f053ac5456958d51e48a17ab3ac29952"
+    },
+    {
       "path": "engine/org_design.py",
       "bytes": 66798,
       "sha256": "e07184359bd58262413cfac3f1eb5e3bd02e582c21b78b1d2367bac80b9de380"
@@ -698,6 +718,11 @@
       "path": "engine/organization_design.py",
       "bytes": 6377,
       "sha256": "bca83c5b93df8853b0009471ac9de36fc47fc19d47369aae629e59b5295e63f4"
+    },
+    {
+      "path": "engine/playbooks.py",
+      "bytes": 3538,
+      "sha256": "60898243f3e90c483817b14588b0277f02a8783687e9905e1f53ebf7b8d9d460"
     },
     {
       "path": "engine/plugin_shop.py",
@@ -725,9 +750,19 @@
       "sha256": "22e3860b555b3a5ddf249ba160345b3f074d991a2c61218aaa8c11c11e518e15"
     },
     {
+      "path": "engine/readiness_gate.py",
+      "bytes": 2876,
+      "sha256": "13ccd9c514751ca1abb24176c1f1c62d4c53b0ecab2a4d054663e8ba1a0d75ed"
+    },
+    {
       "path": "engine/reliability.py",
       "bytes": 50978,
       "sha256": "a183f058146320439c2b83e74dcfa65c2a7775490c839a92b86e86085da20c4d"
+    },
+    {
+      "path": "engine/remediation_wiring.py",
+      "bytes": 8094,
+      "sha256": "7454a3e01d705023dc7888b2c3b4e9501c793cbed8215c06b9663b74a3ceda17"
     },
     {
       "path": "engine/resource_workflows.py",
@@ -1295,6 +1330,11 @@
       "sha256": "b9c1606e7772b837216f4b5ad2229125719edf1729bb4447128b5c9e113d1cb4"
     },
     {
+      "path": "tests_agent_layer_contracts.py",
+      "bytes": 11918,
+      "sha256": "cc61feb9a5f102ef5b0659b7e74f56364df47363de6110da8067d5bb813680ff"
+    },
+    {
       "path": "tests_bridge.py",
       "bytes": 16131,
       "sha256": "7ad1a59e288c0806140adf59394088cb054ddc1719e4816e0e6616e9b9433543"
@@ -1370,6 +1410,11 @@
       "sha256": "a2d008e3e7ae9613c2f05dcab640bcd12a57a51d5a0d1fe724ab3f77738fdb52"
     },
     {
+      "path": "tests_instruction_and_wiring.py",
+      "bytes": 12311,
+      "sha256": "ec4614cd245cd07850953f2d52fde45c41d9adca93f8b75065cd39df4e4523c1"
+    },
+    {
       "path": "tests_integration_tools.py",
       "bytes": 15007,
       "sha256": "d04efabce9985657f65e891e187581369df7c50af12e839c627587740a996beb"
@@ -1417,7 +1462,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "44d6dee3eff454e4d2b19958428c1839486bce17bc6c1f5614a9211d435b2644"
+      "sha256": "ab616cc7bb8c83a08b5483ad92217d9b0a1461bf78363f9a7aabe873e252224b"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",

@@ -44,8 +44,8 @@ Resultado medido en el árbol congelado que originó este repositorio:
 
 ```
 verifica_manifiesto.py
-  entradas manifiesto : 307
-  hashes coincidentes : 307
+  entradas manifiesto : 316
+  hashes coincidentes : 316
   hashes divergentes  : 0
   faltantes           : 0
   exentos declarados  : 14     (data/ y el expediente de verificación, por diseño)
@@ -53,13 +53,13 @@ verifica_manifiesto.py
   RESULTADO           : OK
 
 validate_imports_portable.py
-  valid: true | errors: [] | checks: 1829 | file_count: 308
+  valid: true | errors: [] | checks: 1881 | file_count: 317
   agent_count: 24 | tool_catalog_count: 271 | export_hashes_valid: true
 ```
 
-`MANIFIESTO_SHA256.txt` → `8ac9102db49704d86cac3b807aad401c9fe030102c7aca65a33d8e9fb9bf9d75`
+`MANIFIESTO_SHA256.txt` → `d71e311612ae43bdfd5dae143169c5abbc0b683acc9bc0c8c9410f452530b66b`
 
-El sello cubre **307** archivos; el archivo 308 es el propio manifiesto. `data/` y
+El sello cubre **316** archivos; el archivo 317 es el propio manifiesto. `data/` y
 `docs/PLATAFORMA_VERIFICACION_V1.md` quedan fuera del sello **deliberadamente**: el primero es estado
 de ejecución que el producto reescribe al usarse —verificado: la suite completa lo modifica y los 302
 hashes siguen coincidiendo—, el segundo un expediente que debe poder revisarse sin re-sellar el paquete.
@@ -73,7 +73,7 @@ este árbol son **LF puro**.
 
 Este host trae `core.autocrlf=true` en el gitconfig de sistema (`C:/Program Files/Git/etc/gitconfig`).
 Sin la regla `* -text` de [`.gitattributes`](.gitattributes), Git convertiría LF → CRLF al hacer
-checkout y **los 307 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
+checkout y **los 316 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
 que cualquier clon queda protegido. `* -text` desactiva solo la conversión de fin de línea: el atributo
 `diff` sigue activo y los diffs de texto funcionan con normalidad.
 
@@ -122,11 +122,11 @@ esa variable; con ella pasan. Está medido y documentado en el expediente de ver
 
 ### 5.1 Medición final sobre el árbol congelado
 
-Descubrimiento completo (`test*.py`, 46 módulos), `PYTHONUTF8=1`, sin paralelismo, huella del árbol
-`8ac9102db49704d86cac3b807aad401c9fe030102c7aca65a33d8e9fb9bf9d75`:
+Descubrimiento completo (`test*.py`, 55 módulos), `PYTHONUTF8=1`, sin paralelismo, huella del árbol
+`d71e311612ae43bdfd5dae143169c5abbc0b683acc9bc0c8c9410f452530b66b`:
 
 ```
-Ran 1062 tests in 221.274s
+Ran 1119 tests in 216.981s
 FAILED (errors=3, skipped=3)          ← failures=0
 ```
 
@@ -272,7 +272,36 @@ el campo que el test pretendía inyectar). Ambos sustituidos por lo que sí es v
 independiente. `context_compiler` **no es recuperación semántica** —lo declara en su propio `selection.method`—.
 Y la señal de recompensa y la propagación **no están cableadas**: son del llamador.
 
-### 5.5 Independencia de la verificación: degradada
+### 5.5 Capa de agentes, contrato de instrucción y cableado (P3‑E)
+
+Nueve archivos nuevos (7 módulos + 2 suites): `agent_kinds`, `operational_gate`, `readiness_gate`,
+`playbooks`, `agent_dossier`, `instruction_contract`, `remediation_wiring`.
+
+**Se escribieron, se ejecutaron y se falsificaron.** La ejecución encontró **cinco defectos reales** que la
+lectura no daba:
+
+| # | Defecto | Evidencia |
+|---|---|---|
+| D1 | `readiness_gate`: el switch era un **dict literal**, evaluado ENTERO antes de indexar — `item["gap"]` reventaba con `KeyError` en el primer bloqueo de herramienta | la puerta fallaba **justo cuando tenía que bloquear** |
+| D2 | `instruction_contract`: `reconcile` sólo reparaba `got` de tipo `str`, así que un `2` número JSON frente al `2.0` fijado se declaraba irreparable | el caso 5 de la lista original no podía pasar |
+| D3 | `agent_kinds`: catálogo vacío → preset vacía y **silenciosa** | el caso 2 («nunca lista vacía») era falso; lo correcto es que sea visible |
+| D4 | `agent_dossier`: `to_context_items(limit=64)` daba **66** ítems y `context_compiler` los **rechazaba** | la llamada por defecto no podía alimentar a su consumidor |
+| D5 | `remediation_wiring`: clave de idempotencia estable con `expected_revision` **leída en vivo** | el reintento lanzaba `Clave idempotente reutilizada` — justo el caso para el que existe |
+
+**Verificado contra los componentes reales**, no simulado: `import_items(**plan)` sobre SQLite real → OK
+(revisión 0→1); reimportar el mismo caso → `item_count` sigue 1; cambiar instrucciones sin subir versión →
+`Los registros son inmutables; importar una nueva versión con otro ID.`
+
+| Medición | Resultado |
+|---|---|
+| `tests_agent_layer_contracts.py` | **32/32 OK** |
+| `tests_instruction_and_wiring.py` | **25/25 OK** |
+| Los 5 arreglos revertidos en copia desechable | **`FAILED (failures=2, errors=8)`** de 57 |
+
+**Lo que sigue sin estar cableado:** el llamador que dispara el bucle en producción **no existe**, y la señal
+de recompensa sigue fuera. Nada de esto toca pesos, instala, activa ni ejecuta un agente.
+
+### 5.6 Independencia de la verificación: degradada
 
 La verificación V1 la firmó el propio capitán, que no implementó ninguno de los 11 módulos de
 plataforma, pero tampoco es un tercero independiente. Las capacidades operativas siguen en `NOT_RUN`.
