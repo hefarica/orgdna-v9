@@ -105,7 +105,9 @@ class DesignTests(unittest.TestCase):
                 requests = consent["requests"]
                 self.assertEqual([slot for request in requests for slot in request["slots"]], list(range(1, n + 1)))
                 self.assertEqual(len(requests), consent["max_requests"])
-                self.assertLessEqual(consent["max_requests"], 16)
+                # Un agente = una solicitud (el lote murio): N solicitudes para N
+                # agentes, dentro del techo de solicitudes del producto.
+                self.assertLessEqual(consent["max_requests"], d.MAX_REQUESTS)
                 self.assertEqual(consent["max_total_output_tokens"], sum(r["max_output_tokens"] for r in requests))
                 self.assertTrue(all(r["max_output_tokens"] >= len(r["slots"]) * d.PROFILE_TOKEN_BUDGET for r in requests))
                 self.assertTrue(all(r["max_output_tokens"] <= d.DEFAULT_OUTPUT_TOKENS for r in requests))
@@ -155,7 +157,9 @@ class DesignTests(unittest.TestCase):
 
     def test_reported_model_output_cap_changes_fixed_plan(self):
         consent = self.prepare(32, model_metadata={"id": "deepseek-flash", "max_output_tokens": 8192, "source": "live_api"})
-        self.assertEqual(consent["max_requests"], 16)
+        # Tope del modelo 8 192 -> (8192-1024)//3200 = 2, pero un agente por solicitud
+        # manda: 32 solicitudes de 1, dentro del techo de 64.
+        self.assertEqual(consent["max_requests"], 32)
         self.assertTrue(all(r["max_output_tokens"] <= 8192 for r in consent["requests"]))
         with self.assertRaises(p.ProviderError):
             self.prepare(32, max_output_tokens=4096)
@@ -235,10 +239,9 @@ class DesignTests(unittest.TestCase):
         error = caught.exception
         self.assertEqual(error.status, "PARTIAL_FAILED")
         self.assertEqual(error.audit["completed_requests"], 1)
-        # Con AUTO_MIN_BATCH_PROFILES=2 (medido: la salida por perfil varía y el lote
-        # automatico es pequeño), 13 perfiles salen en lotes de 2: la primera
-        # solicitud completa 2 y la segunda falla en el fixture.
-        self.assertEqual(error.audit["completed_profiles"], 2)
+        # Un agente = una solicitud: 13 perfiles son 13 solicitudes; la primera
+        # completa 1 perfil y la segunda falla en el fixture.
+        self.assertEqual(error.audit["completed_profiles"], 1)
         self.assertFalse(hasattr(error, "profile_specs"))
         self.assertNotIn("Persona Ficticia", json.dumps(error.audit))
         self.assertEqual(len(fixture.calls), 2)
@@ -266,9 +269,9 @@ class DesignTests(unittest.TestCase):
         self.assertEqual(updates[-1]["stage"], "design_ready")
         self.assertEqual(updates[-1]["completed_profiles"], 7)
         self.assertTrue(all(set(u) == {"stage", "completed_requests", "max_requests", "completed_profiles", "total_profiles", "sent_requests", "batch_index", "request_receipts"} for u in updates))
-        # 7 perfiles con lote automatico de 2 -> 4 solicitudes (2+2+2+1).
-        self.assertEqual(updates[-1]["sent_requests"], 4)
-        self.assertEqual(len(updates[-1]["request_receipts"]), 4)
+        # 7 perfiles, un agente por solicitud -> 7 solicitudes.
+        self.assertEqual(updates[-1]["sent_requests"], 7)
+        self.assertEqual(len(updates[-1]["request_receipts"]), 7)
         expected_receipt_fields = {"index", "endpoint", "provider", "model", "payload_sha256", "max_output_tokens",
                                    "status", "usage", "latency_ms", "response_id_sha256", "http_status", "error_code", "normalization"}
         for receipt in updates[-1]["request_receipts"]:
@@ -284,8 +287,8 @@ class DesignTests(unittest.TestCase):
     def test_wrong_count_slot_and_duplicate_profiles_fail_closed(self):
         mutations = [lambda value, response, i: value["profile_specs"].pop(),
                      lambda value, response, i: value["profile_specs"][0].update(name="P99_Wrong"),
-                     lambda value, response, i: value["profile_specs"][0].update(role="CEO") if i == 2 else None,
-                     lambda value, response, i: value["profile_specs"][0].update(display_name="Persona Ficticia 1") if i == 2 else None]
+                     lambda value, response, i: value["profile_specs"][0].update(role="Ingeniero de Tejados") if i == 1 else None,
+                     lambda value, response, i: value["profile_specs"][0].update(display_name="Persona Ficticia 7") if i == 1 else None]
         for mutation in mutations:
             with self.subTest(mutation=mutation), self.assertRaises(d.DesignError):
                 self.run_design(7, Fixture(mutate=mutation))

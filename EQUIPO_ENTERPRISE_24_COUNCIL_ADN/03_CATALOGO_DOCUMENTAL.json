@@ -307,7 +307,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 57189,
-      "sha256": "e37c4f4ef18d34dae7ca2b18e500263a4de2c1f85a228c92655cf778bee6b25f"
+      "sha256": "6b922b236197a2d8263c353230855d8d051fbb6c8ce9691701b18111f985e797"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -721,8 +721,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 72107,
-      "sha256": "0f7115b9a253e4f44a4667d14b6be139f215879b44457b1b6ca49f800941f883"
+      "bytes": 75891,
+      "sha256": "6c367e71a89192e37be177e54fca88da9e2e40f560ade8c82bc2963ce5b0b263"
     },
     {
       "path": "engine/organization_design.py",
@@ -1131,8 +1131,8 @@
     },
     {
       "path": "qa_v7/test_generation_failures_independent.py",
-      "bytes": 18633,
-      "sha256": "84f8d6505b3975a1323c48f8dde3bd064723342d81d14f88395bd379d2706e03"
+      "bytes": 18965,
+      "sha256": "31d1e9dd0d1f76caa343f656044afb1f0a5e9a139435d58b158ebd6eaea78f6e"
     },
     {
       "path": "relanzador_dsh/DSH_REINICIAR.exe",
@@ -1411,8 +1411,8 @@
     },
     {
       "path": "tests_generation_robustness_v7.py",
-      "bytes": 13538,
-      "sha256": "fe84230bd36d61c5b37e9fd05f1d2f00621474a0d0aaa4cd05bba352e7b946a8"
+      "bytes": 13790,
+      "sha256": "ce4301ab99dd2dd9f11a4a9effef2f4677c07caf141f73190b7a8d447a5a1868"
     },
     {
       "path": "tests_improvement.py",
@@ -1466,13 +1466,13 @@
     },
     {
       "path": "tests_org_design.py",
-      "bytes": 23640,
-      "sha256": "029ac401f226f95b3cb3f91b522f61c470a42c3ba6d0c7aa64b623e8d2969cb8"
+      "bytes": 23874,
+      "sha256": "90e2e4178c96c6ff7434cc2065b9ed0ef636b21c6aacb91b333b51b78e0f4fa3"
     },
     {
       "path": "tests_org_design_website.py",
-      "bytes": 9571,
-      "sha256": "dc1cf5add68d30352bc9094358071b267970eb40db3b78eebfd782587bf3def2"
+      "bytes": 9727,
+      "sha256": "036a6847a187286ba4954e06fb3f00496e070e4c9ee939816d93ed94b3b3cc5e"
     },
     {
       "path": "tests_platform_approval_receipt.py",
@@ -1551,8 +1551,8 @@
     },
     {
       "path": "tests_v8_evidence.py",
-      "bytes": 17071,
-      "sha256": "3605cbd6651dbd009ac0455e13a42a8ca22e968e84856355058966e31d08faca"
+      "bytes": 16916,
+      "sha256": "f1e91881fbd841131965762d15c9b2d54da820768e885bc2fab4c4d019bc1a08"
     },
     {
       "path": "tests_v8_models_receipts.py",

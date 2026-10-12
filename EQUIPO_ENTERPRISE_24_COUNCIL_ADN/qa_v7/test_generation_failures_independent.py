@@ -107,14 +107,15 @@ class RealTransportDiagnostics(PipelineCase):
     def test_finish_length_has_specific_action_and_attempt_counts(self):
         def truncate(value, response, index):
             response['choices'][0]['finish_reason'] = 'length'
-        job = self.fail_with(DesignTransport(mutate=truncate), expected_calls=2)
+        # Un agente por solicitud + continuacion: el PRIMER agente trunca, continua
+        # 3 veces (el texto cortado se reenvia como mensaje del asistente) y a la
+        # cuarta truncada su presupuesto se agota: error honesto y el diseno para
+        # (fail-closed: no se publica parcial). 1 agente x (1+3) = 4 facturadas.
+        job = self.fail_with(DesignTransport(mutate=truncate), expected_calls=4)
         error = job['error']
         self.assertEqual(error['code'], 'output_truncated')
         self.assertEqual(error['finish_reason'], 'length')
-        # Con lote automatico de 2, el primer lote trunca y el AUTO-SPLIT lo parte;
-        # el sub-lote de UN perfil vuelve a truncar y ahi si es error honesto
-        # (un perfil solo que trunca ya no se puede partir). Dos envios facturados.
-        self.assertEqual(error['sent_requests'], 2)
+        self.assertEqual(error['sent_requests'], 4)
         self.assertEqual(error['completed_requests'], 0)
         self.assertTrue(error['next_action'])
         self.assertTrue(error['retry_requires_new_consent'])
@@ -137,21 +138,21 @@ class RealTransportDiagnostics(PipelineCase):
 
     def test_unknown_preset_reports_path_without_echoing_value(self):
         def wrong_enum(value, response, index):
-            # Indice 1: con lotes automaticos de 2, el segundo perfil va en la
-            # PRIMERA respuesta. El indice 2 quedaria en el segundo lote.
-            value['profile_specs'][1]['tool_preset_role'] = RAW_MARKER
+            # Un agente por solicitud: cada respuesta trae UN perfil, el primero.
+            value['profile_specs'][0]['tool_preset_role'] = RAW_MARKER
         job = self.fail_with(DesignTransport(mutate=wrong_enum))
         self.assertIn('tool_preset_role', job['error']['field'])
-        self.assertEqual(job['error']['profile_slot'], 2)
+        self.assertEqual(job['error']['profile_slot'], 1)
         self.assertTrue(job['error']['next_action'])
 
     def test_missing_cv_field_reports_schema_location(self):
         def missing(value, response, index):
-            del value['profile_specs'][1]['cv']['education']
+            # Un agente por solicitud: cada respuesta trae UN perfil, el primero.
+            del value['profile_specs'][0]['cv']['education']
         job = self.fail_with(DesignTransport(mutate=missing))
         self.assertEqual(job['error']['code'], 'schema_fields')
         self.assertIn('cv', job['error']['field'])
-        self.assertEqual(job['error']['profile_slot'], 2)
+        self.assertEqual(job['error']['profile_slot'], 1)
 
     def test_http_status_survives_wrapping_without_body_leaks(self):
         for status in (400, 401, 403, 429, 500, 503):
@@ -177,8 +178,11 @@ class RealTransportDiagnostics(PipelineCase):
 
     def test_later_batch_failure_counts_validated_prefix_without_publishing_partial(self):
         def fail_second(value, response, index):
+            # 'length' ya no falla: CONTINUA por diseno (continuation_policy) y el
+            # agente termina. Para probar el fallo tardio con prefijo validado se usa
+            # una negativa del proveedor, que si cierra sin continuacion.
             if index == 2:
-                response['choices'][0]['finish_reason'] = 'length'
+                response['choices'][0]['finish_reason'] = 'content_filter'
         self.provider.transport = DesignTransport(mutate=fail_second)
         self.plan(profiles_per_request=1)
         approval = self.approval()
@@ -315,8 +319,8 @@ class PlanOptionsIndependent(unittest.TestCase):
         result = design.design_with_llm(self.summary, 'deepseek', 'fixture-model', self.cfg,
                     PRIVATE_MARKER, consent, transport=fixture)
         self.assertEqual(len(result['profile_specs']), 4)
-        # 4 perfiles con lote automatico de 2 -> 2 solicitudes (antes 1 de 4).
-        self.assertEqual(len(fixture.calls), 2)
+        # Un agente = una solicitud: 4 perfiles -> 4 solicitudes.
+        self.assertEqual(len(fixture.calls), 4)
         self.assertTrue(result['audit']['receipts'][0]['normalization']['outer_json_fence_removed'])
 
     def test_evidence_urls_must_still_match_reviewed_source(self):

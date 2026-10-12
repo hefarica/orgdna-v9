@@ -148,13 +148,11 @@ class V8EvidenceTests(unittest.TestCase):
     def test_thirty_slots_directed_packages_exact_caps_and_complete_read_ledger(self):
         summary = representative_summary()
         consent = d.prepare_design_consent(summary, 'deepseek', 'deepseek-flash', {'agent_count': 30})
-        # Con AUTO_MIN_BATCH_PROFILES=2 el lote automatico para 30 perfiles son
-        # 15 solicitudes de 2, cada una con tope 1024 + 3200*2 = 7424. La salida
-        # real por perfil VARIA entre corridas; si un lote trunca, el auto-split
-        # lo reemite partido dentro del techo aprobado (split_policy).
-        self.assertEqual(len(consent['requests']), 15)
+        # EL LOTE MURIO (orden del propietario): un agente = una solicitud. 30
+        # perfiles -> 30 solicitudes, cada una con el tope COMPLETO (65 536).
+        self.assertEqual(len(consent['requests']), 30)
         self.assertEqual([slot for request in consent['requests'] for slot in request['slots']], list(range(1, 31)))
-        self.assertEqual([request['max_output_tokens'] for request in consent['requests']], [7424] * 15)
+        self.assertEqual([request['max_output_tokens'] for request in consent['requests']], [65536] * 30)
         distribution = consent['evidence_distribution']
         self.assertEqual(distribution['omitted_from_all_batches'], [])
         self.assertLess(distribution['sent_file_occurrences'], distribution['full_repeat_file_occurrences'] / 2)
@@ -194,12 +192,12 @@ class V8EvidenceTests(unittest.TestCase):
             calls.append(payload)
             return 200, {}, json.dumps({'choices': [{'finish_reason': 'stop', 'message': {'content': json.dumps(value)}}], 'usage': {'prompt_tokens': 10, 'completion_tokens': 20, 'total_tokens': 30}}).encode()
         result = d.design_with_llm(summary, 'deepseek', 'deepseek-flash', {'agent_count': 30}, 'fixture-api-key', consent, transport=transport)
-        self.assertEqual(len(calls), 15)
+        self.assertEqual(len(calls), 30)
         self.assertEqual(len(result['profile_specs']), 30)
         self.assertEqual(result['audit']['completed_profiles'], 30)
         self.assertFalse(result['analysis']['coverage']['whole_repository_content_complete'])
         self.assertEqual(result['provenance']['repository_sha'], SHA)
-        self.assertEqual(result['usage']['total_tokens'], 450)
+        self.assertEqual(result['usage']['total_tokens'], 900)
 
     def test_a_known_global_path_absent_from_batch_cannot_be_cited(self):
         summary = representative_summary()

@@ -31,12 +31,25 @@ else:
 # TRUNCA la respuesta a 4 tokens del limite (output_truncated, BUG-2 original). Con
 # 3 200 por perfil el lote deja ~20% de margen y la salida real cabe entera.
 PROFILE_TOKEN_BUDGET = 3_200
-# Lote automatico minimo: 2 perfiles por solicitud. Mas solicitudes, pero cada una
-# con margen de salida real; y si aun asi trunca, el lote se parte (auto-split).
-AUTO_MIN_BATCH_PROFILES = 2
-MAX_REQUESTS = 16
+# ORDEN DEL PROPIETARIO: EL LOTE MURIO. Un agente = UNA solicitud. El gang no se
+# recorta para caber en un tope: se despliega. N solicitudes para N agentes, cada una
+# con el presupuesto de salida COMPLETO, y si un perfil truncara igual, el modelo
+# CONTINUA exactamente donde corto (continuacion por agente, ver continuation_policy).
+AUTO_MAX_BATCH_PROFILES = 1
+# Continuaciones por agente cuando su respuesta trunca: el texto cortado se envia de
+# vuelta como mensaje del asistente y el modelo prosigue literal hasta cerrar el JSON.
+CONTINUATIONS_PER_AGENT = 3
+_CONTINUATION_INSTRUCTION = ("Continua EXACTAMENTE donde cortaste el JSON anterior. No repitas ningun "
+                             "caracter ya emitido, no anadas preambulos ni explicaciones ni cierres "
+                             "anticipados: entrega solo la continuacion literal hasta completar el JSON "
+                             "completo del perfil.")
+MAX_REQUESTS = 64
 MAX_OUTPUT_TOKENS = 131_072
-DEFAULT_OUTPUT_TOKENS = 16_384
+# ORDEN DEL PROPIETARIO (no estrangular la salida): 65 536 por defecto — un cuarto
+# del maximo que declara deepseek-flash (393 216) y 4x por encima de lo que el
+# proveedor ya acepto en recibo real. Los lotes terminan por finish stop mucho antes;
+# el tope existe como red, no como racion.
+DEFAULT_OUTPUT_TOKENS = 65_536
 BATCH_TOKEN_OVERHEAD = 1_024
 MAX_AGGREGATE_INPUT_BYTES = 8_000_000
 MAX_RESPONSE_BYTES = 2_000_000
@@ -499,7 +512,7 @@ def _split_request(request, data, ctx):
     for group in (request["slots"][:mid], request["slots"][mid:]):
         batch = [by_slot[n] for n in group]
         batch_data, evidence_package = _evidence_packages(data, batch, len(batch), ctx["revision"] is not None)[0]
-        cap = ctx["effective_cap"] if ctx["profiles_per_request"] is not None else min(ctx["effective_cap"], BATCH_TOKEN_OVERHEAD + PROFILE_TOKEN_BUDGET * len(batch))
+        cap = ctx["effective_cap"]
         halves.append(_assemble_request(batch, batch_data, evidence_package, 0, ctx["count"], ctx["slots"],
                                         ctx["project"], ctx["route_name"], ctx["model"], cap,
                                         ctx["revision"], ctx["response_mode"], ctx["endpoint"], ctx["limits"]))
@@ -532,11 +545,9 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
     if per_batch < 1:
         _invalid("output_budget_too_small", "max_output_tokens")
     if profiles_per_request is None:
-        # La salida real por perfil VARIA entre corridas del mismo diseno (medido: 2 570
-        # y >=3 456 tokens de salida por perfil en dos intentos reales del mismo plan).
-        # Ningun presupuesto estatico acierta siempre: el lote automatico es pequeno y
-        # el auto-split al truncar (consent["split_policy"]) cierra el caso restante.
-        per_batch = min(per_batch, max(AUTO_MIN_BATCH_PROFILES, math.ceil(count / max_requests)))
+        # Tope de 8 perfiles por solicitud: cada peticion, con la salida COMPLETA
+        # aprobada, dura ~90 s (medido ~11 s por perfil), lejos del timeout de 300 s.
+        per_batch = min(per_batch, AUTO_MAX_BATCH_PROFILES)
     else:
         per_batch = min(per_batch, profiles_per_request)
     request_count = math.ceil(count / per_batch)
@@ -556,7 +567,10 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
     for start in range(0, count, per_batch):
         batch = slots[start:start + per_batch]
         batch_data, evidence_package = packages[len(requests)]
-        cap = effective_cap if profiles_per_request is not None else min(effective_cap, BATCH_TOKEN_OVERHEAD + PROFILE_TOKEN_BUDGET * len(batch))
+        # ORDEN DEL PROPIETARIO: cada solicitud lleva el presupuesto de salida COMPLETO.
+        # La fraccion proporcional al lote (overhead + budget*len) estrangulaba la
+        # respuesta y trunca cuando el modelo escribe largo. Se acabaron las raciones.
+        cap = effective_cap
         requests.append(_assemble_request(batch, batch_data, evidence_package, len(requests) + 1,
                                           count, slots, project, route["name"], model, cap,
                                           revision, response_mode, endpoint, limits))
@@ -572,7 +586,10 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
                 "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
                 "max_total_output_tokens": sum(r["max_output_tokens"] for r in requests),
                 "split_policy": {"allowed": True, "request_ceiling": max_requests,
-                                 "note": "Un lote cuya respuesta trunque se reemite partido en dos. Cada reemision es una solicitud facturada mas; el total de solicitudes NUNCA supera este techo aprobado. Un lote de un solo perfil que trunca no se parte: es un perfil demasiado grande y se reporta como tal."}}
+                                 "note": "Un lote cuya respuesta trunque se reemite partido en dos. Cada reemision es una solicitud facturada mas; el total de solicitudes NUNCA supera este techo aprobado. Un lote de un solo perfil que trunca no se parte: es un perfil demasiado grande y se reporta como tal."},
+                "continuation_policy": {"allowed": True, "per_agent": CONTINUATIONS_PER_AGENT,
+                                        "request_ceiling": max_requests,
+                                        "note": "Un agente cuya respuesta trunque CONTINUA donde corto: el texto emitido se reenvia como mensaje del asistente y el modelo prosigue literal hasta cerrar su JSON. Cada continuacion es una solicitud facturada mas, dentro del mismo techo aprobado."}}
     consent = dict(manifest, operation="design_organization", payload_sha256=_digest(manifest),
                    payload_bytes=total_bytes, estimated_input_tokens=sum(r["estimated_input_tokens"] for r in requests),
                    token_estimate_method="UTF-8 bytes / 3, aproximación no garantizada; evidencia común y paquetes dirigidos revisables por lote",
@@ -806,7 +823,7 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
         raise p.ConsentRequired("Revisa todos los lotes y confirma el contenido, proveedor/modelo y presupuesto antes de diseñar.")
     for key in ("operation", "schema_version", "endpoint", "provider", "model", "agent_count", "config_digest",
                 "payload_sha256", "request_hashes", "requested_max_output_tokens", "max_output_tokens",
-                "max_requests", "request_limit", "split_policy", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
+                "max_requests", "request_limit", "split_policy", "continuation_policy", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
                 "profiles_per_request", "effective_profiles_per_request", "response_mode",
                 "source_kind", "source_provenance", "evidence_refs", "coverage", "evidence_distribution",
                 "preview", "project_preview", "requests"):
@@ -881,32 +898,65 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
             progress("response_received")
             cancelled()
             try:
-                batch, notes, usage, normalization = _response(response, request, data)
+                # Un agente continuado acumula el texto emitido: el JSON final es la
+                # concatenacion literal de todos los fragmentos facturados.
+                parse_response = response
+                if request.get("_raw"):
+                    parse_response = copy.deepcopy(response)
+                    parse_response["choices"][0]["message"]["content"] = request["_raw"] + parse_response["choices"][0]["message"]["content"]
+                batch, notes, usage, normalization = _response(parse_response, request, data)
             except DesignValidationError as exc:
                 diagnostic = getattr(exc, "diagnostic", None)
                 code = diagnostic.get("code") if isinstance(diagnostic, dict) else None
-                # AUTO-SPLIT: la salida real por perfil varía entre corridas y ningún
-                # presupuesto estático acierta siempre. Un lote truncado NO se
-                # reintenta idéntico: se parte en dos y se reemite. Cada reemisión es
-                # una solicitud facturada más, contabilizada dentro del techo aprobado
-                # (split_policy.request_ceiling == request_limit). Un lote de un solo
-                # perfil que trunca es un perfil demasiado grande: error honesto.
-                if (code != "output_truncated" or len(request["slots"]) < 2
-                        or not isinstance(split_ctx, dict)
-                        or audit["requests"] + 1 > expected["request_limit"]):
-                    raise
-                halves = _split_request(request, data, split_ctx)
-                receipt["status"] = "split_reissued"
-                audit["splits"] += 1
-                # Con splits el contador visible pasa del planificado al TECHO real
-                # aprobado, para que el progreso nunca muestre 9 de 3.
-                audit["max_requests"] = expected["request_limit"]
-                for half in reversed(halves):
-                    next_index += 1
-                    half["index"] = next_index
-                    queue.insert(0, half)
-                progress("splitting_batch")
-                continue
+                # AUTO-SPLIT: un lote de varios perfiles que trunca se parte en dos
+                # y se reemite. Cada reemision es una solicitud facturada mas, dentro
+                # del techo aprobado (split_policy.request_ceiling).
+                if code == "output_truncated" and len(request["slots"]) >= 2 and isinstance(split_ctx, dict) \
+                        and audit["requests"] + 1 <= expected["request_limit"]:
+                    halves = _split_request(request, data, split_ctx)
+                    receipt["status"] = "split_reissued"
+                    audit["splits"] += 1
+                    # Con splits el contador visible pasa del planificado al TECHO real
+                    # aprobado, para que el progreso nunca muestre 9 de 3.
+                    audit["max_requests"] = expected["request_limit"]
+                    for half in reversed(halves):
+                        next_index += 1
+                        half["index"] = next_index
+                        queue.insert(0, half)
+                    progress("splitting_batch")
+                    continue
+                # CONTINUACION POR AGENTE (el lote murio: un agente = una solicitud).
+                # Un UNICO perfil que trunca no se abandona ni se recorta: el texto ya
+                # emitido se reenvia como mensaje del asistente y el modelo prosigue
+                # literal hasta cerrar su JSON. Cada continuacion es una solicitud
+                # facturada mas, dentro del mismo techo aprobado.
+                if code == "output_truncated" and len(request["slots"]) == 1:
+                    used = request.get("_continuations", 0)
+                    if used < CONTINUATIONS_PER_AGENT and audit["requests"] + 1 <= expected["request_limit"]:
+                        partial = None
+                        if isinstance(response, dict):
+                            choices = response.get("choices") or []
+                            if choices and isinstance(choices[0], dict):
+                                message = choices[0].get("message")
+                                if isinstance(message, dict) and isinstance(message.get("content"), str) and message["content"]:
+                                    partial = message["content"]
+                        if partial:
+                            payload = copy.deepcopy(request["payload"])
+                            payload["messages"].append({"role": "assistant", "content": partial})
+                            payload["messages"].append({"role": "user", "content": _CONTINUATION_INSTRUCTION})
+                            request2 = dict(request)
+                            request2["payload"] = payload
+                            request2["payload_sha256"] = _digest(payload)
+                            request2["payload_bytes"] = len(p._dump(payload).encode("utf-8"))
+                            request2["_continuations"] = used + 1
+                            request2["_raw"] = request.get("_raw", "") + partial
+                            audit["continuations"] = audit.get("continuations", 0) + 1
+                            audit["max_requests"] = expected["request_limit"]
+                            receipt["status"] = "continued_truncated"
+                            queue.insert(0, request2)
+                            progress("continuing_agent")
+                            continue
+                raise
             if isinstance(api_key, str) and api_key in p._dump(response):
                 _invalid("sensitive_output")
             receipt["normalization"] = normalization

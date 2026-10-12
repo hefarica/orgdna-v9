@@ -144,8 +144,11 @@ class SafeDesignV7(unittest.TestCase):
         consent = d.prepare_design_consent(self.summary, 'deepseek', 'fixture-model', {'agent_count': 3}, profiles_per_request=1, max_output_tokens=131072, model_metadata={'id': 'fixture-model', 'max_output_tokens': 8192})
         self.assertEqual(consent['max_output_tokens'], 8192)
         self.assertEqual(consent['max_total_output_tokens'], 24576)
+        # El lote murio: N agentes = N solicitudes y el techo por defecto es 64, asi
+        # que agent_count=32 YA no excede nada. La guardia se prueba con un techo
+        # explicito menor que N: 8 agentes no caben en 4 solicitudes.
         with self.assertRaises(d.DesignValidationError) as caught:
-            d.prepare_design_consent(self.summary, 'deepseek', 'fixture-model', {'agent_count': 32}, profiles_per_request=1)
+            d.prepare_design_consent(self.summary, 'deepseek', 'fixture-model', {'agent_count': 8}, profiles_per_request=1, max_requests=4)
         self.assertEqual(caught.exception.diagnostic['code'], 'request_budget_exceeded')
 
     def test_diagnostic_attributes_are_revalidated_not_copied(self):
