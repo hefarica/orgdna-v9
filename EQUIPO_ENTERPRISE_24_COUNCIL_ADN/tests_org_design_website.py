@@ -65,7 +65,8 @@ class WebsiteDesignTests(unittest.TestCase):
     def test_success_seven_profiles_across_batches_without_fake_repository(self):
         result = self.run_design()
         self.assertEqual(len(result['profile_specs']), 7)
-        self.assertEqual(result['audit']['completed_requests'], 2)
+        # 7 perfiles con lote automatico de 2 -> 4 solicitudes (antes 2 de 4).
+        self.assertEqual(result['audit']['completed_requests'], 4)
         for field in ('analysis', 'provenance'):
             self.assertEqual(result[field]['source_kind'], 'website')
             self.assertNotIn('repository', result[field])

@@ -235,9 +235,10 @@ class DesignTests(unittest.TestCase):
         error = caught.exception
         self.assertEqual(error.status, "PARTIAL_FAILED")
         self.assertEqual(error.audit["completed_requests"], 1)
-        # Con PROFILE_TOKEN_BUDGET=3200 (medido en deepseek-flash), el lote de 13
-        # perfiles sale en 2 solicitudes: 4 + 4 — la segunda falla en el fixture.
-        self.assertEqual(error.audit["completed_profiles"], 4)
+        # Con AUTO_MIN_BATCH_PROFILES=2 (medido: la salida por perfil varía y el lote
+        # automatico es pequeño), 13 perfiles salen en lotes de 2: la primera
+        # solicitud completa 2 y la segunda falla en el fixture.
+        self.assertEqual(error.audit["completed_profiles"], 2)
         self.assertFalse(hasattr(error, "profile_specs"))
         self.assertNotIn("Persona Ficticia", json.dumps(error.audit))
         self.assertEqual(len(fixture.calls), 2)
@@ -265,8 +266,9 @@ class DesignTests(unittest.TestCase):
         self.assertEqual(updates[-1]["stage"], "design_ready")
         self.assertEqual(updates[-1]["completed_profiles"], 7)
         self.assertTrue(all(set(u) == {"stage", "completed_requests", "max_requests", "completed_profiles", "total_profiles", "sent_requests", "batch_index", "request_receipts"} for u in updates))
-        self.assertEqual(updates[-1]["sent_requests"], 2)
-        self.assertEqual(len(updates[-1]["request_receipts"]), 2)
+        # 7 perfiles con lote automatico de 2 -> 4 solicitudes (2+2+2+1).
+        self.assertEqual(updates[-1]["sent_requests"], 4)
+        self.assertEqual(len(updates[-1]["request_receipts"]), 4)
         expected_receipt_fields = {"index", "endpoint", "provider", "model", "payload_sha256", "max_output_tokens",
                                    "status", "usage", "latency_ms", "response_id_sha256", "http_status", "error_code", "normalization"}
         for receipt in updates[-1]["request_receipts"]:

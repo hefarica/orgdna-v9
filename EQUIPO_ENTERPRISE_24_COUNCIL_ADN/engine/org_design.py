@@ -31,6 +31,9 @@ else:
 # TRUNCA la respuesta a 4 tokens del limite (output_truncated, BUG-2 original). Con
 # 3 200 por perfil el lote deja ~20% de margen y la salida real cabe entera.
 PROFILE_TOKEN_BUDGET = 3_200
+# Lote automatico minimo: 2 perfiles por solicitud. Mas solicitudes, pero cada una
+# con margen de salida real; y si aun asi trunca, el lote se parte (auto-split).
+AUTO_MIN_BATCH_PROFILES = 2
 MAX_REQUESTS = 16
 MAX_OUTPUT_TOKENS = 131_072
 DEFAULT_OUTPUT_TOKENS = 16_384
@@ -452,6 +455,57 @@ def _evidence_packages(data, slots, per_batch, revision=False):
     return packages
 
 
+def _assemble_request(batch, batch_data, evidence_package, index, count, slots, project, route_name,
+                      model, cap, revision, response_mode, endpoint, limits):
+    """Ensambla UNA solicitud de lote. Lo usa el plan y tambien el auto-split, para
+    que una solicitud reemitida partida sea identica en forma a una planificada."""
+    control = {"schema_version": SCHEMA_VERSION, "selected_provider": route_name, "selected_model": model,
+               "total_profiles": count, "requested_slots": [s["slot"] for s in batch], "global_slot_map": slots}
+    content = ("DESIGN_CONTROL\n" + p._dump(control) + "\nEND_DESIGN_CONTROL\n"
+               "UNTRUSTED_PROJECT_CONFIG\n" + p._dump(project) + "\nEND_UNTRUSTED_PROJECT_CONFIG\n"
+               "UNTRUSTED_PROJECT_DATA\n" + p._dump(batch_data) + "\nEND_UNTRUSTED_PROJECT_DATA")
+    if revision is not None:
+        content += "\nUNTRUSTED_REVISION_CONTEXT\n" + p._dump(revision) + "\nEND_UNTRUSTED_REVISION_CONTEXT"
+    revision_instruction = ("\nREVISION MODE: Preserve exact N, slots and existing technical/display names. Use the current source and the evidence-bound feedback to correct the targeted profiles substantively: revise diagnostic responsibilities, deliverables or skill methods. Distinguish observed test failure from a hypothesis of skill deficiency. Do not claim skill verification, train weights, install anything, relax restrictions or expand tool access. Keep all unrelated profiles stable. Output the same full profile schema, with proposed improvements awaiting independent retest and human review.") if revision is not None else ""
+    payload = {"model": model, "messages": [{"role": "system", "content": _SYSTEM + revision_instruction},
+                                             {"role": "user", "content": content}], "stream": False}
+    # Official text chat APIs document JSON object mode. Custom-compatible
+    # endpoints receive no guessed option. JSON mode does not replace schema
+    # validation and an unsupported-model response never triggers fallback.
+    if response_mode == "json_object" and route_name in JSON_MODE_SOURCES:
+        payload["response_format"] = {"type": "json_object"}
+    payload["max_completion_tokens" if route_name == "openai" else "max_tokens"] = cap
+    size = len(p._dump(payload).encode("utf-8"))
+    # UTF-8 bytes plus framing is deliberately conservative. This is not a
+    # provider tokenizer, and unknown provider limits are never fabricated.
+    input_budget = size + 512
+    if limits.get("context_window") and input_budget + cap > limits["context_window"]:
+        _invalid("context_budget_exceeded", "context_window")
+    return {"index": index, "slots": control["requested_slots"], "endpoint": endpoint,
+            "provider": route_name, "model": model, "payload": payload,
+            "payload_sha256": _digest(payload), "payload_bytes": size,
+            "estimated_input_tokens": math.ceil(size / 3), "conservative_input_budget": input_budget,
+            "max_output_tokens": cap, "evidence_paths": _evidence_refs(batch_data),
+            "evidence_package": copy.deepcopy(evidence_package)}
+
+
+def _split_request(request, data, ctx):
+    """Parte en dos un lote cuya respuesta trunco. Los perfiles no se pierden: se
+    reemiten en lotes mas pequenos, y cada reemision es una solicitud facturada mas
+    que se contabiliza dentro del techo aprobado (request_limit)."""
+    by_slot = {s["slot"]: s for s in ctx["slots"]}
+    mid = (len(request["slots"]) + 1) // 2
+    halves = []
+    for group in (request["slots"][:mid], request["slots"][mid:]):
+        batch = [by_slot[n] for n in group]
+        batch_data, evidence_package = _evidence_packages(data, batch, len(batch), ctx["revision"] is not None)[0]
+        cap = ctx["effective_cap"] if ctx["profiles_per_request"] is not None else min(ctx["effective_cap"], BATCH_TOKEN_OVERHEAD + PROFILE_TOKEN_BUDGET * len(batch))
+        halves.append(_assemble_request(batch, batch_data, evidence_package, 0, ctx["count"], ctx["slots"],
+                                        ctx["project"], ctx["route_name"], ctx["model"], cap,
+                                        ctx["revision"], ctx["response_mode"], ctx["endpoint"], ctx["limits"]))
+    return halves
+
+
 def _plan(summary, provider, model, config, max_output_tokens, model_metadata, max_requests, revision_context=None, profiles_per_request=None, response_mode="json_object"):
     max_output_tokens = p._bounded_int(max_output_tokens, 3_424, MAX_OUTPUT_TOKENS, "max_output_tokens")
     max_requests = p._bounded_int(max_requests, 1, MAX_REQUESTS, "max_requests")
@@ -477,7 +531,13 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
     per_batch = (effective_cap - BATCH_TOKEN_OVERHEAD) // PROFILE_TOKEN_BUDGET
     if per_batch < 1:
         _invalid("output_budget_too_small", "max_output_tokens")
-    if profiles_per_request is not None:
+    if profiles_per_request is None:
+        # La salida real por perfil VARIA entre corridas del mismo diseno (medido: 2 570
+        # y >=3 456 tokens de salida por perfil en dos intentos reales del mismo plan).
+        # Ningun presupuesto estatico acierta siempre: el lote automatico es pequeno y
+        # el auto-split al truncar (consent["split_policy"]) cierra el caso restante.
+        per_batch = min(per_batch, max(AUTO_MIN_BATCH_PROFILES, math.ceil(count / max_requests)))
+    else:
         per_batch = min(per_batch, profiles_per_request)
     request_count = math.ceil(count / per_batch)
     if request_count > max_requests:
@@ -497,34 +557,9 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
         batch = slots[start:start + per_batch]
         batch_data, evidence_package = packages[len(requests)]
         cap = effective_cap if profiles_per_request is not None else min(effective_cap, BATCH_TOKEN_OVERHEAD + PROFILE_TOKEN_BUDGET * len(batch))
-        control = {"schema_version": SCHEMA_VERSION, "selected_provider": route["name"], "selected_model": model,
-                   "total_profiles": count, "requested_slots": [s["slot"] for s in batch], "global_slot_map": slots}
-        content = ("DESIGN_CONTROL\n" + p._dump(control) + "\nEND_DESIGN_CONTROL\n"
-                   "UNTRUSTED_PROJECT_CONFIG\n" + p._dump(project) + "\nEND_UNTRUSTED_PROJECT_CONFIG\n"
-                   "UNTRUSTED_PROJECT_DATA\n" + p._dump(batch_data) + "\nEND_UNTRUSTED_PROJECT_DATA")
-        if revision is not None:
-            content += "\nUNTRUSTED_REVISION_CONTEXT\n" + p._dump(revision) + "\nEND_UNTRUSTED_REVISION_CONTEXT"
-        revision_instruction = ("\nREVISION MODE: Preserve exact N, slots and existing technical/display names. Use the current source and the evidence-bound feedback to correct the targeted profiles substantively: revise diagnostic responsibilities, deliverables or skill methods. Distinguish observed test failure from a hypothesis of skill deficiency. Do not claim skill verification, train weights, install anything, relax restrictions or expand tool access. Keep all unrelated profiles stable. Output the same full profile schema, with proposed improvements awaiting independent retest and human review.") if revision is not None else ""
-        payload = {"model": model, "messages": [{"role": "system", "content": _SYSTEM + revision_instruction},
-                                                 {"role": "user", "content": content}], "stream": False}
-        # Official text chat APIs document JSON object mode. Custom-compatible
-        # endpoints receive no guessed option. JSON mode does not replace schema
-        # validation and an unsupported-model response never triggers fallback.
-        if response_mode == "json_object" and route["name"] in JSON_MODE_SOURCES:
-            payload["response_format"] = {"type": "json_object"}
-        payload["max_completion_tokens" if route["name"] == "openai" else "max_tokens"] = cap
-        size = len(p._dump(payload).encode("utf-8"))
-        # UTF-8 bytes plus framing is deliberately conservative. This is not a
-        # provider tokenizer, and unknown provider limits are never fabricated.
-        input_budget = size + 512
-        if limits.get("context_window") and input_budget + cap > limits["context_window"]:
-            _invalid("context_budget_exceeded", "context_window")
-        requests.append({"index": len(requests) + 1, "slots": control["requested_slots"], "endpoint": endpoint,
-                         "provider": route["name"], "model": model, "payload": payload,
-                         "payload_sha256": _digest(payload), "payload_bytes": size,
-                         "estimated_input_tokens": math.ceil(size / 3), "conservative_input_budget": input_budget,
-                         "max_output_tokens": cap, "evidence_paths": _evidence_refs(batch_data),
-                         "evidence_package": copy.deepcopy(evidence_package)})
+        requests.append(_assemble_request(batch, batch_data, evidence_package, len(requests) + 1,
+                                          count, slots, project, route["name"], model, cap,
+                                          revision, response_mode, endpoint, limits))
     total_bytes = sum(r["payload_bytes"] for r in requests)
     if total_bytes > MAX_AGGREGATE_INPUT_BYTES:
         _invalid("input_budget_exceeded")
@@ -535,7 +570,9 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
                 "profiles_per_request": profiles_per_request, "effective_profiles_per_request": per_batch, "response_mode": response_mode,
                 "request_hashes": [r["payload_sha256"] for r in requests],
                 "request_timeout_seconds": REQUEST_TIMEOUT_SECONDS,
-                "max_total_output_tokens": sum(r["max_output_tokens"] for r in requests)}
+                "max_total_output_tokens": sum(r["max_output_tokens"] for r in requests),
+                "split_policy": {"allowed": True, "request_ceiling": max_requests,
+                                 "note": "Un lote cuya respuesta trunque se reemite partido en dos. Cada reemision es una solicitud facturada mas; el total de solicitudes NUNCA supera este techo aprobado. Un lote de un solo perfil que trunca no se parte: es un perfil demasiado grande y se reporta como tal."}}
     consent = dict(manifest, operation="design_organization", payload_sha256=_digest(manifest),
                    payload_bytes=total_bytes, estimated_input_tokens=sum(r["estimated_input_tokens"] for r in requests),
                    token_estimate_method="UTF-8 bytes / 3, aproximación no garantizada; evidencia común y paquetes dirigidos revisables por lote",
@@ -554,6 +591,13 @@ def _plan(summary, provider, model, config, max_output_tokens, model_metadata, m
                    "El proveedor no ha reportado límites de contexto/salida; el presupuesto configurado no demuestra compatibilidad ni disponibilidad.")
     if revision is not None:
         consent["improvement_summary"] = copy.deepcopy(revision["feedback"])
+    # Contexto privado para el auto-split: no forma parte del pin de consentimiento
+    # (design_with_llm compara solo las claves declaradas) y no altera payload_sha256,
+    # que se calculo sobre el manifiesto antes de anadir esta clave.
+    consent["_split_ctx"] = {"project": project, "route_name": route["name"], "endpoint": endpoint,
+                             "count": count, "slots": slots, "effective_cap": effective_cap,
+                             "profiles_per_request": profiles_per_request, "revision": revision,
+                             "response_mode": response_mode, "model": model, "limits": limits}
     return data, route, consent
 
 
@@ -762,7 +806,7 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
         raise p.ConsentRequired("Revisa todos los lotes y confirma el contenido, proveedor/modelo y presupuesto antes de diseñar.")
     for key in ("operation", "schema_version", "endpoint", "provider", "model", "agent_count", "config_digest",
                 "payload_sha256", "request_hashes", "requested_max_output_tokens", "max_output_tokens",
-                "max_requests", "request_limit", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
+                "max_requests", "request_limit", "split_policy", "max_total_output_tokens", "request_timeout_seconds", "budget_type", "model_limits",
                 "profiles_per_request", "effective_profiles_per_request", "response_mode",
                 "source_kind", "source_provenance", "evidence_refs", "coverage", "evidence_distribution",
                 "preview", "project_preview", "requests"):
@@ -776,6 +820,7 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
              "payload_sha256": expected["payload_sha256"], "request_hashes": list(expected["request_hashes"]),
              "requests": 0, "completed_requests": 0, "max_requests": expected["max_requests"],
              "completed_profiles": 0, "requested_profiles": expected["agent_count"], "receipts": [],
+             "splits": 0,
              "max_total_output_tokens": expected["max_total_output_tokens"], "started_at": p._now()}
     profiles, warnings, usages = [], [], []
 
@@ -799,7 +844,11 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
     cancelled()
     consent["_consumed"] = True
     try:
-        for request in expected["requests"]:
+        split_ctx = expected.get("_split_ctx")
+        queue = list(expected["requests"])
+        next_index = len(queue)
+        while queue:
+            request = queue.pop(0)
             audit["batch_index"] = request["index"]
             cancelled()
             progress("designing")
@@ -831,7 +880,33 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
                 receipt["response_id_sha256"] = hashlib.sha256(response_id.encode("utf-8")).hexdigest()
             progress("response_received")
             cancelled()
-            batch, notes, usage, normalization = _response(response, request, data)
+            try:
+                batch, notes, usage, normalization = _response(response, request, data)
+            except DesignValidationError as exc:
+                diagnostic = getattr(exc, "diagnostic", None)
+                code = diagnostic.get("code") if isinstance(diagnostic, dict) else None
+                # AUTO-SPLIT: la salida real por perfil varía entre corridas y ningún
+                # presupuesto estático acierta siempre. Un lote truncado NO se
+                # reintenta idéntico: se parte en dos y se reemite. Cada reemisión es
+                # una solicitud facturada más, contabilizada dentro del techo aprobado
+                # (split_policy.request_ceiling == request_limit). Un lote de un solo
+                # perfil que trunca es un perfil demasiado grande: error honesto.
+                if (code != "output_truncated" or len(request["slots"]) < 2
+                        or not isinstance(split_ctx, dict)
+                        or audit["requests"] + 1 > expected["request_limit"]):
+                    raise
+                halves = _split_request(request, data, split_ctx)
+                receipt["status"] = "split_reissued"
+                audit["splits"] += 1
+                # Con splits el contador visible pasa del planificado al TECHO real
+                # aprobado, para que el progreso nunca muestre 9 de 3.
+                audit["max_requests"] = expected["request_limit"]
+                for half in reversed(halves):
+                    next_index += 1
+                    half["index"] = next_index
+                    queue.insert(0, half)
+                progress("splitting_batch")
+                continue
             if isinstance(api_key, str) and api_key in p._dump(response):
                 _invalid("sensitive_output")
             receipt["normalization"] = normalization

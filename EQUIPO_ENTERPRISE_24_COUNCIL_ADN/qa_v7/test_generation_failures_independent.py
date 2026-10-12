@@ -83,7 +83,7 @@ class PipelineCase(unittest.TestCase):
 
 
 class RealTransportDiagnostics(PipelineCase):
-    def fail_with(self, transport):
+    def fail_with(self, transport, expected_calls=1):
         self.provider.transport = transport
         previous_design_calls = self.provider.design_calls
         self.plan()
@@ -93,22 +93,28 @@ class RealTransportDiagnostics(PipelineCase):
         job = self.wait('failed')
         self.assertEqual(job['failed_stage'], 'api_design')
         self.assertTrue(job['potentially_billed'])
-        self.assertEqual(len(transport.calls), 1)
+        # 1 llamada = sin reintento ciego del mismo lote. El auto-split al truncar
+        # agrega UNA llamada por nivel partido, y esas llamadas son de un lote
+        # DISTINTO y mas pequeno: no son reenvio identico.
+        self.assertEqual(len(transport.calls), expected_calls)
         self.assertIsNone(self.state.pending_consent)
         self.assertIsNone(job['artifacts'])
         self.state.execute('generation-confirm', approval)
-        self.assertEqual(len(transport.calls), 1, 'Consumed approval cannot bill again')
+        self.assertEqual(len(transport.calls), expected_calls, 'Consumed approval cannot bill again')
         self.assert_no_secrets()
         return job
 
     def test_finish_length_has_specific_action_and_attempt_counts(self):
         def truncate(value, response, index):
             response['choices'][0]['finish_reason'] = 'length'
-        job = self.fail_with(DesignTransport(mutate=truncate))
+        job = self.fail_with(DesignTransport(mutate=truncate), expected_calls=2)
         error = job['error']
         self.assertEqual(error['code'], 'output_truncated')
         self.assertEqual(error['finish_reason'], 'length')
-        self.assertEqual(error['sent_requests'], 1)
+        # Con lote automatico de 2, el primer lote trunca y el AUTO-SPLIT lo parte;
+        # el sub-lote de UN perfil vuelve a truncar y ahi si es error honesto
+        # (un perfil solo que trunca ya no se puede partir). Dos envios facturados.
+        self.assertEqual(error['sent_requests'], 2)
         self.assertEqual(error['completed_requests'], 0)
         self.assertTrue(error['next_action'])
         self.assertTrue(error['retry_requires_new_consent'])
@@ -131,10 +137,12 @@ class RealTransportDiagnostics(PipelineCase):
 
     def test_unknown_preset_reports_path_without_echoing_value(self):
         def wrong_enum(value, response, index):
-            value['profile_specs'][2]['tool_preset_role'] = RAW_MARKER
+            # Indice 1: con lotes automaticos de 2, el segundo perfil va en la
+            # PRIMERA respuesta. El indice 2 quedaria en el segundo lote.
+            value['profile_specs'][1]['tool_preset_role'] = RAW_MARKER
         job = self.fail_with(DesignTransport(mutate=wrong_enum))
         self.assertIn('tool_preset_role', job['error']['field'])
-        self.assertEqual(job['error']['profile_slot'], 3)
+        self.assertEqual(job['error']['profile_slot'], 2)
         self.assertTrue(job['error']['next_action'])
 
     def test_missing_cv_field_reports_schema_location(self):
@@ -307,7 +315,8 @@ class PlanOptionsIndependent(unittest.TestCase):
         result = design.design_with_llm(self.summary, 'deepseek', 'fixture-model', self.cfg,
                     PRIVATE_MARKER, consent, transport=fixture)
         self.assertEqual(len(result['profile_specs']), 4)
-        self.assertEqual(len(fixture.calls), 1)
+        # 4 perfiles con lote automatico de 2 -> 2 solicitudes (antes 1 de 4).
+        self.assertEqual(len(fixture.calls), 2)
         self.assertTrue(result['audit']['receipts'][0]['normalization']['outer_json_fence_removed'])
 
     def test_evidence_urls_must_still_match_reviewed_source(self):
