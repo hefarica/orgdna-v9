@@ -22,11 +22,11 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Grupo | Artefactos | Estado en t9 |
 | --- | --- | --- |
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
-| Pruebas de plataforma (raíz) | 9 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
+| Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 238 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 301 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por la reparación P3‑A |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (300 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 239 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 302 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por la reparación P3‑A |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (301 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `301` |
-| `file_count` que reportará `validate_imports_portable.py` | `302` (incluye el propio manifiesto) |
-| Allowlist | `238` entradas |
+| Entradas del manifiesto | `302` |
+| `file_count` que reportará `validate_imports_portable.py` | `303` (incluye el propio manifiesto) |
+| Allowlist | `239` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 301 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **299** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 302 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **300** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 301
-MANIFIESTO_SHA256_SIN_ESPEJO bce851b27a7d368f5a997bc6def3712fad6bad73c84d938e9659b17d5b5f4e28
+MANIFIESTO_FILE_COUNT 302
+MANIFIESTO_SHA256_SIN_ESPEJO 9f165c9b07d6d31adc1d7ebe54a78fed62720e3d9113628a9a62d9bb1836d4fc
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -371,6 +371,79 @@ La cifra que sí es estable y reproducible es la de la tabla superior.
 | Skips legítimos | 2 (POSIX process group; symlink no soportado) | capacidad de plataforma |
 
 **Ninguno de los 11 fallos restantes es atribuible a la ola de plataforma ni a esta reparación.**
+
+> **Reclasificados por la reparación P3‑B (§9‑ter).** Dos filas de la tabla anterior dejan de estar sin determinar:
+> la «Causa C» es un **defecto de producto en Windows** y la «Causa D» un **defecto de aislamiento del test**. La
+> medición histórica de arriba **no se reescribe**; la corrección se declara en §9‑ter.
+
+---
+
+## 9-ter. Reparación P3‑B — el respaldo del relanzador DSH no podía completarse en Windows
+
+**Defecto medido, no inferido.** Los nombres de entrada del ZIP de respaldo se construían con
+`Path(str(index)) / relativo` (`engine/dsh_launcher.py:345` y `:373`), y `Path.__truediv__` usa `os.sep`, que en
+Windows es `\`. El nombre quedaba `0\history.json`, mientras `zipfile` **normaliza `os.sep` al escribir**
+(`ZipInfo.__init__`), de modo que el archivo guardaba `0/history.json` y el manifiesto interno conservaba el nombre
+sin normalizar. La copia se escribía correctamente y después no podía leer su propia lista de entradas:
+
+```text
+KeyError: "There is no item named '0\\history.json' in the archive"
+```
+
+**Consecuencia:** `dsh-launch-backup` no podía completarse **nunca** en Windows. Y el `except Exception` de la línea
+421 relanzaba con `from None`, de modo que el operador veía «revisa las rutas» apuntando al sitio equivocado.
+
+**Corrección aplicada** (`engine/dsh_launcher.py`):
+
+1. Helper `_entry_name(index, relative)` que devuelve `'%d/%s' % (index, relative.as_posix())`, conforme a
+   APPNOTE 4.4.17.1 (**barra inclinada obligatoria**). Se aplica en `_inventory` y en `backup`, de modo que lo que se
+   escribe y lo que se busca son la misma cadena. En POSIX el resultado es idéntico al anterior.
+2. El `except` conserva mensaje y tipo —el contrato visible no cambia— pero **encadena la causa** (`from cause`).
+
+**Lo que NO se ha hecho:** no se ha relajado ninguna validación, no se ha modificado ninguna otra prueba previa, y el
+alcance del respaldo (rutas, límites de 512 MiB / 20 000 archivos, rechazo de reparse points) queda intacto.
+
+**Evidencia**
+
+| Medición | Antes | Después |
+|---|---|---|
+| `tests_dsh_launcher.py` (16 casos) | **FAILED (failures=1, errors=5)** | **OK (skipped=1)** |
+| `tests_platform_launcher_zip_names.py` (9 casos, nuevo) | no existía | **9/9 OK** |
+
+**Falsificación ejecutada.** Restaurado el código original en una copia desechable del árbol (helper ausente, los dos
+sitios de llamada con `os.sep`, `from None`), la ejecución conjunta da **`Ran 25 tests — FAILED (failures=4, errors=8,
+skipped=1)`**. Las aserciones señalan el defecto de forma directa:
+
+```text
+AssertionError: '\' unexpectedly found in '0\sub\deep\leaf.txt' : nombre no conforme a APPNOTE 4.4.17.1
+AssertionError: None is not an instance of <class 'RuntimeError'>
+```
+
+En POSIX `os.sep` es `/` y el defecto es **invisible**: el respaldo funciona. Por eso el módulo nuevo comprueba el
+**formato** del nombre y no solo el resultado; sin esa aserción la regresión volvería sin ser detectada en Linux o macOS.
+
+**Reclasificación de las dos filas** (la medición histórica no se reescribe):
+
+| Fila histórica | Clasificación anterior | Clasificación corregida |
+|---|---|---|
+| Causa C — 4 casos en `tests_dsh_launcher` | «línea base V8, causa no determinada» | **defecto de producto en Windows**, localizado y reparado aquí |
+| Causa D — `test_no_script_assumption_no_guessed_port` | «puerto 3080 inyectado» | **defecto de aislamiento del test**: leía el `%LOCALAPPDATA%\DSH_LAUNCHER\launcher.json` real del operador. El producto lee la configuración correctamente. Comprobado: con `LOCALAPPDATA` aislado el caso pasa |
+
+**Actualización DECLARADA de un hash pinneado.** `qa_v7/dsh_baseline.json` es un contrato de preservación por
+bytes sobre la superficie de integración DSH (42 archivos: extensión Cordis, `engine/dsh_*.py`, el relanzador) y
+pinnaba `engine/dsh_launcher.py` en `9998fe928f8307a081b1f5eaf0ba8157444a071cc1acf0a6dd1822625665866b`. La
+reparación cambia ese archivo, así que la entrada se actualiza a
+`651274749334518afd66f9b757525017ba03bfa886ef0c29d67df8447505f939`. Reescribirla en silencio sería exactamente lo
+que ese contrato existe para impedir: la enmienda queda registrada **dentro del propio archivo**, en la clave
+`amendments`, con el hash anterior, el nuevo, el motivo y la evidencia. `baseline_zip_sha256` **no se toca**: es
+procedencia del ZIP de origen y ningún test lo consume. Verificado tras la enmienda:
+`qa_v7.test_dsh_preservation_independent` → **4/4 OK**.
+
+**Riesgo residual declarado (NO VERIFICADO AQUÍ).** `test_symlink_destination_rejected` requiere
+`SeCreateSymbolicLinkPrivilege` (o Modo desarrollador) para montar su propio escenario; sin ese privilegio lanza
+`WinError 1314` antes de ejercitar nada. Se declara **skip con motivo explícito** en lugar de quedar en rojo, de modo
+que la carencia de cobertura sea visible y no un fallo aparente del producto. **La ruta de rechazo de reparse points
+queda NO VERIFICADA en este host**; `no_links()` sí contempla junctions vía `st_file_attributes & 0x400`.
 
 ---
 

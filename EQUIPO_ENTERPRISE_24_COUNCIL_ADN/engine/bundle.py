@@ -196,7 +196,7 @@ RUNTIME_ALLOWLIST = (
     'tests_platform_policy.py', 'tests_platform_memory_tenants.py',
     'tests_platform_eval_artifacts.py', 'tests_platform_reliability_connectors.py',
     'tests_platform_approval_receipt.py', 'tests_platform_integration.py',
-    'tests_platform_packaging_cache.py',
+    'tests_platform_packaging_cache.py', 'tests_platform_launcher_zip_names.py',
     'docs/PLATAFORMA_CONTRATOS_V1.md', 'docs/PLATAFORMA_DECISIONES.md',
     'docs/PLATAFORMA_REVISION_RV1.md', 'docs/PLATAFORMA_REVISION_RV2.md',
     'docs/PLATAFORMA_APROBACION_V1.md', 'docs/PLATAFORMA_ENTREGA_V9.md',

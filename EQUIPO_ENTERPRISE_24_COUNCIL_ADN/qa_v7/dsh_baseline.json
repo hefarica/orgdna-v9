@@ -32,7 +32,7 @@
     "engine/cordis_extension.py": "f55744e84d3cefcbd65c732b2e0196b69aa2414ccb895d2864f92d58076f2f6d",
     "engine/dsh_connection.py": "ddd7d8a9778f95bef5c93e3589d03aac75050dae6693fe034cb2ac2ecf7be390",
     "engine/dsh_harness.py": "1584a7747fac0ca7bc8d952685e8467b51eefde7ffdc9ffed7c59692755e2afd",
-    "engine/dsh_launcher.py": "9998fe928f8307a081b1f5eaf0ba8157444a071cc1acf0a6dd1822625665866b",
+    "engine/dsh_launcher.py": "651274749334518afd66f9b757525017ba03bfa886ef0c29d67df8447505f939",
     "engine/integration_recommendations.py": "c22fe2703f32e47af5751102bb6275b7c0e03a0b8ae796bc0a45031ce32883ed",
     "engine/integration_tools.py": "7757f5d2a8f9b51930d35becf1c99aaa2f5d4efa1b12fc6d8d37f6df798aa73a",
     "engine/launcher.py": "529a13a0c4ecd2bed872d4226780426495511ad5b12e73c998411e63c7788198",
@@ -64,5 +64,15 @@
     "action in HARNESS_ACTIONS": "2a6849865536a67c3d60066c8fb8479f7bccbee83a3d4c792ccd8777cdb2f72c",
     "action in LAUNCHER_ACTIONS": "4e24817a87b8d1a7bc730965da8adc8aaee0af877cd890775fe5638131afc3ec",
     "action in INTEGRATION_ACTIONS": "34a895d98a64a481e49123bda1390034a47ab98d168ea16587aae14ea9e2f49a"
-  }
+  },
+  "amendments": [
+    {
+      "file": "engine/dsh_launcher.py",
+      "previous_sha256": "9998fe928f8307a081b1f5eaf0ba8157444a071cc1acf0a6dd1822625665866b",
+      "new_sha256": "651274749334518afd66f9b757525017ba03bfa886ef0c29d67df8447505f939",
+      "reason": "dsh-launch-backup era inoperante en Windows: los nombres de entrada del ZIP de respaldo se construian con os.sep (Path.__truediv__) y no coincidian con los que zipfile normaliza al escribir (ZipInfo), de modo que la verificacion del propio respaldo fallaba con KeyError \"no item named 0\\history.json\". Reparacion P3-B.",
+      "declared": "Actualizacion DECLARADA, no silenciosa: se sustituye una sola entrada y quedan registrados el hash anterior y el nuevo, el motivo y la evidencia.",
+      "evidence": "tests_dsh_launcher.py: 16 casos FAILED(failures=1,errors=5) -> OK(skipped=1). tests_platform_launcher_zip_names.py: 9/9 OK. Falsificacion con el codigo original en copia desechable: 25 casos FAILED(failures=4,errors=8,skipped=1)."
+    }
+  ]
 }

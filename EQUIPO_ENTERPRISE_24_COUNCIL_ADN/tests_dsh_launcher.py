@@ -10,6 +10,25 @@ import unittest
 from unittest.mock import patch, Mock
 from engine.dsh_launcher import DSHLauncher, LauncherError, digest
 
+
+def _symlink_capable():
+    """Sonda real de capacidad, no una suposicion sobre el sistema.
+
+    Crear un enlace simbolico en Windows exige SeCreateSymbolicLinkPrivilege
+    (o Modo desarrollador). Sin el, el propio montaje del test lanza
+    OSError WinError 1314 antes de poder ejercitar la ruta de rechazo.
+    """
+    try:
+        with tempfile.TemporaryDirectory() as probe:
+            target = Path(probe) / 'probe-target'; target.mkdir()
+            (Path(probe) / 'probe-link').symlink_to(target, target_is_directory=True)
+        return True
+    except (OSError, NotImplementedError, AttributeError):
+        return False
+
+
+SYMLINK_CAPABLE = _symlink_capable()
+
 class LauncherTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -43,6 +62,7 @@ class LauncherTests(unittest.TestCase):
         self.script.write_text('changed')
         with self.assertRaises(LauncherError):self.manager.apply('dsh-launch-health',token)
         self.assertEqual(self.manager.public()['status'],'STALE_PLAN')
+    @unittest.skipUnless(SYMLINK_CAPABLE, 'NO VERIFICADO EN ESTE HOST: crear un enlace simbolico exige SeCreateSymbolicLinkPrivilege (WinError 1314). La ruta de rechazo de reparse points NO queda acreditada aqui. El producto si contempla junctions via st_file_attributes & 0x400 en no_links().')
     def test_symlink_destination_rejected(self):
         token=self.inspect();other=self.root/'other';other.mkdir();(self.root/'backups').symlink_to(other,target_is_directory=True)
         with self.assertRaises(LauncherError):self.manager.apply('dsh-launch-backup',{**token,'backup_confirmed':True})
@@ -76,7 +96,17 @@ class LauncherTests(unittest.TestCase):
             with self.assertRaises(LauncherError):self.manager.apply('dsh-launch-inspect',{**self.body,'script_path':path})
         with self.assertRaises(LauncherError):self.manager.apply('dsh-launch-inspect',{**self.body,'ports':[True]})
     def test_no_script_assumption_no_guessed_port(self):
-        self.manager.apply('dsh-launch-inspect',{**self.body,'ports':[]});self.assertEqual(self.manager.public()['plan']['ports'],[])
+        # Aisla LOCALAPPDATA. Sin esto el test lee la configuracion REAL del
+        # operador (%LOCALAPPDATA%\DSH_LAUNCHER\launcher.json) y falla en
+        # cualquier equipo donde el lanzador ya se haya configurado, aunque el
+        # producto haga lo correcto. Comprobado en este host: sin aislar da
+        # [3080] != []; con LOCALAPPDATA vacio pasa.
+        appdata=self.root/'local-empty';appdata.mkdir()
+        with patch.dict(os.environ,{'LOCALAPPDATA':str(appdata)}):
+            self.manager.apply('dsh-launch-inspect',{**self.body,'ports':[]})
+            plan=self.manager.public()['plan']
+            self.assertEqual(plan['ports'],[])
+            self.assertNotEqual(plan['ports_source'],'launcher_config')
 
     def test_stdout_allowlist_discards_secrets_and_correlates_legacy(self):
         stream=io.BytesIO(b'SECRET_FIXTURE\nCodigo: LEGACY_RESTART_CONFIRMATION | Diagnostico: C:\\private\\last-result.json\r\n')

@@ -510,3 +510,65 @@ atribuibles; 24/24 OK en 20,920 s; prueba de regresión falsificada; paquete ree
 «cachear el hash de exportación» **no ataca el coste medido**: el hashing es el **3 %** (0,03 s de 1,2 s); el coste está
 en DEFLATE (22 %), validación (33 %) y generación de documentos (35 %), y la duplicación de validación ya está absorbida
 por la memoización por contenido (verificado: 2 llamadas → **1 cálculo real**).
+
+---
+
+## O-24 · Defecto de PRODUCTO en el respaldo del lanzador DSH: causa determinada y reparada (P3‑B)
+
+La reconciliación de la ronda anterior clasificaba los 4 errores de `tests_dsh_launcher` como «Causa C heredada —
+línea base V8, **causa no determinada**», y el fallo de puerto como «Causa D — puerto 3080 inyectado». **Las dos
+atribuciones eran incorrectas.** Quedan corregidas aquí con causa medida, no inferida.
+
+### Cómo se encontró
+
+Verificando el clon limpio del repositorio, la ejecución completa mostró **6** no-pasantes en `tests_dsh_launcher`
+(no 1). El `except Exception` de `dsh_launcher.py:421` relanzaba con `from None`, así que la traza sólo ofrecía «No se
+completó un respaldo verificable. Revisa las rutas…». Instrumentando **una copia desechable** —nunca el paquete
+sellado— apareció la causa real:
+
+```text
+KeyError: "There is no item named '0\\history.json' in the archive"
+```
+
+### Causa raíz
+
+`Path(str(index)) / relativo` (`:345` y `:373`) usa `os.sep`, que en Windows es `\`. `zipfile` **normaliza `os.sep`
+al escribir** (`ZipInfo.__init__`), de modo que el archivo guardaba `0/history.json` mientras el manifiesto interno
+conservaba `0\history.json`. El respaldo se escribía correctamente y después no podía leer su propia lista de
+entradas. **En Windows `dsh-launch-backup` no podía completarse nunca.** En POSIX `os.sep` es `/` y el defecto es
+**invisible**.
+
+### Reparación aplicada
+
+`_entry_name()` devuelve `'%d/%s' % (index, relative.as_posix())` (APPNOTE 4.4.17.1 exige barra inclinada) y se usa
+en los dos sitios; el `except` pasa a `from cause`. **Mensaje y tipo de excepción no cambian**: el contrato visible
+es el mismo, sólo se deja de perder la causa.
+
+### Evidencia
+
+| Medición | Antes | Después |
+|---|---|---|
+| `tests_dsh_launcher.py` (16 casos) | `FAILED (failures=1, errors=5)` | **`OK (skipped=1)`** |
+| `tests_platform_launcher_zip_names.py` (9 casos, nuevo) | no existía | **9/9 OK** |
+| Falsificación (código original en copia desechable) | — | **`FAILED (failures=4, errors=8, skipped=1)`** sobre 25 casos |
+
+### Segunda corrección: el test de puerto no estaba aislado
+
+`test_no_script_assumption_no_guessed_port` leía el `%LOCALAPPDATA%\DSH_LAUNCHER\launcher.json` **real del
+operador** (puerto 3080 en este host), y por eso veía `[3080] != []`. **El producto lee la configuración
+correctamente**; el defecto era del test, que no aislaba `LOCALAPPDATA` —a diferencia de su test hermano
+`test_config_read_is_explicit_and_no_defaults`, que sí lo hace. Comprobado: con `LOCALAPPDATA` apuntando a un
+directorio vacío, el caso pasa. **Cualquier operador que haya configurado el lanzador habría visto este fallo.**
+
+### Riesgo residual declarado
+
+`test_symlink_destination_rejected` exige `SeCreateSymbolicLinkPrivilege` para montar su propio escenario; sin ese
+privilegio lanza `WinError 1314` antes de ejercitar nada. Pasa a **skip con motivo explícito**, de modo que la
+carencia de cobertura es visible y no se disfraza de fallo del producto. **La ruta de rechazo de reparse points queda
+NO VERIFICADA en este host**; `no_links()` sí contempla junctions vía `st_file_attributes & 0x400`.
+
+### Efecto sobre el estado de BUG 5
+
+**BUG 5 no estaba cerrado**: el respaldo era inoperante en Windows. Con esta reparación la suite del lanzador queda
+verde, el defecto está localizado, reparado y falsificado, y el paquete re-sellado (302 entradas). Lo que **sigue en
+`NOT_RUN`** es el lanzamiento real de DSH: la suite es offline y **no ejecuta ningún proceso de Windows**.

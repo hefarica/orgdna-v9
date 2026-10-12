@@ -334,6 +334,20 @@ class DSHLauncher:
         self._event('TCP_CHECK_ONLY_NO_RUNTIME_IDENTITY')
 
     @staticmethod
+    def _entry_name(index, relative):
+        """Nombre de entrada ZIP conforme a APPNOTE 4.4.17.1 (barra inclinada).
+
+        Path.__truediv__ usa os.sep, que en Windows es '\\': el nombre quedaba
+        como '0\\history.json'. zipfile normaliza os.sep al escribir (ZipInfo),
+        asi que el archivo guardaba '0/history.json' mientras este manifiesto
+        interno conservaba el nombre sin normalizar. La copia se escribia bien y
+        fallaba al verificarse contra su propia lista: dsh-launch-backup no podia
+        completarse nunca en Windows y el error real quedaba enmascarado.
+        as_posix() fija el separador en los dos lados: se busca lo que se escribio.
+        """
+        return '%d/%s' % (index, relative.as_posix())
+
+    @staticmethod
     def _inventory(roots):
         names = set()
         for index, root in enumerate(roots):
@@ -342,7 +356,7 @@ class DSHLauncher:
             for path in candidates:
                 no_links(path)
                 if path.is_file():
-                    names.add(str(Path(str(index)) / (path.relative_to(root) if root.is_dir() else path.name)))
+                    names.add(DSHLauncher._entry_name(index, path.relative_to(root) if root.is_dir() else Path(path.name)))
                     if len(names) > MAX_FILES:
                         raise LauncherError('Demasiados archivos en las rutas de respaldo.')
         return names
@@ -370,7 +384,7 @@ class DSHLauncher:
                 total += size
                 if total > MAX_BACKUP or len(files) >= MAX_FILES:
                     raise LauncherError('Respaldo demasiado grande: máximo 512 MiB y 20.000 archivos. Usa un respaldo nativo fuera de la app.')
-                files.append((p, str(Path(str(index)) / (p.relative_to(root) if root.is_dir() else p.name))))
+                files.append((p, DSHLauncher._entry_name(index, p.relative_to(root) if root.is_dir() else Path(p.name))))
         if not files:
             raise LauncherError('Las rutas no contienen archivos para respaldar.')
         # Never create output inside the selected source or through an existing link.
@@ -416,9 +430,13 @@ class DSHLauncher:
                 'application_consistency': 'UNVERIFIED', 'destination': str(self.backup_root),
                 'warning': 'Puede contener credenciales. Protege esta carpeta. No demuestra consistencia de una base de datos activa ni cobertura de rutas omitidas.'}
             self._event('BACKUP_FILE_HASHES_VERIFIED')
-        except Exception:
+        except Exception as cause:
             target.unlink(missing_ok=True)
-            raise LauncherError('No se completó un respaldo verificable. Revisa las rutas y cierra DSH manualmente antes de repetir.') from None
+            # Se conserva el mensaje y el tipo (el contrato visible no cambia),
+            # pero la causa original queda encadenada. Con `from None` un fallo
+            # interno era indistinguible de un fallo de rutas: el diagnostico
+            # apuntaba al sitio equivocado.
+            raise LauncherError('No se completó un respaldo verificable. Revisa las rutas y cierra DSH manualmente antes de repetir.') from cause
 
     @staticmethod
     def _result_path():

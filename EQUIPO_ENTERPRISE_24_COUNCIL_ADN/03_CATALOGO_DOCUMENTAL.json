@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 30524,
-      "sha256": "d1f89dd212b6662a16cbbeb92f977dce1f04787e0cc5d0831c314d7affcd12c2"
+      "bytes": 35632,
+      "sha256": "96f0298dd0b2a55fcd2cfc623a83bbedd5ccfbdcc4557306ea2bcaa1b6e62b3c"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -541,8 +541,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83022,
-      "sha256": "e59de963cb67b9e32cc475be4548f16202f75335a007af73dc2a3edec13049ef"
+      "bytes": 83062,
+      "sha256": "88f24f707276849959782a750d7f38b0cde9250585ecb39f374ed2573ced6a6c"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -606,8 +606,8 @@
     },
     {
       "path": "engine/dsh_launcher.py",
-      "bytes": 32776,
-      "sha256": "9998fe928f8307a081b1f5eaf0ba8157444a071cc1acf0a6dd1822625665866b"
+      "bytes": 33854,
+      "sha256": "651274749334518afd66f9b757525017ba03bfa886ef0c29d67df8447505f939"
     },
     {
       "path": "engine/evaluation_harness.py",
@@ -1036,8 +1036,8 @@
     },
     {
       "path": "qa_v7/dsh_baseline.json",
-      "bytes": 6402,
-      "sha256": "e23693503b199581dc4318352216beebeca3096e75a6e369b23a03a1ade3d0f6"
+      "bytes": 7416,
+      "sha256": "6e63e38653e76abb3704b203355a29df8a51f003a74d00844fc1b58bdf8d2aec"
     },
     {
       "path": "qa_v7/fixtures.py",
@@ -1306,8 +1306,8 @@
     },
     {
       "path": "tests_dsh_launcher.py",
-      "bytes": 9975,
-      "sha256": "a7f1a91ba75d41af2754dc4f5674af75c3c09e697d0f82b03936e991e16d9416"
+      "bytes": 11536,
+      "sha256": "bf1cf7da40d2f33f3b3578f930e0d517b5f1db7e0a10e6c2bb725fe52099b9cd"
     },
     {
       "path": "tests_evaluation_bridge.py",
@@ -1393,6 +1393,11 @@
       "path": "tests_platform_integration.py",
       "bytes": 42357,
       "sha256": "6857be3c70e35db05f98aacb5dc8be9814db1f7285e8d2048a8b40afeb9ce73d"
+    },
+    {
+      "path": "tests_platform_launcher_zip_names.py",
+      "bytes": 6064,
+      "sha256": "4525ab48cf95e70a520b3df8b0f5bb32ea3ec9ab5d0c74f0b47934c4af56573d"
     },
     {
       "path": "tests_platform_memory_tenants.py",
