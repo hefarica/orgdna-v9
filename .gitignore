@@ -18,6 +18,14 @@ htmlcov/
 ~$*.xlsm
 ~$*.xlsb
 
+# Estado de EJECUCIÓN del producto (proyectos, versiones, registro de capacidades).
+# El sello SHA-256 ya lo declara exento, y la app lo recrea desde cero:
+# capability_library.py hace mkdir(parents=True) + CREATE TABLE IF NOT EXISTS.
+# Versionarlo tenía una consecuencia real: la app escribe aquí en cada ejecución,
+# el árbol quedaba sucio solo, y cualquier `git pull` fallaba -- el operador no
+# podía actualizar nunca. Los archivos siguen en disco; solo dejan de rastrearse.
+EQUIPO_ENTERPRISE_24_COUNCIL_ADN/data/
+
 # Estado del arnes DSH (rollback de sesion: sessionId, checkpoints, rolls, undos).
 # No es producto: cambia solo, por sesion, y no aporta nada al entregable.
 .dsh/
