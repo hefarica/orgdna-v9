@@ -307,7 +307,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 57189,
-      "sha256": "6b922b236197a2d8263c353230855d8d051fbb6c8ce9691701b18111f985e797"
+      "sha256": "693d291a06daa901cd0ba65bc94a47e250aa2163adaa3f5d2f41edba0cbd83ed"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -721,8 +721,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 75891,
-      "sha256": "6c367e71a89192e37be177e54fca88da9e2e40f560ade8c82bc2963ce5b0b263"
+      "bytes": 75971,
+      "sha256": "cc6a9389b61e2931dbaf4610c37ca06bd9536ecd9243562023b1db0ba5c00771"
     },
     {
       "path": "engine/organization_design.py",
