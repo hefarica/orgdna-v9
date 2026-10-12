@@ -307,7 +307,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 46041,
-      "sha256": "3ccaa0dda5c1cb71bb66e1d83597248c76f075b5748e6f9e6ece6aa789ee228f"
+      "sha256": "34338566a5802997499855cc02fa707fff87abf1b71a74657d0a517d443312ea"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -831,8 +831,8 @@
     },
     {
       "path": "launch.cmd",
-      "bytes": 600,
-      "sha256": "2b502897ca341befd89424d338fcda919f2389227b3eac6ff35eed3ec5b2998b"
+      "bytes": 2464,
+      "sha256": "5fdc351e3e28298179b83159d5ce4e040873f5fd62cc5df0421ccfc865e196ef"
     },
     {
       "path": "organizacion/COORDINACION_POLITICA.json",
@@ -1086,8 +1086,8 @@
     },
     {
       "path": "qa_v7/dsh_baseline.json",
-      "bytes": 9347,
-      "sha256": "27c95ef677c91931c012a934b2250b53c2ae600aae49e8521922b67d054a9dcb"
+      "bytes": 10227,
+      "sha256": "02570c695c2cbd32dac87ed17591cdb9a96bcf783f9778a77bdb0d8492804232"
     },
     {
       "path": "qa_v7/fixtures.py",

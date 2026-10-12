@@ -36,7 +36,7 @@
     "engine/integration_recommendations.py": "dd32e294e0119bd2149a8428b6d3a829651babe2d8bddb62b674b6f7cc4ca563",
     "engine/integration_tools.py": "7757f5d2a8f9b51930d35becf1c99aaa2f5d4efa1b12fc6d8d37f6df798aa73a",
     "engine/launcher.py": "529a13a0c4ecd2bed872d4226780426495511ad5b12e73c998411e63c7788198",
-    "launch.cmd": "2b502897ca341befd89424d338fcda919f2389227b3eac6ff35eed3ec5b2998b",
+    "launch.cmd": "5fdc351e3e28298179b83159d5ce4e040873f5fd62cc5df0421ccfc865e196ef",
     "relanzador_dsh/DSH_REINICIAR.exe": "c149d0bf8b7d7a14ce81f7008a6c8b98dc02aa78aecb708342138093eeeb3fd0",
     "relanzador_dsh/PROVENANCE.json": "74daa6da467f0d7e1df4dac94d79e73b1e5facafd8ddcd53bd3d1fe5120981d4",
     "relanzador_dsh/fuente/Launcher.cs": "4b3eb5d4a933f81773289f0418f91514c0d1df199668f7b62201d18674750253",
@@ -89,6 +89,14 @@
       "reason": "P3-C: la cota de agentes pasa de un literal 32 duplicado a una fuente unica (engine/limits.py, MAX_AGENTS = 40). Este archivo contiene una de las cotas, asi que su contenido cambia. La enmienda queda registrada aqui con el hash anterior y el nuevo: reescribirla en silencio es lo que este contrato existe para impedir.",
       "declared": "Actualizacion DECLARADA, no silenciosa.",
       "evidence": "Positivo N=40 en modo API: tests_org_design.DesignTests.test_profiles_24_32_and_40_are_rich_unique_core_compatible -> OK. Fronteras movidas: tests_bridge.py (33->41), tests_org_design (33->41), qa_v7/test_generation_failures_independent (33->41), tests_platform_integration (47->48 modulos de engine/)."
+    },
+    {
+      "file": "launch.cmd",
+      "previous_sha256": "2b502897ca341befd89424d338fcda919f2389227b3eac6ff35eed3ec5b2998b",
+      "new_sha256": "5fdc351e3e28298179b83159d5ce4e040873f5fd62cc5df0421ccfc865e196ef",
+      "reason": "launch.cmd delega ahora en el ARRANQUE LIMPIO (..\\arranque_limpio.py): verifica el sello, actualiza desde el repo sin pisar nada, detecta la instancia obsoleta por /api/instance y arranca el codigo nuevo. Si el motor no esta, cae al comportamiento original del paquete. La interfaz documentada (--port, --strict-port, --no-browser, --workbook) se conserva y se reenvia intacta.",
+      "declared": "Actualizacion DECLARADA, no silenciosa.",
+      "evidence": "Probado: launch.cmd --check desde la raiz del workspace y desde un clon en otra ruta. qa_v7.test_dsh_preservation_independent y tests_platform_integration verifican este archivo."
     }
   ]
 }

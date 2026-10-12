@@ -223,8 +223,11 @@ def stop_instance(pid, port):
     return False, 'el puerto %d sigue respondiendo' % port
 
 
-def launch(port):
-    args = [sys.executable, '-m', 'engine.launcher', '--port', str(port)]
+def launch(port, extra=()):
+    """Arranca el panel. `extra` reenvia a engine.launcher los argumentos que no son
+    de este motor (--strict-port, --no-browser, --workbook ...), para que la interfaz
+    documentada de launch.cmd siga funcionando igual."""
+    args = [sys.executable, '-m', 'engine.launcher', '--port', str(port)] + list(extra)
     flags = 0
     if os.name == 'nt':
         flags = getattr(subprocess, 'CREATE_NEW_PROCESS_GROUP', 0) | getattr(subprocess, 'DETACHED_PROCESS', 0)
@@ -252,7 +255,12 @@ def main():
     parser.add_argument('--yes', action='store_true', help='sin preguntas')
     parser.add_argument('--no-update', action='store_true', help='no consulta el repo')
     parser.add_argument('--port', type=int, default=None, help='fuerza el puerto')
-    args = parser.parse_args()
+    # parse_known_args: lo que no sea de este motor (--strict-port, --no-browser,
+    # --workbook) se reenvia intacto a engine.launcher, para no romper la interfaz
+    # documentada de launch.cmd.
+    args, reenviar = parser.parse_known_args()
+    if reenviar:
+        say('#  se reenvia a engine.launcher: %s' % ' '.join(reenviar))
 
     started = time.time()
     say('#' * 74)
@@ -363,7 +371,10 @@ def main():
         return 0
 
     # ---- 7. Parada + arranque ---------------------------------------------
-    port = args.port or (stale[0]['port'] if stale else (current[0]['port'] if current else DEFAULT_PORT))
+    # OJO: `args.port or ...` seria un error, porque --port 0 es legitimo (pide un
+    # puerto libre) y 0 es falsy: se ignoraria en silencio.
+    port = args.port if args.port is not None else (
+        stale[0]['port'] if stale else (current[0]['port'] if current else DEFAULT_PORT))
     if stale:
         step(6, 'Parada de la instancia obsoleta')
         say('  AVISO: los recibos de generacion viven EN MEMORIA hasta Guardar proyecto.')
@@ -389,11 +400,11 @@ def main():
         say('  nada que detener')
 
     step(7, 'Arranque')
-    ok, detail = launch(port)
+    ok, detail = launch(port, reenviar)
     if not ok:
         say('  FALLO al lanzar: %s' % detail)
         return 4
-    say('  lanzado en       : puerto %d' % port)
+    say('  lanzado en       : puerto %s' % (port if port else 'libre (--port 0)'))
 
     row = wait_ready(port, want)
     if row is None:
