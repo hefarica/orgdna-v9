@@ -1,0 +1,35 @@
+{
+  "measured_at_utc": "2026-10-07T05:01:57Z",
+  "scope": "Python\u2194Node real loopback HTTP/1.1 keep-alive with official-service doubles",
+  "actual_dsh_runtime_tested": false,
+  "actual_provider_or_llm_tested": false,
+  "user_computer_tested": false,
+  "python": "3.12.14",
+  "node": "v24.19.0",
+  "pair_plus_initial_verified_handshake_ms": 7.413,
+  "authenticated_handshake": {
+    "samples": 200,
+    "unit": "ms",
+    "p50": 0.306,
+    "p95": 0.559,
+    "p99": 0.847,
+    "max": 3.728
+  },
+  "read_profiles_including_fresh_handshake": {
+    "samples": 200,
+    "unit": "ms",
+    "p50": 0.611,
+    "p95": 0.964,
+    "p99": 1.562,
+    "max": 2.093
+  },
+  "native_import_preview_including_handshake": {
+    "samples": 200,
+    "unit": "ms",
+    "p50": 0.5,
+    "p95": 0.791,
+    "p99": 1.037,
+    "max": 1.586
+  },
+  "warning": "Transport/service-double measurements only. Not full DSH, native agent wakeup, model generation or end-to-end task latency."
+}

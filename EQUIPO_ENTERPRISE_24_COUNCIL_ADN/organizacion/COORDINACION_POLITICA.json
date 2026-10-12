@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "max_writers": 3,
+  "council_participants": 24,
+  "council_read_only": true,
+  "implementation_max_concurrency": 3,
+  "global_scope": "all_projects_and_workspaces_in_this_local_store",
+  "lease_fields": [
+    "owner_agent_id",
+    "task_id",
+    "workspace",
+    "paths",
+    "base_sha",
+    "ttl_seconds",
+    "expected_version"
+  ],
+  "ttl_seconds": {
+    "default": 900,
+    "minimum": 60,
+    "maximum": 3600
+  },
+  "path_conflicts": "same_path_or_parent_child_in_normalized_workspace",
+  "renewal_and_release": "same_owner_and_task_only",
+  "historical_snapshot_reactivates_leases": false,
+  "filesystem_lock_enforced": false,
+  "dsh_enforced": false,
+  "base_sha_verified_by_app": false,
+  "live_leases_included": false
+}

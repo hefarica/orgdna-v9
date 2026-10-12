@@ -1,0 +1,330 @@
+{
+  "schema_version": "1.0",
+  "workbook_name": "ADN_Organizacional.xlsx",
+  "data_start_row": 6,
+  "max_agents": 32,
+  "configuration": {
+    "sheet": "Configuracion",
+    "cells": {
+      "repo_url": "B6",
+      "repo_name": "B7",
+      "agent_count": "B8",
+      "max_direct_reports": "B9",
+      "template": "B10",
+      "provider": "B11",
+      "model": "B12",
+      "implementation_concurrency": "B13",
+      "council_concurrency": "B14",
+      "repo_ref": "B15",
+      "analysis_model": "B21",
+      "llm_budget_usd": "B22"
+    },
+    "bridge_metadata": {
+      "last_applied": "B16",
+      "applied_config": "B17",
+      "profile_status": "B18"
+    },
+    "fingerprint_fields": [
+      "repo_url",
+      "repo_name",
+      "agent_count",
+      "max_direct_reports",
+      "template",
+      "repo_ref",
+      "provider",
+      "model",
+      "implementation_concurrency",
+      "council_concurrency",
+      "analysis_model",
+      "llm_budget_usd"
+    ],
+    "fingerprint_separator": "|",
+    "preserve_formula_cells": [
+      "B14"
+    ],
+    "formula_cells": {
+      "council_concurrency": "=B8"
+    }
+  },
+  "assignments": {
+    "sheet": "Asignacion_modelos",
+    "range": "A6:K37",
+    "columns": {
+      "slot": "A",
+      "id": "B",
+      "role": "C",
+      "provider": "D",
+      "model": "E",
+      "availability": "F",
+      "user_rank": "G",
+      "notes": "H",
+      "selection_source": "I",
+      "auto_provider": "J",
+      "auto_model": "K"
+    },
+    "editable_columns": [
+      "D",
+      "E",
+      "G",
+      "H"
+    ],
+    "auxiliary_range": "I6:K37",
+    "default_formulas": {
+      "provider": "=IF(J6<>\"\",J6,'Configuracion'!$B$11)",
+      "model": "=IF(K6<>\"\",K6,'Configuracion'!$B$12)"
+    },
+    "manual_override_rule": "D/E cells without formulas are manual overrides; preserve by agent ID. I/J/K are bridge outputs."
+  },
+  "providers": {
+    "sheet": "Proveedores",
+    "range": "A6:F25",
+    "columns": {
+      "provider": "A",
+      "label": "B",
+      "base_url": "C",
+      "key_alias": "D",
+      "enabled": "E",
+      "status": "F"
+    },
+    "named_range": {
+      "name": "CatalogoProveedores",
+      "refers_to": "Proveedores!$A$6:$A$25"
+    }
+  },
+  "models": {
+    "sheet": "Modelos",
+    "range": "A6:H205",
+    "columns": {
+      "provider": "A",
+      "model_id": "B",
+      "name": "C",
+      "availability": "D",
+      "user_rank": "E",
+      "verified_at": "F",
+      "capabilities": "G",
+      "notes": "H"
+    },
+    "validation_source": "CatalogoModelos",
+    "validation_targets": [
+      "Configuracion!B12",
+      "Asignacion_modelos!E6:E37"
+    ],
+    "named_range": {
+      "name": "CatalogoModelos",
+      "refers_to": "Modelos!$B$6:$B$205"
+    }
+  },
+  "organization": {
+    "sheet": "Organigrama",
+    "range": "A6:O37",
+    "columns": {
+      "slot": "A",
+      "id": "B",
+      "active": "C",
+      "display_name": "D",
+      "title": "E",
+      "department": "F",
+      "parent_slot": "G",
+      "reports_to": "H",
+      "depth": "I",
+      "direct_report_count": "J",
+      "provider": "K",
+      "model": "L",
+      "model_status": "M",
+      "evidence": "N",
+      "tree": "O"
+    },
+    "preserve_all_formulas": true
+  },
+  "profiles": {
+    "sheet": "Perfiles",
+    "range": "A6:J37",
+    "columns": {
+      "slot": "A",
+      "id": "B",
+      "display_name": "C",
+      "title": "D",
+      "department": "E",
+      "summary": "F",
+      "responsibilities": "G",
+      "deliverables": "H",
+      "journeys": "I",
+      "evidence": "J"
+    },
+    "write_range": "A6:J37"
+  },
+  "learning": {
+    "sheet": "Aprendizaje",
+    "range": "A6:I205",
+    "columns": {
+      "record_id": "A",
+      "slot": "B",
+      "display_name": "C",
+      "observed_failure": "D",
+      "proposed_skill": "E",
+      "acceptance_test": "F",
+      "status": "G",
+      "evidence": "H",
+      "version": "I"
+    },
+    "preserve_user_records": true
+  },
+  "tests": {
+    "sheet": "Pruebas",
+    "range": "A6:J205",
+    "columns": {
+      "test_id": "A",
+      "slot": "B",
+      "display_name": "C",
+      "objective": "D",
+      "acceptance_criterion": "E",
+      "status": "F",
+      "sha_environment": "G",
+      "observed_result": "H",
+      "evidence_url": "I",
+      "auditor": "J"
+    },
+    "preserve_user_records": true
+  },
+  "hyperlinks": {
+    "panel": "http://127.0.0.1:8765/",
+    "implementation": "http://127.0.0.1:8765/download/implementation.json",
+    "council": "http://127.0.0.1:8765/download/council.json",
+    "definitions": "http://127.0.0.1:8765/download/definitions.json",
+    "package": "http://127.0.0.1:8765/download/package.zip"
+  },
+  "notes": [
+    "32 slots; active agents are first N slots.",
+    "The formulas calculate organization only; no API is called by Excel.",
+    "Model catalog is initially UNVERIFIED; provider and model must match.",
+    "Model keys are aliases only; secrets never belong in the workbook.",
+    "Excel COM updates models and dropdown sources; bridge reads cached values or COM values for formula cells."
+  ],
+  "formula_sheets": [
+    "Organigrama"
+  ],
+  "cv": {
+    "sheet": "CV",
+    "range": "A6:F405",
+    "columns": {
+      "slot": "A",
+      "display_name": "B",
+      "section": "C",
+      "detail": "D",
+      "evidence": "E",
+      "credential": "F"
+    },
+    "sections": [
+      "Resumen",
+      "Experiencia objetivo",
+      "Formación objetivo",
+      "Certificación objetivo"
+    ]
+  },
+  "skills": {
+    "sheet": "Competencias",
+    "range": "A6:H405",
+    "columns": {
+      "slot": "A",
+      "display_name": "B",
+      "skill_id": "C",
+      "skill_name": "D",
+      "target_level": "E",
+      "demonstrated_level": "F",
+      "evidence": "G",
+      "next_validation": "H"
+    }
+  },
+  "council": {
+    "sheet": "Council",
+    "range": "A6:I37",
+    "columns": {
+      "slot": "A",
+      "id": "B",
+      "display_name": "C",
+      "title": "D",
+      "active": "E",
+      "channel": "F",
+      "required_contribution": "G",
+      "decision": "H",
+      "status": "I"
+    },
+    "preserve_columns": [
+      "E"
+    ]
+  },
+  "subteams": {
+    "sheet": "Subequipos",
+    "range": "A6:I37",
+    "columns": {
+      "slot": "A",
+      "display_name": "B",
+      "department": "C",
+      "reports_to": "D",
+      "auditor": "E",
+      "consultant": "F",
+      "scope": "G",
+      "independence": "H",
+      "status": "I"
+    },
+    "preserve_columns": [
+      "D"
+    ]
+  },
+  "hyperlink_cells": [
+    {
+      "sheet": "Inicio",
+      "cell": "A17",
+      "url": "http://127.0.0.1:8765/",
+      "label": "ABRIR PANEL LOCAL"
+    },
+    {
+      "sheet": "Inicio",
+      "cell": "A19",
+      "url": "http://127.0.0.1:8765/download/implementation.json",
+      "label": "DESCARGAR RECIPE DSH"
+    },
+    {
+      "sheet": "Inicio",
+      "cell": "A21",
+      "url": "http://127.0.0.1:8765/download/definitions.json",
+      "label": "DESCARGAR BACKUP DSH"
+    },
+    {
+      "sheet": "Inicio",
+      "cell": "A23",
+      "url": "http://127.0.0.1:8765/download/package.zip",
+      "label": "DESCARGAR PAQUETE ZIP"
+    },
+    {
+      "sheet": "Exportacion",
+      "cell": "B6",
+      "url": "http://127.0.0.1:8765/download/implementation.json",
+      "label": "Descargar Recipe DSH"
+    },
+    {
+      "sheet": "Exportacion",
+      "cell": "B7",
+      "url": "http://127.0.0.1:8765/download/definitions.json",
+      "label": "Descargar Definitions Backup"
+    },
+    {
+      "sheet": "Exportacion",
+      "cell": "B8",
+      "url": "http://127.0.0.1:8765/download/package.zip",
+      "label": "Descargar paquete ZIP"
+    },
+    {
+      "sheet": "Exportacion",
+      "cell": "B9",
+      "url": "http://127.0.0.1:8765/download/council.json",
+      "label": "Descargar Council opcional"
+    },
+    {
+      "sheet": "Exportacion",
+      "cell": "B10",
+      "url": "http://127.0.0.1:8765/",
+      "label": "Abrir panel local"
+    }
+  ]
+}

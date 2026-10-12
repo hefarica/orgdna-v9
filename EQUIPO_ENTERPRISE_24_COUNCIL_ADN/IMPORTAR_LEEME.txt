@@ -1,0 +1,78 @@
+IMPORTACIÓN Y USO · EQUIPO ENTERPRISE 24 · ArbitrageX · Council + ADN organizacional
+
+DOS FORMATOS PRINCIPALES DIFERENTES
+1. agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json: recipe v1, el squad de implementación y sus 24 agentes.
+2. agent-team-backup-2026-10-07.json: definitions/backup v2, una lista compartida de 24 agentes y dos squads (implementación y Council). Es un export acotado de esta organización; no sustituye el backup completo de tu instalación.
+
+El archivo extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json es una recipe adicional sólo del Council. No es el segundo formato solicitado. Si importas definitions ya están incluidos ambos squads. Si eliges recipes, importa implementación y, opcionalmente, Council. No necesitas importar repetidamente los tres archivos para obtener el mismo equipo.
+
+NOMBRES, HASHES Y ORIGEN
+La fecha del backup corresponde a exportedAt UTC y el UUID del nombre recipe es el del squad. Los sufijos (1)/(2) de los ejemplos son copias del navegador, no nombres canónicos. agent-team-export-manifest.json registra SHA-256 de los bytes exactos; no es un formato importable DSH. Los dos JSON y la recipe Council comparten el instante congelado de exportación. Plantilla offline; este equipo no se presenta como un diseño generado por IA.
+
+ANTES DE IMPORTAR
+Exporta backup completo de DSH. Revisa Preview, versión instalada, 24 miembros, identidad, prompts, modelos/proveedores y affectedSquads. Merge preserva IDs y actualiza definiciones globales, afectando squads anteriores con esos IDs. Copy puede remapear UUID estructurales sin reescribir UUID dentro de textos: reconciliar identidad antes de operar. No seleccionar sustitución total del catálogo sin revisar consecuencias. La importación es una acción manual del usuario; generar este paquete no importa ni activa agentes.
+
+CONTRATO DE FASE
+Las dos fases comparten exactamente los mismos prompts bifásicos. collabNote fija ORGDNA_PHASE. Los squads antiguos sin ese contrato no deben ejecutarse automáticamente. Council: all, concurrencia N, sólo lectura. Implementación: adaptive, concurrencia ≤3, exige DAG. El CEO consolida después en una tarea individual nueva.
+
+APP WEB LOCAL, CON EXCEL COMO COMPLEMENTO
+1. Descomprime todo el ZIP conservando carpetas.
+2. En Windows con Python 3.10+ ya instalado, ejecuta launch.cmd para abrir la aplicación local. En otro sistema, python -m engine.bridge inicia el panel; la integración Excel COM requiere Windows y Excel. No se instala software automáticamente.
+3. Trabaja desde el panel local: configura el proyecto, genera/revisa la organización y utiliza sus exportaciones Recipe, Definitions Backup y paquete ZIP. La aplicación no exige abrir Excel para generar una organización.
+4. Si quieres usar el complemento Excel, abre ADN_Organizacional.xlsx y selecciónalo en el panel. Es una plantilla inicial del paquete, no una copia de tu libro abierto ni una prueba de que sus celdas estén sincronizadas con los JSON actuales. Aplicar al libro es una acción explícita.
+5. Las descargas contienen el estado actual de organización del panel; un GET no guarda Excel ni consulta proveedores. Los enlaces de Exportacion en Excel también abren Recipe, Definitions Backup y ZIP en el motor local. Exportar o descargar no llama a proveedores ni lanza Council. La generación mediante IA requiere el flujo API autorizado; la plantilla offline no realiza llamadas ni acredita un diseño de IA.
+
+CLAVES Y PRIVACIDAD
+No pegues claves en celdas. Usa los mecanismos locales documentados del puente y verifica destino y coste antes de analizar con API. Nunca distribuyas tu almacén de credenciales junto al ZIP.
+
+VERIFICACIÓN
+python validate_imports_portable.py
+Lee 06_VERIFICACION_DEL_PAQUETE.txt. El HTML funciona offline; busca y selecciona un perfil. Su contenido se muestra como texto escapado.
+
+
+AJUSTES DSH REALES DE ESTE EXPORT
+
+Implementación:
+{
+  "executionMode": "parallel",
+  "triggerMode": "model-tool",
+  "failurePolicy": "stop",
+  "maxConcurrency": 3,
+  "activationMode": "manual",
+  "memberSelectionMode": "adaptive",
+  "responseMode": "foreground",
+  "plannerMaxTokens": 8192,
+  "contextMode": "fork",
+  "planningContext": "full",
+  "leaderAgentId": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+  "memberTimeoutMs": 900000,
+  "tokenBudget": 288000,
+  "handoffSummaryMaxChars": 16000
+}
+
+Council:
+{
+  "executionMode": "parallel",
+  "triggerMode": "model-tool",
+  "failurePolicy": "stop",
+  "maxConcurrency": 24,
+  "activationMode": "manual",
+  "memberSelectionMode": "all",
+  "responseMode": "foreground",
+  "plannerMaxTokens": 8192,
+  "contextMode": "fork",
+  "planningContext": "full",
+  "leaderAgentId": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+  "memberTimeoutMs": 900000,
+  "tokenBudget": 288000,
+  "handoffSummaryMaxChars": 16000
+}
+
+Importar guarda definiciones; hay que seleccionar el equipo y disponer de una sesión compatible, modelos, herramientas y permisos reales. No crea una conexión al repositorio por sí solo. Con always y guaranteed, según la versión del host, cada mensaje puede activar planificación y consumir tokens, también un saludo. Los topes de tokens no son un importe garantizado en USD. full amplía el contexto de planificación disponible, pero no inventa acceso a archivos o historial ausente.
+
+Un saludo presenta el equipo, sus capacidades declaradas, el objetivo específico del repositorio y un plan verificable. No autoriza por sí mismo transacciones, uso de capital, firma, publicación ni cambios de credenciales. Los límites y qualityGate se exportan sólo mediante campos reconocidos; dependen de soporte real del runtime, y nunca acreditan que se haya ejecutado una revisión.
+
+PLAN_PREVIEW_TAREA.txt contiene la tarea preparada para copiar en Plan Preview del equipo seleccionado. No se añade previewTask como clave inventada al JSON nativo. El contexto y contrato de saludo también están en los prompts/collabNote generados por el motor. Revisar preview y costes antes de dispatch.
+
+INTEGRACIÓN DEL MISMO EQUIPO
+El paquete incluye el builder y las fuentes del addon Cordis, Plugin Shop y el puente DSH de sólo lectura. Preparar el ZIP adicional desde la app no modifica las dos descargas principales ni instala capacidades. Las variantes extended-native conservan los mismos UUID; sólo se consideran tras preflight y activación autorizada. Leer docs/integration_runtime.md, docs/plugin_shop.md, docs/dsh_connection.md y cordis_extension/README_ES.md. Los registros privados, bindings vivos, claves y cachés del catálogo no se distribuyen. Las mediciones Node/Python incluidas son transporte de prueba con servicios simulados, no rendimiento DSH en producción ni comunicación realtime de los agentes.

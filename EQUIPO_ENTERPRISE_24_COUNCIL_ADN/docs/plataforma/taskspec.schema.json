@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:taskspec:1",
+  "title": "TaskSpec v1 / Task Graph v1 - contrato congelado R0",
+  "description": "Contrato declarativo del Task Graph Engine (flujo I1, modulo destino engine/task_graph.py). La raiz describe un TaskSpec; $defs.task_graph describe el grafo que lo contiene. Parsear o validar este documento no ejecuta ninguna tarea.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "R0",
+  "frozen_at": "2026-10-10",
+  "version_field": "taskspec_version",
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). Este contrato no admite ningun campo cuya normalizacion coincida con la lista. Los nombres 'tokens' (metrica de presupuesto entera) y 'access_token'/'bearer_token' (credencial) son distintos en esa comparacion; se documenta en docs/PLATAFORMA_DECISIONES.md.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false. Un campo con forma de credencial no se valida parcialmente: no valida.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Declarativo por defecto. Validar este contrato no importa modulos con efectos, no abre red, no escribe en disco, no consume credenciales, no envia nada a proveedores y no modifica DSH. La autonomia declarada en un TaskSpec es un limite, no una autorizacion de ejecucion.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "taskspec_version": {
+      "const": "1",
+      "description": "Campo de version del contrato. Un valor distinto de \"1\" se rechaza con el codigo unsupported_version."
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$",
+      "description": "Identificador estable y unico dentro del grafo."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "intent": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "Resultado pretendido en una frase. No es una promesa de exito."
+    },
+    "agent_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Referencia declarativa al Agent Registry (I2). Su presencia no prueba que el agente exista ni que pueda ejecutarse."
+    },
+    "autonomy_level": {
+      "enum": ["observe", "propose", "prepare", "execute-approved"],
+      "default": "observe",
+      "description": "Nivel de autonomia de la tarea. observe es el valor por defecto y el techo por defecto de la organizacion."
+    },
+    "depends_on": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+      },
+      "description": "Aristas entrantes del DAG. Una dependencia inexistente o una auto-dependencia invalidan el grafo entero."
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Techo declarado de tokens. 'tokens' aqui es una magnitud de presupuesto, no un token de acceso."
+        },
+        "money_usd": {
+          "type": "number",
+          "minimum": 0
+        },
+        "time_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requests": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["tokens", "money_usd", "time_seconds", "requests"],
+      "description": "Presupuesto declarado por tarea. Un presupuesto no es un limite de facturacion ni una autorizacion de gasto."
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "propertyNames": {
+          "not": {
+            "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+          }
+        },
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Criterio medible y verificable offline."
+          },
+          "verify": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Comando o asercion que lo comprueba."
+          },
+          "status": {
+            "enum": ["pending", "passed", "failed", "not_run"],
+            "default": "pending",
+            "description": "not_run es un estado legitimo del vocabulario PASS/FAIL/NOT_RUN de la suite (LEEME_V8.txt:82-83) y nunca se aproxima a passed."
+          }
+        },
+        "required": ["criterion", "verify"]
+      },
+      "description": "Al menos un criterio medible por tarea. Un TaskSpec sin criterio de aceptacion no es valido."
+    },
+    "falsifiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "propertyNames": {
+          "not": {
+            "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+          }
+        },
+        "properties": {
+          "falsifier_id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Observacion que refutaria el resultado declarado."
+          },
+          "how_detected": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 600,
+            "description": "Como se detectaria esa observacion."
+          }
+        },
+        "required": ["falsifier_id", "statement", "how_detected"]
+      },
+      "description": "Al menos un falsificador por tarea. Un resultado sin falsificador declarado no se considera verificado."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+      "description": "Clave de deduplicacion de la tarea. Reutilizarla no duplica el efecto declarado."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400
+      },
+      "description": "Referencias al Evidence Graph (I2). Una referencia no es evidencia hasta que el nodo existe."
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "taskspec_version",
+    "task_id",
+    "title",
+    "intent",
+    "autonomy_level",
+    "depends_on",
+    "budget",
+    "acceptance_criteria",
+    "falsifiers",
+    "idempotency_key"
+  ],
+  "$defs": {
+    "graph_rules": {
+      "title": "Reglas congeladas del grafo v1",
+      "description": "Anotacion normativa para I1. No es un motor: describe lo que engine/task_graph.py debe hacer cumplir.",
+      "type": "object",
+      "properties": {
+        "acyclic": {"const": true},
+        "unique_task_ids": {"const": true},
+        "dependencies_must_exist": {"const": true},
+        "self_dependency_forbidden": {"const": true},
+        "deterministic_order_rule": {
+          "const": "nivel = longitud de la cadena de dependencias mas larga desde una raiz; dentro del nivel, orden lexicografico ascendente por task_id"
+        },
+        "hash_rule": {
+          "const": "SHA-256 hexadecimal sobre JSON canonico (sort_keys=True, separators=(',',':'), ensure_ascii=False) de la lista de TaskSpec ya ordenada topologicamente"
+        },
+        "error_codes": {
+          "const": [
+            "cycle_detected",
+            "duplicate_task_id",
+            "unknown_dependency",
+            "self_dependency",
+            "empty_graph",
+            "unsupported_version",
+            "invalid_idempotency_key",
+            "missing_acceptance_criterion",
+            "missing_falsifier",
+            "negative_budget"
+          ]
+        },
+        "executes_actions": {"const": false}
+      }
+    },
+    "task_graph": {
+      "title": "TaskGraph v1 (envolvente del DAG)",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "graph_version": {"const": "1"},
+        "taskspec_version": {"const": "1"},
+        "tasks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#"}
+        },
+        "graph_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "topological_order": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "policy_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Referencia al Policy Engine (I3). La referencia no concede permisos."
+        },
+        "created_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+        }
+      },
+      "required": [
+        "graph_version",
+        "taskspec_version",
+        "tasks",
+        "graph_sha256",
+        "topological_order"
+      ]
+    }
+  }
+}

@@ -1,0 +1,2831 @@
+{
+  "format": "orgdna/governance-contracts",
+  "version": 1,
+  "policy": {
+    "version": "1.0",
+    "weights": {
+      "quality": 30,
+      "compliance": 20,
+      "efficiency": 15,
+      "collaboration": 15,
+      "evidence": 20
+    },
+    "range": [
+      0,
+      100
+    ],
+    "dimensions": {
+      "quality": "Criterios de aceptación y regresión satisfechos / criterios acordados; los fallos permanecen en el denominador.",
+      "compliance": "Obligaciones del mandato y límites de autoridad respetados / obligaciones evaluadas.",
+      "efficiency": "Presupuesto acordado / coste real comparable, limitado a 100; nunca tokens, velocidad o volumen sin calidad.",
+      "collaboration": "Handoffs, dependencias y compromisos útiles cumplidos / compromisos acordados.",
+      "evidence": "Afirmaciones comprobadas por revisión independiente / afirmaciones y resultados exigidos, incluidos negativos."
+    },
+    "aggregation": "Media de entregables únicos dentro de un grupo comparable; no suma de actividad.",
+    "missing_data": "Sin evaluar: score=null y rank=null; ausencia de datos no equivale a cero.",
+    "confidence": "Descriptiva, no probabilidad: baja <3 muestras; media 3–9; alta ≥10 con ≥2 revisores independientes.",
+    "comparison": "Ranking sólo dentro del mismo comparison_group; funciones y dificultad no comparables no se ordenan juntas.",
+    "anti_gaming": [
+      "Criterios, presupuesto y grupo fijados antes de revisar; no autoevaluación ni revisión por cadena de mando.",
+      "No premiar volumen, ocultar fallos, omitir criterios, manipular denominadores ni castigar reportes honestos de errores.",
+      "No se infiere calidad desde persona, CV, títulos, modelo, coste o nombre de agente.",
+      "Las revisiones incluyen resultados negativos y conflictos; evidencia registrada no implica ejecución verificada por la app."
+    ],
+    "promotion": {
+      "minimum_samples": 5,
+      "minimum_score": 85,
+      "quality_floor": 80,
+      "compliance_floor": 90,
+      "evidence_floor": 90,
+      "approval": "Supervisor revisa y Owner aprueba; independencia adicional ante conflicto.",
+      "types": [
+        "recognition",
+        "promotion",
+        "succession"
+      ],
+      "automatic": false,
+      "permissions_changed": false,
+      "runtime_changed": false
+    },
+    "learning": "Aprendizaje operativo: feedback y skills/checklists versionados con fallo demostrado y retest; sin entrenamiento de pesos.",
+    "runtime_enforced": false
+  },
+  "profiles": [
+    {
+      "agent_id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+      "name": "Planner",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+          "name": "Planner",
+          "display_name": "Elena Valdés",
+          "role": "CEO"
+        },
+        "reports_to": {
+          "id": "OWNER_EXTERNAL",
+          "name": "Owner externo",
+          "display_name": "Owner externo",
+          "role": "OWNER"
+        },
+        "chain_of_command": [
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+            "name": "PersonalOps",
+            "display_name": "Alba Prieto",
+            "role": "OWNEROPS"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+      "name": "Architect",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+          "name": "Architect",
+          "display_name": "Gabriel Montes",
+          "role": "ARCHITECTURE"
+        },
+        "reports_to": {
+          "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+          "name": "Planner",
+          "display_name": "Elena Valdés",
+          "role": "CEO"
+        },
+        "chain_of_command": [
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+            "name": "Implementer",
+            "display_name": "Mateo Salvatierra",
+            "role": "CTO"
+          },
+          {
+            "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+            "name": "Backend",
+            "display_name": "Lucía Ferrer",
+            "role": "BACKEND"
+          },
+          {
+            "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+            "name": "Frontend",
+            "display_name": "Nicolás Vega",
+            "role": "FRONTEND"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+      "name": "QA",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+          "name": "QA",
+          "display_name": "Santiago Vidal",
+          "role": "QA"
+        },
+        "reports_to": {
+          "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+          "name": "Planner",
+          "display_name": "Elena Valdés",
+          "role": "CEO"
+        },
+        "chain_of_command": [
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+            "name": "Reviewer",
+            "display_name": "Inés Robles",
+            "role": "ASSURANCE"
+          },
+          {
+            "id": "24234d32-aec2-5b8f-8aa9-3dbf492c3c3c",
+            "name": "Security",
+            "display_name": "Valeria Ríos",
+            "role": "SECURITY"
+          },
+          {
+            "id": "2afbda5b-fcb1-55de-aac1-1d3a29e2662b",
+            "name": "EvidenceAuditor",
+            "display_name": "Iván Olivares",
+            "role": "EVIDENCE"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "039fa8c8-ba62-5929-837c-dd6480445976",
+      "name": "PersonalOps",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+          "name": "PersonalOps",
+          "display_name": "Alba Prieto",
+          "role": "OWNEROPS"
+        },
+        "reports_to": {
+          "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+          "name": "Planner",
+          "display_name": "Elena Valdés",
+          "role": "CEO"
+        },
+        "chain_of_command": [
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "d345c7bf-a05e-58bb-a434-412a8e018900",
+            "name": "SRE",
+            "display_name": "Andrés Leiva",
+            "role": "SRE"
+          },
+          {
+            "id": "07345392-10e4-596b-8261-723199a106c2",
+            "name": "Ledger",
+            "display_name": "Hugo Serrano",
+            "role": "LEDGER"
+          },
+          {
+            "id": "671a9d2a-3d9b-59c7-a72d-d2bb53363c01",
+            "name": "Release",
+            "display_name": "Sofía Montalvo",
+            "role": "RELEASE"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+      "name": "Implementer",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+          "name": "Implementer",
+          "display_name": "Mateo Salvatierra",
+          "role": "CTO"
+        },
+        "reports_to": {
+          "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+          "name": "Architect",
+          "display_name": "Gabriel Montes",
+          "role": "ARCHITECTURE"
+        },
+        "chain_of_command": [
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "fecfbc1e-c2cd-54a1-a338-63717e2da523",
+            "name": "Data",
+            "display_name": "Adriana Soler",
+            "role": "DATA"
+          },
+          {
+            "id": "1379d506-d159-59a8-9f7b-7e017d2f464d",
+            "name": "Integration",
+            "display_name": "Tomás Aranda",
+            "role": "INTEGRATION"
+          },
+          {
+            "id": "3de093dc-2587-582d-9d90-d593478fc65a",
+            "name": "Contracts",
+            "display_name": "Diego Cárdenas",
+            "role": "CONTRACTS"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+      "name": "Backend",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+          "name": "Backend",
+          "display_name": "Lucía Ferrer",
+          "role": "BACKEND"
+        },
+        "reports_to": {
+          "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+          "name": "Architect",
+          "display_name": "Gabriel Montes",
+          "role": "ARCHITECTURE"
+        },
+        "chain_of_command": [
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "3c77aa48-d378-5352-b961-686581792862",
+            "name": "Quant",
+            "display_name": "Clara Beltrán",
+            "role": "QUANT"
+          },
+          {
+            "id": "c8fe5355-4371-5e3f-8a3f-160bcb90fdbb",
+            "name": "GraphRouting",
+            "display_name": "Marina Duarte",
+            "role": "GRAPH"
+          },
+          {
+            "id": "c4c6a704-6b59-5c0c-b8bc-53edb6d2f769",
+            "name": "MarketMicrostructure",
+            "display_name": "Pablo Alarcón",
+            "role": "MARKET"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+      "name": "Frontend",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+          "name": "Frontend",
+          "display_name": "Nicolás Vega",
+          "role": "FRONTEND"
+        },
+        "reports_to": {
+          "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+          "name": "Architect",
+          "display_name": "Gabriel Montes",
+          "role": "ARCHITECTURE"
+        },
+        "chain_of_command": [
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "e389f32c-1b45-5781-b5f8-61f4c9fbfdd3",
+            "name": "BrowserE2E",
+            "display_name": "Bruno Calderón",
+            "role": "E2E"
+          },
+          {
+            "id": "b6e1a9d2-14dc-5a48-b2c8-c1c54966b009",
+            "name": "ModeParity",
+            "display_name": "Natalia Sanz",
+            "role": "PARITY"
+          },
+          {
+            "id": "d256860f-67f4-534a-a1e0-3db4e7d220d2",
+            "name": "AIEngineering",
+            "display_name": "Daniela Fuentes",
+            "role": "AI"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+      "name": "Reviewer",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+          "name": "Reviewer",
+          "display_name": "Inés Robles",
+          "role": "ASSURANCE"
+        },
+        "reports_to": {
+          "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+          "name": "QA",
+          "display_name": "Santiago Vidal",
+          "role": "QA"
+        },
+        "chain_of_command": [
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [
+          {
+            "id": "d59b0906-7517-59bb-a0d2-0c0fb8215ba2",
+            "name": "Specification",
+            "display_name": "Julián Escobar",
+            "role": "SPEC"
+          },
+          {
+            "id": "ff0d8395-2a3a-5d1d-9185-63c3aa3c19e7",
+            "name": "Performance",
+            "display_name": "Camila Navarro",
+            "role": "PERFORMANCE"
+          }
+        ],
+        "authority": "Coordinar y revisar entregas de sus subordinados dentro del mandato.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "24234d32-aec2-5b8f-8aa9-3dbf492c3c3c",
+      "name": "Security",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "24234d32-aec2-5b8f-8aa9-3dbf492c3c3c",
+          "name": "Security",
+          "display_name": "Valeria Ríos",
+          "role": "SECURITY"
+        },
+        "reports_to": {
+          "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+          "name": "QA",
+          "display_name": "Santiago Vidal",
+          "role": "QA"
+        },
+        "chain_of_command": [
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "2afbda5b-fcb1-55de-aac1-1d3a29e2662b",
+      "name": "EvidenceAuditor",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "2afbda5b-fcb1-55de-aac1-1d3a29e2662b",
+          "name": "EvidenceAuditor",
+          "display_name": "Iván Olivares",
+          "role": "EVIDENCE"
+        },
+        "reports_to": {
+          "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+          "name": "QA",
+          "display_name": "Santiago Vidal",
+          "role": "QA"
+        },
+        "chain_of_command": [
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "d345c7bf-a05e-58bb-a434-412a8e018900",
+      "name": "SRE",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "d345c7bf-a05e-58bb-a434-412a8e018900",
+          "name": "SRE",
+          "display_name": "Andrés Leiva",
+          "role": "SRE"
+        },
+        "reports_to": {
+          "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+          "name": "PersonalOps",
+          "display_name": "Alba Prieto",
+          "role": "OWNEROPS"
+        },
+        "chain_of_command": [
+          {
+            "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+            "name": "PersonalOps",
+            "display_name": "Alba Prieto",
+            "role": "OWNEROPS"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "07345392-10e4-596b-8261-723199a106c2",
+      "name": "Ledger",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "07345392-10e4-596b-8261-723199a106c2",
+          "name": "Ledger",
+          "display_name": "Hugo Serrano",
+          "role": "LEDGER"
+        },
+        "reports_to": {
+          "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+          "name": "PersonalOps",
+          "display_name": "Alba Prieto",
+          "role": "OWNEROPS"
+        },
+        "chain_of_command": [
+          {
+            "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+            "name": "PersonalOps",
+            "display_name": "Alba Prieto",
+            "role": "OWNEROPS"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "671a9d2a-3d9b-59c7-a72d-d2bb53363c01",
+      "name": "Release",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "671a9d2a-3d9b-59c7-a72d-d2bb53363c01",
+          "name": "Release",
+          "display_name": "Sofía Montalvo",
+          "role": "RELEASE"
+        },
+        "reports_to": {
+          "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+          "name": "PersonalOps",
+          "display_name": "Alba Prieto",
+          "role": "OWNEROPS"
+        },
+        "chain_of_command": [
+          {
+            "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+            "name": "PersonalOps",
+            "display_name": "Alba Prieto",
+            "role": "OWNEROPS"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "fecfbc1e-c2cd-54a1-a338-63717e2da523",
+      "name": "Data",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "fecfbc1e-c2cd-54a1-a338-63717e2da523",
+          "name": "Data",
+          "display_name": "Adriana Soler",
+          "role": "DATA"
+        },
+        "reports_to": {
+          "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+          "name": "Implementer",
+          "display_name": "Mateo Salvatierra",
+          "role": "CTO"
+        },
+        "chain_of_command": [
+          {
+            "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+            "name": "Implementer",
+            "display_name": "Mateo Salvatierra",
+            "role": "CTO"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "1379d506-d159-59a8-9f7b-7e017d2f464d",
+      "name": "Integration",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "1379d506-d159-59a8-9f7b-7e017d2f464d",
+          "name": "Integration",
+          "display_name": "Tomás Aranda",
+          "role": "INTEGRATION"
+        },
+        "reports_to": {
+          "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+          "name": "Implementer",
+          "display_name": "Mateo Salvatierra",
+          "role": "CTO"
+        },
+        "chain_of_command": [
+          {
+            "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+            "name": "Implementer",
+            "display_name": "Mateo Salvatierra",
+            "role": "CTO"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "3de093dc-2587-582d-9d90-d593478fc65a",
+      "name": "Contracts",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "3de093dc-2587-582d-9d90-d593478fc65a",
+          "name": "Contracts",
+          "display_name": "Diego Cárdenas",
+          "role": "CONTRACTS"
+        },
+        "reports_to": {
+          "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+          "name": "Implementer",
+          "display_name": "Mateo Salvatierra",
+          "role": "CTO"
+        },
+        "chain_of_command": [
+          {
+            "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+            "name": "Implementer",
+            "display_name": "Mateo Salvatierra",
+            "role": "CTO"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "3c77aa48-d378-5352-b961-686581792862",
+      "name": "Quant",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "3c77aa48-d378-5352-b961-686581792862",
+          "name": "Quant",
+          "display_name": "Clara Beltrán",
+          "role": "QUANT"
+        },
+        "reports_to": {
+          "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+          "name": "Backend",
+          "display_name": "Lucía Ferrer",
+          "role": "BACKEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+            "name": "Backend",
+            "display_name": "Lucía Ferrer",
+            "role": "BACKEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "c8fe5355-4371-5e3f-8a3f-160bcb90fdbb",
+      "name": "GraphRouting",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "c8fe5355-4371-5e3f-8a3f-160bcb90fdbb",
+          "name": "GraphRouting",
+          "display_name": "Marina Duarte",
+          "role": "GRAPH"
+        },
+        "reports_to": {
+          "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+          "name": "Backend",
+          "display_name": "Lucía Ferrer",
+          "role": "BACKEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+            "name": "Backend",
+            "display_name": "Lucía Ferrer",
+            "role": "BACKEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "c4c6a704-6b59-5c0c-b8bc-53edb6d2f769",
+      "name": "MarketMicrostructure",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "c4c6a704-6b59-5c0c-b8bc-53edb6d2f769",
+          "name": "MarketMicrostructure",
+          "display_name": "Pablo Alarcón",
+          "role": "MARKET"
+        },
+        "reports_to": {
+          "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+          "name": "Backend",
+          "display_name": "Lucía Ferrer",
+          "role": "BACKEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+            "name": "Backend",
+            "display_name": "Lucía Ferrer",
+            "role": "BACKEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "e389f32c-1b45-5781-b5f8-61f4c9fbfdd3",
+      "name": "BrowserE2E",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "e389f32c-1b45-5781-b5f8-61f4c9fbfdd3",
+          "name": "BrowserE2E",
+          "display_name": "Bruno Calderón",
+          "role": "E2E"
+        },
+        "reports_to": {
+          "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+          "name": "Frontend",
+          "display_name": "Nicolás Vega",
+          "role": "FRONTEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+            "name": "Frontend",
+            "display_name": "Nicolás Vega",
+            "role": "FRONTEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "b6e1a9d2-14dc-5a48-b2c8-c1c54966b009",
+      "name": "ModeParity",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "b6e1a9d2-14dc-5a48-b2c8-c1c54966b009",
+          "name": "ModeParity",
+          "display_name": "Natalia Sanz",
+          "role": "PARITY"
+        },
+        "reports_to": {
+          "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+          "name": "Frontend",
+          "display_name": "Nicolás Vega",
+          "role": "FRONTEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+            "name": "Frontend",
+            "display_name": "Nicolás Vega",
+            "role": "FRONTEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "d256860f-67f4-534a-a1e0-3db4e7d220d2",
+      "name": "AIEngineering",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "d256860f-67f4-534a-a1e0-3db4e7d220d2",
+          "name": "AIEngineering",
+          "display_name": "Daniela Fuentes",
+          "role": "AI"
+        },
+        "reports_to": {
+          "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+          "name": "Frontend",
+          "display_name": "Nicolás Vega",
+          "role": "FRONTEND"
+        },
+        "chain_of_command": [
+          {
+            "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+            "name": "Frontend",
+            "display_name": "Nicolás Vega",
+            "role": "FRONTEND"
+          },
+          {
+            "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+            "name": "Architect",
+            "display_name": "Gabriel Montes",
+            "role": "ARCHITECTURE"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "d59b0906-7517-59bb-a0d2-0c0fb8215ba2",
+      "name": "Specification",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "d59b0906-7517-59bb-a0d2-0c0fb8215ba2",
+          "name": "Specification",
+          "display_name": "Julián Escobar",
+          "role": "SPEC"
+        },
+        "reports_to": {
+          "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+          "name": "Reviewer",
+          "display_name": "Inés Robles",
+          "role": "ASSURANCE"
+        },
+        "chain_of_command": [
+          {
+            "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+            "name": "Reviewer",
+            "display_name": "Inés Robles",
+            "role": "ASSURANCE"
+          },
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    },
+    {
+      "agent_id": "ff0d8395-2a3a-5d1d-9185-63c3aa3c19e7",
+      "name": "Performance",
+      "command": {
+        "version": "1.0",
+        "self": {
+          "id": "ff0d8395-2a3a-5d1d-9185-63c3aa3c19e7",
+          "name": "Performance",
+          "display_name": "Camila Navarro",
+          "role": "PERFORMANCE"
+        },
+        "reports_to": {
+          "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+          "name": "Reviewer",
+          "display_name": "Inés Robles",
+          "role": "ASSURANCE"
+        },
+        "chain_of_command": [
+          {
+            "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+            "name": "Reviewer",
+            "display_name": "Inés Robles",
+            "role": "ASSURANCE"
+          },
+          {
+            "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+            "name": "QA",
+            "display_name": "Santiago Vidal",
+            "role": "QA"
+          },
+          {
+            "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+            "name": "Planner",
+            "display_name": "Elena Valdés",
+            "role": "CEO"
+          },
+          {
+            "id": "OWNER_EXTERNAL",
+            "name": "Owner externo",
+            "display_name": "Owner externo",
+            "role": "OWNER"
+          }
+        ],
+        "direct_reports": [],
+        "authority": "Ejecutar únicamente su tarea autorizada y reportar al superior asignado.",
+        "superior_directives": "Cumplir instrucciones del superior identificado cuando sean compatibles con el objetivo del Owner, evidencia, seguridad y permisos efectivos.",
+        "reasoned_dissent": "Refutar respetuosamente con evidencia, contraejemplo, impacto y alternativa. Registrar el disenso y pedir decisión; nunca inventar hechos ni obedecer a ciegas.",
+        "blocking_rule": "Si una orden excede autoridad, contradice el objetivo, exige falsear evidencia o carece de permiso: BLOCKED, conservar evidencia y escalar por la cadena hasta Owner.",
+        "resolved_disagreement": "Tras una decisión válida del superior, ejecutar dentro del mandato; la discrepancia técnica no permite sabotaje ni desobediencia arbitraria. Un riesgo no resuelto o permiso ausente sigue bloqueando.",
+        "functional_links": "Auditoría y consultoría colaboran; no crean otra cadena de mando ni facultan aprobar trabajo propio.",
+        "runtime_enforced": false
+      },
+      "performance_contract": {
+        "score_range": [
+          0,
+          100
+        ],
+        "weights": {
+          "quality": 30,
+          "compliance": 20,
+          "efficiency": 15,
+          "collaboration": 15,
+          "evidence": 20
+        },
+        "initial_status": "sin_evaluar",
+        "self_grading": false,
+        "report_fields": [
+          "task_id",
+          "requirement_ids",
+          "candidate_sha",
+          "acceptance_criteria",
+          "expected",
+          "actual",
+          "negative_results",
+          "evidence",
+          "budget",
+          "actual_cost",
+          "handoffs",
+          "reviewer_id",
+          "limitations"
+        ],
+        "promotion_is_recommendation": true,
+        "automatic_permissions": false
+      }
+    }
+  ],
+  "initial_scoreboard": {
+    "version": "1.0",
+    "weights": {
+      "quality": 30,
+      "compliance": 20,
+      "efficiency": 15,
+      "collaboration": 15,
+      "evidence": 20
+    },
+    "rows": [
+      {
+        "agent_id": "d256860f-67f4-534a-a1e0-3db4e7d220d2",
+        "name": "AIEngineering",
+        "display_name": "Daniela Fuentes",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+        "name": "Architect",
+        "display_name": "Gabriel Montes",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+        "name": "Backend",
+        "display_name": "Lucía Ferrer",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "e389f32c-1b45-5781-b5f8-61f4c9fbfdd3",
+        "name": "BrowserE2E",
+        "display_name": "Bruno Calderón",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "3de093dc-2587-582d-9d90-d593478fc65a",
+        "name": "Contracts",
+        "display_name": "Diego Cárdenas",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "fecfbc1e-c2cd-54a1-a338-63717e2da523",
+        "name": "Data",
+        "display_name": "Adriana Soler",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "2afbda5b-fcb1-55de-aac1-1d3a29e2662b",
+        "name": "EvidenceAuditor",
+        "display_name": "Iván Olivares",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+        "name": "Frontend",
+        "display_name": "Nicolás Vega",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "c8fe5355-4371-5e3f-8a3f-160bcb90fdbb",
+        "name": "GraphRouting",
+        "display_name": "Marina Duarte",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+        "name": "Implementer",
+        "display_name": "Mateo Salvatierra",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "1379d506-d159-59a8-9f7b-7e017d2f464d",
+        "name": "Integration",
+        "display_name": "Tomás Aranda",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "07345392-10e4-596b-8261-723199a106c2",
+        "name": "Ledger",
+        "display_name": "Hugo Serrano",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "c4c6a704-6b59-5c0c-b8bc-53edb6d2f769",
+        "name": "MarketMicrostructure",
+        "display_name": "Pablo Alarcón",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "b6e1a9d2-14dc-5a48-b2c8-c1c54966b009",
+        "name": "ModeParity",
+        "display_name": "Natalia Sanz",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "ff0d8395-2a3a-5d1d-9185-63c3aa3c19e7",
+        "name": "Performance",
+        "display_name": "Camila Navarro",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "039fa8c8-ba62-5929-837c-dd6480445976",
+        "name": "PersonalOps",
+        "display_name": "Alba Prieto",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+        "name": "Planner",
+        "display_name": "Elena Valdés",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+        "name": "QA",
+        "display_name": "Santiago Vidal",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "3c77aa48-d378-5352-b961-686581792862",
+        "name": "Quant",
+        "display_name": "Clara Beltrán",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "671a9d2a-3d9b-59c7-a72d-d2bb53363c01",
+        "name": "Release",
+        "display_name": "Sofía Montalvo",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+        "name": "Reviewer",
+        "display_name": "Inés Robles",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "d345c7bf-a05e-58bb-a434-412a8e018900",
+        "name": "SRE",
+        "display_name": "Andrés Leiva",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "24234d32-aec2-5b8f-8aa9-3dbf492c3c3c",
+        "name": "Security",
+        "display_name": "Valeria Ríos",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      },
+      {
+        "agent_id": "d59b0906-7517-59bb-a0d2-0c0fb8215ba2",
+        "name": "Specification",
+        "display_name": "Julián Escobar",
+        "comparison_group": null,
+        "score": null,
+        "dimensions": {
+          "quality": null,
+          "compliance": null,
+          "efficiency": null,
+          "collaboration": null,
+          "evidence": null
+        },
+        "rank": null,
+        "status": "sin_evaluar",
+        "sample_count": 0,
+        "pending_count": 0,
+        "reviewer_count": 0,
+        "reviewer_ids": [],
+        "confidence": "sin_evaluar",
+        "confidence_is_probability": false,
+        "promotion_eligible": false,
+        "promotion_requires_approval": true,
+        "source_record_ids": [],
+        "source_review_ids": [],
+        "evidence_verified_by_app": false,
+        "runtime_verified": false
+      }
+    ],
+    "excluded_records": [],
+    "integrity": {
+      "valid": true,
+      "errors": [],
+      "authenticated": false,
+      "note": "Hashes detectan inconsistencias, no autentican al autor ni sustituyen firmas o revisión externa."
+    },
+    "automatic_promotions": false,
+    "evidence_status": "manual_records_not_runtime_verified",
+    "note": "Ranking descriptivo por grupo comparable; revisiones registradas, no pruebas ejecutadas por la app. Más muestras mejoran contexto, nunca suman puntos."
+  },
+  "local_evaluation_history_included": false,
+  "initial_status_is_not_project_score": true,
+  "permissions_changed": false,
+  "automatic_promotions": false
+}

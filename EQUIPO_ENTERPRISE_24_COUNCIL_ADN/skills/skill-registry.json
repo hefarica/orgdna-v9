@@ -1,0 +1,48 @@
+{
+  "format": "orgdna/local-skill-registry",
+  "version": 1,
+  "release": "1.0.0",
+  "status": "PROPOSED_NOT_INSTALLED",
+  "dsh_native_skill_installation_verified": false,
+  "model_weights_changed": false,
+  "source_schema": {
+    "repository": "https://github.com/toolclub/dsh-agent-team-gui",
+    "commit": "14ea11960b20b1f93c33541ba9df7746ed16d08a",
+    "version": "1.3.0",
+    "scope": "public_source_not_user_runtime"
+  },
+  "skills": [
+    {
+      "name": "webapp-testing",
+      "version": "1.0.0",
+      "entrypoint": "webapp-testing/SKILL.md",
+      "sha256": "dbc08b5fc7c3924f82c4c368b5702c42f70b8acb0d5d156c9b1ee50c09d7aabb",
+      "status": "PROPOSED",
+      "installation_verified": false,
+      "promotion_requires": "independent_retest_with_evidence"
+    },
+    {
+      "name": "systematic-debugging",
+      "version": "1.0.0",
+      "entrypoint": "systematic-debugging/SKILL.md",
+      "sha256": "82cf4f794ffe8f5dac01be62722fc086da4939d0a1b86989fba20fe5d7f1ca17",
+      "status": "PROPOSED",
+      "installation_verified": false,
+      "promotion_requires": "independent_retest_with_evidence"
+    }
+  ],
+  "shared_resources": [
+    {
+      "path": "remedial-learning.md",
+      "sha256": "127cd34d2591acfc22479d0c2d64817c840d5e8d93585f301cd638c6c8845ff7"
+    },
+    {
+      "path": "evidence-contract.schema.json",
+      "sha256": "967bb465c0c37d3374c60db70c5e23192140a3cb93b70b6bddb9852250a5eb72"
+    },
+    {
+      "path": "README.md",
+      "sha256": "a82174a2e9723189a50165cdef2d34b9e0b89cb88ccbd0a0555b8c5eeb6e5ad0"
+    }
+  ]
+}

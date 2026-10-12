@@ -1,0 +1,903 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:policy:2",
+  "title": "PolicyDecision - revision 2 del contrato (v2), payload v1 sin cambios",
+  "description": "Revision 2 del contrato de politica. Cierra F-T4-2: la exigencia de aprobacion del segundo allOf se limita a los tipos de accion que levantan una puerta obligatoria, y $defs.mandatory_gates pasa de anotacion no referenciada a restriccion evaluable. El motor engine/policy_engine.py NO se modifica: sus decisiones siguen siendo las correctas y eran el contrato el que estaba sobre-restringido.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "t9 (INT-A)",
+  "schema_revision": "2",
+  "version_field": "policy_contract_version",
+  "payload_version": "1",
+  "supersedes": {
+    "file": "docs/plataforma/policy.schema.json",
+    "schema_revision": "1",
+    "sha256": "c6026c70690115c7e37ac0d080510f6f19b36cabc76c89701e7d5443bf54118e",
+    "bytes_untouched": true,
+    "reason": "Un contrato v1 no se edita en caliente (PLATAFORMA_CONTRATOS_V1.md seccion 10; policy_engine.py:44-45). La revision se emite como archivo nuevo."
+  },
+  "revision_history": [
+    {
+      "schema_revision": "1",
+      "status": "vigente e intacto",
+      "summary": "Contrato de R0. El segundo allOf exige approval objeto en toda decision allow, lo que combinado con gate obligatorio en require_human_approval deja sin salida valida a una accion de solo lectura."
+    },
+    {
+      "schema_revision": "2",
+      "status": "esta revision, aditiva",
+      "summary": "allow implica aprobacion SOLO para tipos de accion sujetos a puerta obligatoria; los tipos sin puerta se aceptan con gate null y approval null. $defs.mandatory_gates se referencia desde el allOf y desde gate."
+    }
+  ],
+  "compatibility": {
+    "engine_unmodified": true,
+    "v1_file_bytes_untouched": true,
+    "accepts_every_decision_the_engine_produces": true,
+    "newly_accepted": "allow con gate null y approval null de tipos de accion sin puerta (F-T4-2)",
+    "rejected_that_v1_accepted": "ninguna decision emitida por el motor; el motor ya rechaza allow con gate null y approval no nulo",
+    "known_schema_limits": [
+      "La igualdad approval.gate == gate no es expresable en JSON Schema; la verifica el motor en validate_decision (policy_engine.py:886-902) y se cubre en las pruebas.",
+      "La trazabilidad de matched_rules para allow sin puerta (regla default.open o gate.*) la verifica el motor, no el esquema."
+    ]
+  },
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). Los aprobadores se identifican por rol o referencia opaca, nunca por un valor de credencial.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Una decision allow no ejecuta, no firma, no gasta, no abre conectores y no escribe nada: solo declara que la accion propuesta no esta prohibida por la politica vigente. La ejecucion sigue siendo un paso humano o de runtime separado, fuera de este contrato.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "policy_contract_version": {
+      "const": "1",
+      "description": "Campo de version del PAYLOAD, no de la revision del contrato: el motor sigue emitiendo \"1\" y no se modifica. La revision del contrato es schema_revision=2."
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$"
+    },
+    "policy_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "action": {
+      "$ref": "#/$defs/action"
+    },
+    "decision": {
+      "enum": [
+        "allow",
+        "deny",
+        "require_human_approval"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "gate": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/mandatory_gates"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "matched_rules": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/matched_rule"
+      }
+    },
+    "limits": {
+      "$ref": "#/$defs/limits"
+    },
+    "approval": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/approval_record"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "side_effects_performed": {
+      "const": false
+    },
+    "evaluated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "policy_contract_version",
+    "policy_id",
+    "policy_revision",
+    "action",
+    "decision",
+    "reason",
+    "gate",
+    "matched_rules",
+    "limits",
+    "side_effects_performed",
+    "evaluated_at"
+  ],
+  "allOf": [
+    {
+      "comment": "Puerta obligatoria: require_human_approval siempre nombra una de las ocho puertas.",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "require_human_approval"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "$ref": "#/$defs/mandatory_gates"
+          }
+        },
+        "required": [
+          "gate"
+        ]
+      }
+    },
+    {
+      "comment": "Una aprobacion registrada solo es valida declarando la puerta que autoriza (espejo de policy_engine.validate_decision).",
+      "if": {
+        "properties": {
+          "approval": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "approval"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "$ref": "#/$defs/mandatory_gates"
+          }
+        },
+        "required": [
+          "gate"
+        ]
+      }
+    },
+    {
+      "comment": "allow en un tipo de accion sujeto a puerta obligatoria exige el registro de aprobacion y una puerta levantada por ese tipo de accion.",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "$ref": "#/$defs/gated_action_kinds"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "approval": {
+            "$ref": "#/$defs/approval_record"
+          }
+        },
+        "required": [
+          "approval",
+          "gate"
+        ]
+      }
+    },
+    {
+      "comment": "allow en un tipo de accion que no levanta ninguna puerta: gate null y approval null. Nunca se presenta una lectura como autorizada por una persona.",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "$ref": "#/$defs/ungated_action_kinds"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "type": "null"
+          },
+          "approval": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por write_file (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "write_file"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "write"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por call_provider (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "call_provider"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "secrets",
+              "spend",
+              "connectors"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por install_package (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "install_package"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "install"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por open_connector (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "open_connector"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "connectors"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por spend_money (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "spend_money"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "spend"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por store_memory (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "store_memory"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "write"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por push (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "push"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "push"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por merge (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "merge"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "merge"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por deploy (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "deploy"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "deploy"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "comment": "Puertas levantadas por send_message_out (policy_engine.DEFAULT_ACTION_GATES).",
+      "if": {
+        "properties": {
+          "decision": {
+            "const": "allow"
+          },
+          "action": {
+            "properties": {
+              "action_kind": {
+                "const": "send_message_out"
+              }
+            },
+            "required": [
+              "action_kind"
+            ]
+          }
+        },
+        "required": [
+          "decision",
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "gate": {
+            "enum": [
+              "connectors"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "mandatory_gates": {
+      "title": "Las ocho puertas humanas obligatorias (restriccion evaluable, no anotacion)",
+      "enum": [
+        "secrets",
+        "spend",
+        "connectors",
+        "write",
+        "install",
+        "push",
+        "merge",
+        "deploy"
+      ]
+    },
+    "gated_action_kinds": {
+      "title": "Tipos de accion que levantan al menos una puerta obligatoria",
+      "enum": [
+        "write_file",
+        "call_provider",
+        "install_package",
+        "open_connector",
+        "spend_money",
+        "store_memory",
+        "push",
+        "merge",
+        "deploy",
+        "send_message_out"
+      ]
+    },
+    "ungated_action_kinds": {
+      "title": "Tipos de accion que no levantan ninguna puerta obligatoria",
+      "enum": [
+        "read_repo",
+        "run_tests"
+      ]
+    },
+    "gates_for_action": {
+      "title": "Puertas levantadas por cada tipo de accion (policy_engine.DEFAULT_ACTION_GATES)",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "read_repo": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "write_file": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "run_tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "call_provider": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "install_package": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "open_connector": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "spend_money": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "store_memory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "push": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "merge": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "deploy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        },
+        "send_message_out": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "read_repo",
+        "write_file",
+        "run_tests",
+        "call_provider",
+        "install_package",
+        "open_connector",
+        "spend_money",
+        "store_memory",
+        "push",
+        "merge",
+        "deploy",
+        "send_message_out"
+      ]
+    },
+    "action": {
+      "title": "Accion propuesta (declarativa)",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "action_kind": {
+          "enum": [
+            "read_repo",
+            "write_file",
+            "run_tests",
+            "call_provider",
+            "install_package",
+            "open_connector",
+            "spend_money",
+            "store_memory",
+            "push",
+            "merge",
+            "deploy",
+            "send_message_out"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "scope_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$"
+        }
+      },
+      "required": [
+        "action_kind",
+        "target"
+      ]
+    },
+    "matched_rule": {
+      "title": "Regla coincidente",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"
+        },
+        "outcome": {
+          "enum": [
+            "allow",
+            "deny",
+            "require_human_approval"
+          ]
+        },
+        "limit_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "rule_id",
+        "outcome"
+      ]
+    },
+    "limits": {
+      "title": "Limites vigentes declarados por la politica",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "write_allowed": {
+          "type": "boolean"
+        },
+        "network_allowed": {
+          "const": false
+        },
+        "spend_usd_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "autonomy_ceiling": {
+          "enum": [
+            "observe",
+            "propose",
+            "prepare",
+            "execute-approved"
+          ]
+        },
+        "approvals_required": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/mandatory_gates"
+          }
+        }
+      },
+      "required": [
+        "write_allowed",
+        "network_allowed",
+        "autonomy_ceiling",
+        "approvals_required"
+      ]
+    },
+    "approval_record": {
+      "title": "Aprobacion humana declarativa",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "gate": {
+          "$ref": "#/$defs/mandatory_gates"
+        },
+        "approver_role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "approved_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+        },
+        "scope_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "one_shot": {
+          "const": true
+        }
+      },
+      "required": [
+        "gate",
+        "approver_role",
+        "approved_at",
+        "scope_hash",
+        "one_shot"
+      ]
+    }
+  }
+}

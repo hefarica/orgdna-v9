@@ -1,0 +1,14 @@
+{
+  "name": "orgdna-v7-isolated-chromium-acceptance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Authored acceptance suite. Chromium NOT RUN in delivery environment.",
+  "engines": {"node": ">=22 <23"},
+  "devDependencies": {"@playwright/test": "1.56.1"},
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "list": "playwright test --list",
+    "report": "playwright show-report artifacts/html"
+  }
+}

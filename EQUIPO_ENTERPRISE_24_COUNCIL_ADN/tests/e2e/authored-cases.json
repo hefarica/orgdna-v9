@@ -1,0 +1,502 @@
+{
+  "kind": "authored-case-inventory",
+  "browser_execution": "NOT_RUN",
+  "count": 99,
+  "tests": [
+    {
+      "file": "coordination.spec.cjs",
+      "title": "coordination: acquire renew release and reload preserve exact local lease identity",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "coordination.spec.cjs",
+      "title": "coordination: overlapping path rejects atomically and third-writer limit survives refresh",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "coordination.spec.cjs",
+      "title": "coordination: native SHA and TTL validity prevent requests; traversal cannot reserve outside fixture",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "coordination.spec.cjs",
+      "title": "modelos: invalid priorities never post; exact rank persists across reload without inference",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: choose an exact API ID while display name and preserved DSH alias remain distinct",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: preview separates requested nominal and per-batch limits, estimated input, unknown cost and evidence",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: failed keeps safe observed usage and distinguishes it from billing",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: cancelled keeps safe observed usage and distinguishes it from billing",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: completed keeps safe observed usage and distinguishes it from billing",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: a cancelled pending receipt continues local polling and unknown usage is not zero",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation-v8.spec.cjs",
+      "title": "v8 generation: documented Z.AI selection requires its own acknowledgement and changing ID clears it",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: exact plan needs one fresh approval and publishes exactly N profiles",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: rapid double prepare and confirm send one of each request",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: partial coverage warning belongs to the single authorization",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: #generation-tokens is locked during review and a replacement plan needs fresh approval",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: #generation-batch is locked during review and a replacement plan needs fresh approval",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: #generation-response-mode is locked during review and a replacement plan needs fresh approval",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: invalid #generation-tokens=4095 cannot prepare",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: invalid #generation-tokens=8192.5 cannot prepare",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: invalid #generation-batch=0 cannot prepare",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: invalid #generation-batch=33 cannot prepare",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: failed request downloads bounded diagnostic and retry only prepares",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: cancellation before consent never calls the inert provider",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: cancel while request waits prevents a late result from publishing",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "generation: reload resumes awaiting consent without remembering checked approval",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "recovery: saved config blocks exports then restores original bytes and keeps draft",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "recovery: failed redesign preserves identity and restore remains valid after saved-project reload",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "generation.spec.cjs",
+      "title": "recovery: late polling response cannot replace a successful restore",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: evidence has no score until independent review; correction preserves history",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: duplicate task and stale form reject atomically; discard refreshes draft version",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: promotion refuses one perfect sample without changing authority",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: succession refuses one perfect sample without changing authority",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: recognition requires supervisor then Owner declaration and changes no hierarchy or permissions",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "governance.spec.cjs",
+      "title": "governance: five reviewed samples permit promotion proposal and Owner rejection closes it",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: skill registration and feedback required fields block empty evidence without a POST",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: two manual feedback versions persist and historical project reload restores the original proposal",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: remediation prompt cancellations and invalid status leave the observation unchanged",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: remediation rejects a skipped step then persists proposed and testing as manual declarations",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: per-profile capability target changes invalidate review and discard keeps assignments empty",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: per-profile capability apply sends the reviewed hash and persists only exact inactive recipients",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: overlapping subteam selections preview and apply the exact deduplicated member union",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: editing a saved local capability creates an immutable new content version without reassigning the original",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "learning.spec.cjs",
+      "title": "habilidades: manual capability references reject unsafe URL forms locally and editor reset has no write",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: inicio page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: organigrama page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: perfiles page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: council page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: habilidades page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: modelos page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: repositorio page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: exportaciones page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: registro page and static control inventory",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: inicio at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: organigrama at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: perfiles at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: council at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: habilidades at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: modelos at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: repositorio at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: exportaciones at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: registro at 390px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: inicio at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: organigrama at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: perfiles at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: council at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: habilidades at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: modelos at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: repositorio at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: exportaciones at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: registro at 768px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: inicio at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: organigrama at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: perfiles at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: council at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: habilidades at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: modelos at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: repositorio at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: exportaciones at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "responsive: registro at 1440px",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "navigation: aliases and browser history preserve the active page",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "a11y: Spanish document, labelled visible controls and keyboard profile dialog",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "a11y: capabilities tabs use arrow, home, end and selected state",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "navigation.spec.cjs",
+      "title": "organigrama: zoom, filter, inspector cancel and hierarchy restore",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "inicio: source selection, readonly Council count and offline alternative",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "inicio: synthetic credential field clears, does not persist and can be forgotten",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "perfiles: search/filter and save a real dialog edit; dirty close needs a decision",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "perfiles: tool policy draft rejects overlap and resets without runtime changes",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "organigrama: subteam uses existing members and saves locally",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "council: save manual entry and close it without starting agents",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "habilidades: manual library item, local search and assignment preview",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "modelos: synthetic catalog, exact-ID selection and per-profile assignment",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "repositorio: synthetic inventory reads display scope without an LLM call",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "exportaciones: actual downloaded native JSON agrees on format, IDs, bytes and hashes",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "exportaciones: DSH guards and mocked readonly refresh never connect or launch",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "registro: actual receipt download identifies fixture provenance without secrets",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "inicio: save two project versions, reload old version, and save independent copy",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "perfiles: save exact proposed tool allow/deny and reopen without runtime grants",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "habilidades: assign, activate, deactivate and unassign require separate local previews",
+      "status": "NOT_RUN"
+    },
+    {
+      "file": "workflows.spec.cjs",
+      "title": "habilidades: evaluation controls expose limits and require a reviewed plan",
+      "status": "NOT_RUN"
+    }
+  ]
+}

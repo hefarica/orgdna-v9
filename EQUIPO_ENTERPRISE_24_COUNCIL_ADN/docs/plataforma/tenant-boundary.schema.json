@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:tenant-boundary:1",
+  "title": "TenantBoundary v1 - contrato congelado R0",
+  "description": "Contrato declarativo de Tenant Isolation (flujo I4, modulo destino engine/tenants.py). Declara que dominios estan aislados por inquilino y con que reglas. No contiene datos de ningun inquilino, no materializa almacenes y no abre conexiones.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "R0",
+  "frozen_at": "2026-10-10",
+  "version_field": "tenant_boundary_version",
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). Este contrato no nombra ningun campo de credencial y no admite valores de material sensible.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false + sensitive_values_stored const false.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Declarativo por defecto. Declarar una frontera no crea almacenes, no migra datos, no copia proyectos y no acredita aislamiento en runtime: solo fija la regla que las pruebas de I4 deben poder refutar.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "tenant_boundary_version": {
+      "const": "1",
+      "description": "Campo de version del contrato. Un valor distinto de \"1\" se rechaza."
+    },
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$"
+    },
+    "organization_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "UUID de la organizacion, coherente con engine/project_store.py:119-125."
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "isolated_domains": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "organizations",
+          "projects",
+          "sensitive_material",
+          "budgets",
+          "memories",
+          "artifacts"
+        ]
+      },
+      "description": "Dominios separados por inquilino. sensitive_material designa el dominio de material sensible (claves y secretos): se declara el dominio, nunca el valor."
+    },
+    "domain_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "organizations": {"$ref": "#/$defs/domain_rule"},
+        "projects": {"$ref": "#/$defs/domain_rule"},
+        "sensitive_material": {"$ref": "#/$defs/domain_rule"},
+        "budgets": {"$ref": "#/$defs/domain_rule"},
+        "memories": {"$ref": "#/$defs/domain_rule"},
+        "artifacts": {"$ref": "#/$defs/domain_rule"}
+      },
+      "required": [
+        "organizations",
+        "projects",
+        "sensitive_material",
+        "budgets",
+        "memories",
+        "artifacts"
+      ]
+    },
+    "sensitive_values_stored": {
+      "const": false,
+      "description": "Invariante: este contrato no almacena valores de material sensible. Solo referencias externas declaradas."
+    },
+    "cross_tenant_read": {
+      "const": false,
+      "description": "Invariante: un inquilino no lee datos de otro."
+    },
+    "shared_tenants": {
+      "const": [],
+      "description": "Invariante: ningun dominio se comparte entre inquilinos. Compartir exigiria otra version de contrato."
+    },
+    "project_ids": {
+      "type": "array",
+      "default": [],
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+      }
+    },
+    "declared_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "money_usd_max": {"type": ["number", "null"], "minimum": 0},
+        "tokens_max": {"type": ["integer", "null"], "minimum": 0},
+        "network_allowed": {"const": false}
+      },
+      "required": ["network_allowed"]
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "tenant_boundary_version",
+    "tenant_id",
+    "organization_id",
+    "isolated_domains",
+    "domain_rules",
+    "sensitive_values_stored",
+    "cross_tenant_read",
+    "shared_tenants",
+    "created_at"
+  ],
+  "$defs": {
+    "domain_rule": {
+      "title": "Regla por dominio aislado",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "store_kind": {
+          "enum": ["none", "local_directory", "in_memory"],
+          "description": "Forma de almacenamiento declarada. none significa que el dominio no se materializa en este contrato."
+        },
+        "cross_tenant_read": {"const": false},
+        "shared_between_tenants": {"const": false},
+        "exported_in_package": {
+          "type": "boolean",
+          "description": "false para los dominios que nunca entran en el ZIP o el export DSH."
+        }
+      },
+      "required": [
+        "store_kind",
+        "cross_tenant_read",
+        "shared_between_tenants",
+        "exported_in_package"
+      ]
+    },
+    "isolation_rules": {
+      "title": "Reglas congeladas de aislamiento v1",
+      "description": "Anotacion normativa para I4 (engine/tenants.py).",
+      "type": "object",
+      "properties": {
+        "read_rule": {
+          "const": "toda lectura lleva tenant_id explicito; sin coincidencia exacta se deniega con error tipado, nunca con una lista vacia silenciosa"
+        },
+        "default_exported_domains": {
+          "const": ["organizations", "projects", "artifacts"]
+        },
+        "never_exported_domains": {
+          "const": ["sensitive_material", "memories"]
+        },
+        "error_codes": {
+          "const": [
+            "unknown_tenant",
+            "cross_tenant_denied",
+            "boundary_version_unsupported",
+            "domain_not_declared",
+            "sensitive_domain_not_materializable"
+          ]
+        },
+        "opens_connections": {"const": false}
+      }
+    }
+  }
+}

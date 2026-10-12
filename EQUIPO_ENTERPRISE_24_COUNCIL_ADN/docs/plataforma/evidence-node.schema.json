@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:evidence-node:1",
+  "title": "EvidenceNode v1 - contrato congelado R0",
+  "description": "Contrato declarativo del Evidence Graph (flujo I2, modulo destino engine/evidence_graph.py). Un nodo liga una afirmacion a referencias verificables (archivo, resultado de tool, prueba, decision o registro humano) y a aristas de soporte o contradiccion. Verificar este documento no ejecuta ninguna prueba.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "R0",
+  "frozen_at": "2026-10-10",
+  "version_field": "evidence_node_version",
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). Ningun nombre de este contrato coincide con esa lista.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false. Una referencia a evidencia es una ruta, un hash o una etiqueta; nunca un valor de credencial ni una cabecera de autorizacion.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Declarativo por defecto. Un nodo de evidencia registrado no prueba por si mismo que una accion ocurriera, que una prueba se ejecutara ni que un archivo se leyera: solo registra la referencia y su hash declarado.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "evidence_node_version": {
+      "const": "1",
+      "description": "Campo de version del contrato. Un valor distinto de \"1\" se rechaza."
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+    },
+    "node_kind": {
+      "enum": ["claim", "evidence", "decision"],
+      "description": "claim afirma y requiere veredicto; evidence aporta bytes o resultados; decision registra una eleccion humana o de politica."
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "description": "Texto afirmado. Debe ser localizable en la evidencia referenciada, sin parafrasear la conclusion."
+    },
+    "verdict": {
+      "enum": ["supported", "unevidenced", "insufficient", "contradicted"],
+      "description": "Veredicto derivado por la regla congelada de $defs.verdict_rules. Nunca se eleva a supported por conveniencia."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "default": [],
+      "items": {"$ref": "#/$defs/evidence_ref"}
+    },
+    "edges": {
+      "type": "array",
+      "default": [],
+      "items": {"$ref": "#/$defs/edge"},
+      "description": "Aristas de soporte, contradiccion o dependencia hacia otros nodos."
+    },
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+      "description": "Frontera de inquilino (contrato memory-record y tenant-boundary). Un nodo sin inquilino no es valido."
+    },
+    "plane": {
+      "enum": ["execution", "project", "organizational", "personal"],
+      "description": "Plano de memoria al que pertenece el nodo, coherente con el contrato memory-record."
+    },
+    "created_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    },
+    "superseded_by": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Un nodo no se edita: se supera. null significa vigente."
+    }
+  },
+  "required": [
+    "evidence_node_version",
+    "node_id",
+    "node_kind",
+    "statement",
+    "verdict",
+    "evidence_refs",
+    "edges",
+    "tenant_id",
+    "created_at"
+  ],
+  "$defs": {
+    "evidence_ref": {
+      "title": "Referencia de evidencia tipada",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "kind": {
+          "enum": ["file", "api_result", "tool_result", "test", "decision", "human_record"]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "description": "Ruta relativa, identificador de resultado local o etiqueta de registro. No admite URL con credenciales embebidas."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Rango o selector dentro de la referencia (por ejemplo 'lineas 19-46')."
+        },
+        "observed_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false,
+          "description": "true solo si el hash o el resultado se recomprobo en la misma ejecucion."
+        }
+      },
+      "required": ["kind", "ref"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {"kind": {"const": "file"}},
+            "required": ["kind"]
+          },
+          "then": {"required": ["sha256"]}
+        },
+        {
+          "if": {
+            "properties": {"kind": {"const": "test"}},
+            "required": ["kind"]
+          },
+          "then": {"required": ["observed_at"]}
+        }
+      ]
+    },
+    "edge": {
+      "title": "Arista tipada entre nodos",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "target_node_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+        },
+        "relation": {
+          "enum": ["supports", "contradicts", "depends_on"]
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 600
+        }
+      },
+      "required": ["target_node_id", "relation"]
+    },
+    "verdict_rules": {
+      "title": "Regla congelada de veredicto v1",
+      "description": "Anotacion normativa para I2. Se evalua en este orden; el primer caso aplicable gana.",
+      "type": "object",
+      "properties": {
+        "contradicted": {
+          "const": "existe al menos una arista con relation=contradicts"
+        },
+        "supported": {
+          "const": "hay al menos una evidencia con verified=true, hash de 64 hex recomprobado y ninguna contradiccion"
+        },
+        "unevidenced": {
+          "const": "evidence_refs esta vacio"
+        },
+        "insufficient": {
+          "const": "hay referencias pero ninguna con verified=true y hash recomprobado"
+        },
+        "never_implied": {
+          "const": "la ausencia de evidencia no se convierte en supported ni en contradicted"
+        }
+      }
+    }
+  }
+}

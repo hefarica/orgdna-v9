@@ -1,0 +1,39 @@
+{
+  "format": "orgdna/third-party-launcher-provenance",
+  "version": 1,
+  "source_archive": "DSH_REINICIAR_ENTREGA_1_1_1.zip",
+  "source_archive_sha256": "92efe1844ac87e69df24c9fcc1898e79c7e3777775d02f442e0e0bd66c2d1e8f",
+  "selected_variant": "fuente/DSH_REINICIAR.exe",
+  "files": [
+    {
+      "source_member": "DSH_REINICIAR_ENTREGA_1_1_1/fuente/DSH_REINICIAR.exe",
+      "package_path": "relanzador_dsh/DSH_REINICIAR.exe",
+      "bytes": 52224,
+      "sha256": "c149d0bf8b7d7a14ce81f7008a6c8b98dc02aa78aecb708342138093eeeb3fd0"
+    },
+    {
+      "source_member": "DSH_REINICIAR_ENTREGA_1_1_1/fuente/core.cjs",
+      "package_path": "relanzador_dsh/fuente/core.cjs",
+      "bytes": 32924,
+      "sha256": "1384b5b46376f5f2ef53f7320fc1604dce4d099ac33a5166f9476765f6d0065a"
+    },
+    {
+      "source_member": "DSH_REINICIAR_ENTREGA_1_1_1/fuente/Launcher.cs",
+      "package_path": "relanzador_dsh/fuente/Launcher.cs",
+      "bytes": 26926,
+      "sha256": "4b3eb5d4a933f81773289f0418f91514c0d1df199668f7b62201d18674750253"
+    },
+    {
+      "source_member": "DSH_REINICIAR_ENTREGA_1_1_1/fuente/app.manifest",
+      "package_path": "relanzador_dsh/fuente/app.manifest",
+      "bytes": 742,
+      "sha256": "5a6967b47b95486273ce6525058e9cf8dc2e443de67ad6572f944a33f230f956"
+    }
+  ],
+  "review_scope": "Static source and embedded payload inspection only. Source-archive build metadata is supporting evidence, not an independent reproducible build.",
+  "executed_in_cloud": false,
+  "executed_on_user_computer": false,
+  "windows_execution_verified": false,
+  "included_archive_logs_or_receipts": false,
+  "warning": "El relanzador puede detener procesos y modificar datos locales. Revisar ruta, identidad, backup y acción antes de autorizar. Incluir el archivo no lo ejecuta."
+}

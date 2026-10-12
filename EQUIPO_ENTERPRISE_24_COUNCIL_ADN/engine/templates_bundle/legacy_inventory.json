@@ -1,0 +1,218 @@
+{
+  "source_archive_name": "EQUIPO_ENTERPRISE_21_PERFILES(2).zip",
+  "source_archive_sha256": "9376b6830fb5224ab13b956b6fe9d3e8022e2bcc5ad7351c6bda8542b626ab9d",
+  "source_entry_count": 42,
+  "inspection": "All 42 entries were read as UTF-8 data and CRC checked; no old script was executed. Historical project contents are not republished.",
+  "entries": [
+    {
+      "source_file": "00_DIRECTRIZ_COMUN.txt",
+      "source_bytes": 16285,
+      "source_sha256": "cab2a1897aeff70f49cc6dc51f9ab55df2380973825e28c671657ac5e7467d46"
+    },
+    {
+      "source_file": "01_PROTOCOLO_DE_COORDINACION.md",
+      "source_bytes": 8985,
+      "source_sha256": "ca4eac55e2986257f8120ff64bc6d7edf2d08f728e78b85561122bade1e50b30"
+    },
+    {
+      "source_file": "02_FUENTES_Y_ALCANCE.md",
+      "source_bytes": 4958,
+      "source_sha256": "fb087a5876ce6ac3bbc02034d06fe5479376b24a2afcd8febc1d1100a276b0ff"
+    },
+    {
+      "source_file": "03_CATALOGO_DOCUMENTAL.json",
+      "source_bytes": 183260,
+      "source_sha256": "8e224c6c053e784318ab1b80c3d9cb496353d5b437d483d99394bac48ccb26b5"
+    },
+    {
+      "source_file": "04_CONTROL_DE_LONGITUD.txt",
+      "source_bytes": 2645,
+      "source_sha256": "8fe508c4ba071b62440ab01dab3ba9845adab24c1466fcd0e7979dc39df2fd34"
+    },
+    {
+      "source_file": "05_ROLES_Y_MISIONES.md",
+      "source_bytes": 67652,
+      "source_sha256": "340c6f57a510a8557ab6127a5be000c8151e8d983ff8522055c91517b1573093"
+    },
+    {
+      "source_file": "06_VERIFICACION_DEL_PAQUETE.txt",
+      "source_bytes": 5607,
+      "source_sha256": "d03a7daf12eb25c1ca83667c2cabbec2a415a272acd7ede291c50225eb0e20d8"
+    },
+    {
+      "source_file": "07_APRENDIZAJE_Y_HABILIDADES.txt",
+      "source_bytes": 7162,
+      "source_sha256": "62b170cd8182f44c981c623bf463a6c318c1fc7381a5f857c1225059a8a515cc"
+    },
+    {
+      "source_file": "AGENT_TEAM_DEFINITIONS_21.json",
+      "source_bytes": 591075,
+      "source_sha256": "ecd6db11bb6bca5ca067bfc652a4f16ace54efa41900daa29c932b5a1509ec32"
+    },
+    {
+      "source_file": "AGENT_TEAM_RECIPE_21.json",
+      "source_bytes": 590983,
+      "source_sha256": "3177cd79eced5ce09238ab23c5d96d2eb7cad0b8dfabd656f44bf0a06730415c"
+    },
+    {
+      "source_file": "COLLAB_NOTE_EQUIPO_21.txt",
+      "source_bytes": 4830,
+      "source_sha256": "1f21363c720373bd58f9b8ec97fad358fa49bb237f4e33f5402b0b6d6ed94397"
+    },
+    {
+      "source_file": "DIRECTRIZ_COLABORACION_21.txt",
+      "source_bytes": 2243,
+      "source_sha256": "c802c79286581446a4996020cab5a9ba683ac99bd965fed43cbfda2c165f04e4"
+    },
+    {
+      "source_file": "EQUIPO_ENTERPRISE_21_PROMPTS_COMPLETOS.md",
+      "source_bytes": 592847,
+      "source_sha256": "a072f3cbd2b8173da0acba68641735d8f3dbc7a8088212e6e8942fda2749b26b"
+    },
+    {
+      "source_file": "IMPORTAR_LEEME.txt",
+      "source_bytes": 6169,
+      "source_sha256": "0126e43c79ab989309b3c4ef79c44bffed0c52674d50f8d94817510649f8218e"
+    },
+    {
+      "source_file": "MANIFIESTO_SHA256.txt",
+      "source_bytes": 3795,
+      "source_sha256": "849cb907cb419a6473221ff4f522a2fba9ff5ee7fc5e77e62a92e335e155d150"
+    },
+    {
+      "source_file": "PRESERVACION_Y_NOVEDADES.md",
+      "source_bytes": 9442,
+      "source_sha256": "54598c6880abcfed92561a7866d83406190b283b928410f4cde02e52fad5bdf9"
+    },
+    {
+      "source_file": "PROMPT_MAESTRO_21.txt",
+      "source_bytes": 17312,
+      "source_sha256": "b0cd7c2b109e88619af8996a1ef986c9d0a06239b86f42c3405c587631178fc7"
+    },
+    {
+      "source_file": "RESUMEN_EQUIPO_ENTERPRISE_21.txt",
+      "source_bytes": 6804,
+      "source_sha256": "e02a1d833542a1c5b89073f60b8a1513f04b2000a2285c9604763865bdf97dc6"
+    },
+    {
+      "source_file": "VISOR_DE_PERFILES.html",
+      "source_bytes": 620755,
+      "source_sha256": "a5f4ea5491b0b71028cc53a5bbc12b54d28ac85cfbbc28a8245226ef8a62ae88"
+    },
+    {
+      "source_file": "final_schema_validation_public.json",
+      "source_bytes": 24786,
+      "source_sha256": "3a2d82c88c4bba78115861a6630db49860ee2c9ad42e1cb6c558e8893fea1dbd"
+    },
+    {
+      "source_file": "prompts/01_Planner.txt",
+      "source_bytes": 29905,
+      "source_sha256": "fcdc2c93cde0c59606fee8799235ffcefd24ffcf2dd66a0b57051dff7055af0b"
+    },
+    {
+      "source_file": "prompts/02_Implementer.txt",
+      "source_bytes": 28752,
+      "source_sha256": "f7c925802af96aded678cd4b778f39f65d2903ce5a4e261f38cdd7eade935022"
+    },
+    {
+      "source_file": "prompts/03_Reviewer.txt",
+      "source_bytes": 28470,
+      "source_sha256": "a1e4044c7564aa5dea2fe9d8213573191e5487eb1021adb7688c38af4b81e971"
+    },
+    {
+      "source_file": "prompts/04_Architect.txt",
+      "source_bytes": 27833,
+      "source_sha256": "63dd24e533ee6d9b7af70369b0ad9949db251c9d0eb9f25ea4ab2545427e28f8"
+    },
+    {
+      "source_file": "prompts/05_Backend.txt",
+      "source_bytes": 28018,
+      "source_sha256": "f7696dacd3044d61e35b4bd56b38c99024d486ceda2c796da486a4aac6e7a082"
+    },
+    {
+      "source_file": "prompts/06_Frontend.txt",
+      "source_bytes": 27911,
+      "source_sha256": "52a12eb166c88f6201bb6f97065e1502ce4216069a6329316862718c93b8983e"
+    },
+    {
+      "source_file": "prompts/07_Data.txt",
+      "source_bytes": 27708,
+      "source_sha256": "aa2f0c5495b4b80bd621fb09c30632511a26419cc750c880c71c2ff0e163c01b"
+    },
+    {
+      "source_file": "prompts/08_Integration.txt",
+      "source_bytes": 28267,
+      "source_sha256": "821513a6af364f2641040ead03e6372798457c07662f4e8b87a086223da8d3ba"
+    },
+    {
+      "source_file": "prompts/09_Quant.txt",
+      "source_bytes": 27985,
+      "source_sha256": "5454a925c2d81851e1d78c788d0daf907994c99d6c32e4ca2b033113794ed67c"
+    },
+    {
+      "source_file": "prompts/10_Contracts.txt",
+      "source_bytes": 27322,
+      "source_sha256": "5e94ec1acdba2a6c36d5dae01f307ecbe1da0600ca05a1cde7731e3d31589fa7"
+    },
+    {
+      "source_file": "prompts/11_Security.txt",
+      "source_bytes": 27427,
+      "source_sha256": "5f315a6fb7fe114d60db30929d0aafb2295cba73370ef89b182e82924b6b80a7"
+    },
+    {
+      "source_file": "prompts/12_QA.txt",
+      "source_bytes": 27366,
+      "source_sha256": "cc195e42d3668be90db527a35b426e2e384fe7ff8cc5caa958f8ad4deb5ec5b7"
+    },
+    {
+      "source_file": "prompts/13_Performance.txt",
+      "source_bytes": 26474,
+      "source_sha256": "56876dcf5e81132e8ee99bf3ff858df48a2aa905ae29d11a1c64838885c805b3"
+    },
+    {
+      "source_file": "prompts/14_SRE.txt",
+      "source_bytes": 26618,
+      "source_sha256": "b90e38f3578bfa974fa6de0e47c05bbd59ad604146bbfd6452039e09e887d114"
+    },
+    {
+      "source_file": "prompts/15_Release.txt",
+      "source_bytes": 26447,
+      "source_sha256": "d72e443f8bf23ab1fec9e7dfc4251a8fe3e10e6ecc6ebbb3bef3afe9dc4673cf"
+    },
+    {
+      "source_file": "prompts/16_Ledger.txt",
+      "source_bytes": 27554,
+      "source_sha256": "f362922c74ac7677db3f6c556022dd743417a1e645f4e55434b9772e935465fc"
+    },
+    {
+      "source_file": "prompts/17_GraphRouting.txt",
+      "source_bytes": 26450,
+      "source_sha256": "6719b738b6a1e54446f283979f48efac7b6711c99138d82a7837c3e6783cfd5c"
+    },
+    {
+      "source_file": "prompts/18_MarketMicrostructure.txt",
+      "source_bytes": 26236,
+      "source_sha256": "bf958a768a4062df898a25f2a0c06e87bc8adeb85191060f0120c157cfcac45f"
+    },
+    {
+      "source_file": "prompts/19_AIEngineering.txt",
+      "source_bytes": 26917,
+      "source_sha256": "18a0272c4e5b5e70b599a11794cf9071e08d88925fbabe18f5f765528eaf6dd8"
+    },
+    {
+      "source_file": "prompts/20_Specification.txt",
+      "source_bytes": 26408,
+      "source_sha256": "dcb32a3e6ed1c72a0547efd75f72616cb80532c332ac449239bfb37d28c4b9a7"
+    },
+    {
+      "source_file": "prompts/21_PersonalOps.txt",
+      "source_bytes": 26688,
+      "source_sha256": "e2894d0ec5856428367d02dc9986f33e17e7785085b8876679301bb74686f3e9"
+    },
+    {
+      "source_file": "validate_imports_portable.cjs",
+      "source_bytes": 14125,
+      "source_sha256": "845f80b999b045cae18a3231b1d870878a0c3a3ffc3b83e7b2f885735303ca53"
+    }
+  ]
+}

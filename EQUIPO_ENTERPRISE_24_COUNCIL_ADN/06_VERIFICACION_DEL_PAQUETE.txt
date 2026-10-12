@@ -1,0 +1,9 @@
+VERIFICACIÓN DEL PAQUETE
+
+Validación offline al generar: organización, recipe v1, definitions v2, mismos 24 agentes/prompts en ambas fases, dos squads con referencias íntegras, longitudes y formatos estrictos. El validador del paquete revisa CRC, SHA-256, mapa histórico, prompts individuales, datos del visor y allowlist del motor.
+
+Repetir: python validate_imports_portable.py
+O: python validate_imports_portable.py ruta_al_paquete.zip
+Python 3.10+, biblioteca estándar. No usa red ni ejecuta el repositorio, skills o scripts históricos. MANIFIESTO_SHA256.txt cubre todos los archivos salvo el propio manifiesto; detecta alteración accidental, no es una firma de identidad del autor. agent-team-export-manifest.json contiene los hashes exactos de los JSON DSH, sin añadir claves a sus esquemas ni intentar incluir su propio hash o el del ZIP. El UUID del nombre de recipe identifica el squad, no su contenido. Ver docs/export_artifacts.md.
+
+NO VERIFICADO por generar este ZIP: importación real DSH, disponibilidad de modelos en la cuenta, runtime de agentes, ACL, pruebas del proyecto, aprendizaje efectivo, macros/COM de Excel, interfaz en un navegador real o rentabilidad. El libro no contiene macros; requiere el motor local para tareas que no son fórmulas.

@@ -1,0 +1,31 @@
+CONTROL DE LONGITUD · 24 agentes
+
+Planner: 26413 UTF-16; 26756 bytes UTF-8
+Architect: 26348 UTF-16; 26681 bytes UTF-8
+QA: 26374 UTF-16; 26717 bytes UTF-8
+PersonalOps: 26168 UTF-16; 26506 bytes UTF-8
+Implementer: 26449 UTF-16; 26789 bytes UTF-8
+Backend: 26282 UTF-16; 26610 bytes UTF-8
+Frontend: 26487 UTF-16; 26829 bytes UTF-8
+Reviewer: 25996 UTF-16; 26329 bytes UTF-8
+Security: 25903 UTF-16; 26234 bytes UTF-8
+EvidenceAuditor: 25583 UTF-16; 25908 bytes UTF-8
+SRE: 25388 UTF-16; 25717 bytes UTF-8
+Ledger: 26197 UTF-16; 26541 bytes UTF-8
+Release: 25372 UTF-16; 25716 bytes UTF-8
+Data: 25771 UTF-16; 26093 bytes UTF-8
+Integration: 25523 UTF-16; 25846 bytes UTF-8
+Contracts: 26010 UTF-16; 26345 bytes UTF-8
+Quant: 27526 UTF-16; 27888 bytes UTF-8
+GraphRouting: 25616 UTF-16; 25952 bytes UTF-8
+MarketMicrostructure: 26236 UTF-16; 26575 bytes UTF-8
+BrowserE2E: 25503 UTF-16; 25826 bytes UTF-8
+ModeParity: 25591 UTF-16; 25912 bytes UTF-8
+AIEngineering: 26058 UTF-16; 26389 bytes UTF-8
+Specification: 25786 UTF-16; 26127 bytes UTF-8
+Performance: 25705 UTF-16; 26026 bytes UTF-8
+
+Límite emitido systemPrompt: <50000 UTF-16.
+Implementation collabNote: 5347 UTF-16.
+Council collabNote: 5407 UTF-16.
+Límite de notas emitidas: <8000 UTF-16. Cada JSON principal <4 MiB.

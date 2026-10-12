@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:local:evidence-contract:1.0",
+  "title": "Evidencia local OrgDNA; no es un schema de recipe DSH",
+  "type": "object",
+  "required": [
+    "evidence_id",
+    "run_id",
+    "case_id",
+    "requirement_id",
+    "actor_id",
+    "candidate_hash",
+    "environment",
+    "source",
+    "observation_method",
+    "required_capability",
+    "status",
+    "started_at",
+    "finished_at",
+    "expected",
+    "observed",
+    "invocation",
+    "artifacts"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requirement_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "actor_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "candidate_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[a-f0-9]{40}([a-f0-9]{24})?$",
+      "description": "null sólo para BLOCKED/NOT_RUN si no se pudo identificar el candidato; explicar en limitations."
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "label",
+        "configuration_hash",
+        "tools"
+      ],
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "configuration_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "null sólo para BLOCKED/NOT_RUN, con motivo en limitations."
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "status"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "AVAILABLE",
+                  "NOT_REGISTERED",
+                  "DENIED",
+                  "DEPENDENCY_MISSING",
+                  "UNREACHABLE"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "enum": [
+        "real",
+        "mock",
+        "static"
+      ]
+    },
+    "observation_method": {
+      "enum": [
+        "browser_playwright",
+        "browser_rdc",
+        "http",
+        "unit_test",
+        "integration_test",
+        "static_inspection",
+        "manual_observation",
+        "not_observed"
+      ]
+    },
+    "required_capability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN"
+      ]
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "expected": {
+      "type": "string",
+      "minLength": 1
+    },
+    "observed": {
+      "type": "string",
+      "minLength": 1
+    },
+    "invocation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Comando o herramienta real con argumentos sin secretos; null si no se ejecutó."
+    },
+    "exit_code": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "timeout_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "correlation_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "redacted": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "independent_reviewer_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "PASS",
+              "FAIL"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "candidate_hash": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string"
+          },
+          "finished_at": {
+            "type": "string"
+          },
+          "invocation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "environment": {
+            "properties": {
+              "configuration_hash": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "candidate_hash": {
+            "type": "null"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "limitations"
+        ],
+        "properties": {
+          "limitations": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "environment": {
+            "properties": {
+              "configuration_hash": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "limitations"
+        ],
+        "properties": {
+          "limitations": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

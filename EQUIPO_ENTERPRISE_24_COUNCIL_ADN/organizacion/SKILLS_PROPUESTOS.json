@@ -1,0 +1,1882 @@
+{
+  "status": "PROPOSED_NOT_INSTALLED",
+  "skills": [],
+  "professions": [],
+  "profile_competencies": [
+    {
+      "id": "bb4f7927-7d2f-4ff7-a467-dc999ac59c2a",
+      "skills": [
+        {
+          "id": "4237f721-34c6-5a88-93f8-cbcb058d8719",
+          "name": "Planificación DAG",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "715b4048-2e0a-5640-a043-99e43c9973f5",
+          "name": "Gestión de riesgos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "9cd1941a-8256-54b1-86db-f48fd7844e90",
+          "name": "Diseño organizacional",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "7c65ae99-5c83-560e-ab9c-aaf1ddc2aa4e",
+          "name": "Priorización basada en evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "652c1b23-a5c6-5722-a26c-705b204994c4",
+          "name": "Decisiones de producto",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f",
+      "skills": [
+        {
+          "id": "4bd984c4-4e83-5b3e-bb1f-48ff2a98e3dc",
+          "name": "Arquitectura de software",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "964e2f61-9731-5573-b4df-6febb93631bd",
+          "name": "Modelado de estados",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1612b603-5b00-5126-9e0b-e53950baf49e",
+          "name": "Contratos API",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "56b3f35a-3f73-5c67-901b-1c957e2a20e7",
+          "name": "Consistencia distribuida",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1c090a2d-5a7a-5141-baf8-f83203f7081e",
+          "name": "Análisis de decisiones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "d37e22a3-3427-53f5-a11b-2f741d9ee58a",
+      "skills": [
+        {
+          "id": "a0f02646-0add-5233-b8ce-da381f6af474",
+          "name": "Diseño de pruebas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "5a55fc5e-b0fd-52fc-b392-ff4af0dac554",
+          "name": "Pruebas de integración",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "f3c8196a-f80b-5461-80fc-27ad2e6a7e99",
+          "name": "Pruebas de propiedades",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c927951e-97d4-53be-882e-331c450ba18c",
+          "name": "Regresión",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "d4288a57-2b8e-542b-bb5e-a330699503bb",
+          "name": "Criterios de aceptación",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "039fa8c8-ba62-5929-837c-dd6480445976",
+      "skills": [
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "ded9ec67-0d43-53c6-ac44-434e2f3a63e5",
+          "name": "Priorización",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "8f8ffd74-b5aa-5608-9226-12a3a21ab77d",
+          "name": "Comunicación de riesgos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "d61726fd-a17d-503f-b0da-371eeea648bf",
+          "name": "Gestión de autorizaciones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "7b735bcd-83a0-512d-b071-f17ff9555c94",
+          "name": "Diseño de procesos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "8869c04c-628b-4bc3-a46c-25acb993b698",
+      "skills": [
+        {
+          "id": "4bd984c4-4e83-5b3e-bb1f-48ff2a98e3dc",
+          "name": "Arquitectura de software",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "bd0de05d-88bd-5a88-8e05-efb351276f6c",
+          "name": "Entrega vertical",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "60dd320f-f36f-5207-9572-513e95d43767",
+          "name": "Revisión técnica",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1612b603-5b00-5126-9e0b-e53950baf49e",
+          "name": "Contratos API",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "a0f02646-0add-5233-b8ce-da381f6af474",
+          "name": "Diseño de pruebas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "04bb8901-fa3c-545a-878b-a3cf462e3a65",
+      "skills": [
+        {
+          "id": "a939f262-2b6a-5566-b55f-b43dd143c982",
+          "name": "Servicios backend",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1cb3b4f8-22d2-5a47-94b6-b8ac9a59ca9d",
+          "name": "Concurrencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "24a6633e-a5f8-588c-ae60-2a55c8f9132b",
+          "name": "Idempotencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1612b603-5b00-5126-9e0b-e53950baf49e",
+          "name": "Contratos API",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "d28d2e1d-94c6-55cf-96e3-502260dadeb1",
+      "skills": [
+        {
+          "id": "6bb2d326-3506-57c2-bfac-a0101bb3651a",
+          "name": "Interfaz web",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "719d5bae-b403-5268-bcfc-101f02c8e4f7",
+          "name": "Accesibilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c751ce6c-63e8-53e4-8559-bc559738f214",
+          "name": "Gestión de estado",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "7d0987e7-db55-5798-bf76-6535728cbbbb",
+          "name": "Streaming",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "78c896e2-84be-5e05-97bc-c1958a942735",
+          "name": "Pruebas de interfaz",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "8453288b-95e1-456f-8bf5-07f2567c2e90",
+      "skills": [
+        {
+          "id": "c612b7a5-b982-5386-abd2-fa9177ceb09b",
+          "name": "Revisión independiente",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "b5892ca2-4c08-5ab5-8f83-68172840625c",
+          "name": "Análisis de contraejemplos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "66a31cbb-499f-5d5b-b2fb-f70bc9cc6a9f",
+          "name": "Análisis de riesgo",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "a0f02646-0add-5233-b8ce-da381f6af474",
+          "name": "Diseño de pruebas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0f5f2798-bd44-5d4f-9b0c-dbc197d4ae47",
+          "name": "Supervisión técnica",
+          "level": "liderazgo objetivo; pendiente de evaluación",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Debe demostrar delegación, feedback y revisión sin conflicto.",
+          "source": "hierarchy_assignment"
+        }
+      ]
+    },
+    {
+      "id": "24234d32-aec2-5b8f-8aa9-3dbf492c3c3c",
+      "skills": [
+        {
+          "id": "b30c05e7-1e16-5ae2-b5be-296fe79d81ac",
+          "name": "Modelado de amenazas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "97bdc01a-6c3c-588d-a816-d93c244a41c7",
+          "name": "Autorización",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "d5469a71-6282-5b52-abda-3053235364c3",
+          "name": "Gestión de secretos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "afb3176d-14b0-5d94-8093-d89d4e1b1d88",
+          "name": "Inyección de instrucciones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c78a1452-ee6e-57b9-a5e2-06b1e106ca37",
+          "name": "Seguridad de dependencias",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "2afbda5b-fcb1-55de-aac1-1d3a29e2662b",
+      "skills": [
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c612b7a5-b982-5386-abd2-fa9177ceb09b",
+          "name": "Revisión independiente",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9f742ff-9efd-5f3f-bbbd-0fc014d43c75",
+          "name": "Integridad de artefactos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "b5892ca2-4c08-5ab5-8f83-68172840625c",
+          "name": "Análisis de contraejemplos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6fff7b35-c8e9-5f65-b895-28f1287fcf0f",
+          "name": "Gestión de gates",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "d345c7bf-a05e-58bb-a434-412a8e018900",
+      "skills": [
+        {
+          "id": "4926fe20-8dfa-57e1-aada-1ffebe1520db",
+          "name": "Observabilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "197ff2d9-763c-5cc6-9bbf-7478df7c492a",
+          "name": "Respuesta a incidentes",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "18333bc8-849f-5437-a764-7b93ef961983",
+          "name": "Recuperación",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "bf708762-9c18-5fa8-974e-8076c9e98d94",
+          "name": "SLO",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "46d41452-fb3c-53ef-aeeb-54aba3af49c1",
+          "name": "Operación segura",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "07345392-10e4-596b-8261-723199a106c2",
+      "skills": [
+        {
+          "id": "a7adef04-e92e-54d3-ae94-7e86a22de3a5",
+          "name": "Conciliación",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "583cf9b7-c06c-534b-9281-e01ec51e9833",
+          "name": "Contabilidad de eventos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "963555e3-2c14-5478-ac44-42efb5831990",
+          "name": "Precisión numérica",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "73e7eed3-d208-57e6-9739-2e1c043bc759",
+          "name": "Análisis dimensional",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "671a9d2a-3d9b-59c7-a72d-d2bb53363c01",
+      "skills": [
+        {
+          "id": "c91ad187-0977-5b56-a1d9-669ba07da26d",
+          "name": "Gestión de releases",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "d4aa5146-7b68-5971-b172-7c9aab908cf1",
+          "name": "Control de versiones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "aebf893b-a31e-560e-8393-94a59de4904d",
+          "name": "Integración continua",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "846fa049-d431-5fee-b9ee-5d81bab36b22",
+          "name": "Rollback",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "8f84f6cf-d4b7-5f4a-9aeb-a30f105a19bb",
+          "name": "Verificación de despliegue",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "fecfbc1e-c2cd-54a1-a338-63717e2da523",
+      "skills": [
+        {
+          "id": "1ce836c7-1273-5826-8e77-7cacbb84cb39",
+          "name": "Modelado de datos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1a444460-53ea-59cb-b071-cf5836cc93b9",
+          "name": "Migraciones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "fd6383cc-d3bd-533b-9ca3-6bc625af53f0",
+          "name": "Calidad de datos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "963555e3-2c14-5478-ac44-42efb5831990",
+          "name": "Precisión numérica",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "43abe2b4-f748-53e0-9f99-2643de330a61",
+          "name": "Proveniencia de datos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "1379d506-d159-59a8-9f7b-7e017d2f464d",
+      "skills": [
+        {
+          "id": "3bfa63d3-97b7-540b-acc5-6e793a60f0f7",
+          "name": "Integraciones externas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1612b603-5b00-5126-9e0b-e53950baf49e",
+          "name": "Contratos API",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6637d5c1-2ce8-5117-9649-6cdb3f7cda02",
+          "name": "Límites y cuotas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "ad1d9b9e-0cfb-5c3b-904e-a556d00f2e28",
+          "name": "Reintentos seguros",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0256d4bb-84ed-5c63-95a4-600ca7cb8a8a",
+          "name": "Pruebas de contrato",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "3de093dc-2587-582d-9d90-d593478fc65a",
+      "skills": [
+        {
+          "id": "f1ae1731-5391-5c52-a03f-69a2bc423722",
+          "name": "Contratos inteligentes",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "12d9578d-7611-5700-80b8-f86972f51cc0",
+          "name": "Atomicidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "86a470db-0160-5278-a614-41068d45f73f",
+          "name": "Máquinas de estado",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "81584bf6-e593-58a7-b944-ca991c7acd4b",
+          "name": "Análisis estático",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "f3c8196a-f80b-5461-80fc-27ad2e6a7e99",
+          "name": "Pruebas de propiedades",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "3c77aa48-d378-5352-b961-686581792862",
+      "skills": [
+        {
+          "id": "2bba3ca1-4375-5295-9142-7466a6567859",
+          "name": "Validación matemática",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "73e7eed3-d208-57e6-9739-2e1c043bc759",
+          "name": "Análisis dimensional",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "5e3ef7a0-cdd6-5ea9-85e0-9e8a0eb98723",
+          "name": "Estadística",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "9f79a24a-7639-5400-a902-7a40d64bb98c",
+          "name": "Optimización",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "963555e3-2c14-5478-ac44-42efb5831990",
+          "name": "Precisión numérica",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "c8fe5355-4371-5e3f-8a3f-160bcb90fdbb",
+      "skills": [
+        {
+          "id": "e863a86f-a5d2-5f42-aebd-3208b80e3bdc",
+          "name": "Algoritmos de grafos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "de6b164e-c335-587f-9aef-bb63f3e12c8a",
+          "name": "Búsqueda",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "9f79a24a-7639-5400-a902-7a40d64bb98c",
+          "name": "Optimización",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "bd04b569-9008-5f50-8a10-9a51f9aeb472",
+          "name": "Consistencia de snapshots",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "f3c8196a-f80b-5461-80fc-27ad2e6a7e99",
+          "name": "Pruebas de propiedades",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "c4c6a704-6b59-5c0c-b8bc-53edb6d2f769",
+      "skills": [
+        {
+          "id": "5511a2fa-99a4-58aa-9092-7a9541d844e1",
+          "name": "Modelado de escenarios",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "de71fcc1-ede7-5f63-b7d6-79b5d5de4196",
+          "name": "Microestructura de mercados",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "5e3ef7a0-cdd6-5ea9-85e0-9e8a0eb98723",
+          "name": "Estadística",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "e9580793-422c-5b2a-9494-3bd7b74645d3",
+          "name": "Riesgo de inventario",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6b5e82bb-15a8-5b8b-bf23-ec0fda1a9054",
+          "name": "Análisis de sensibilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "e389f32c-1b45-5781-b5f8-61f4c9fbfdd3",
+      "skills": [
+        {
+          "id": "ced23898-32e1-5f17-bbed-8153f310afbe",
+          "name": "Automatización de navegador",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "ac27f18e-0708-5553-9535-ec40dc57f7d8",
+          "name": "Pruebas E2E",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "719d5bae-b403-5268-bcfc-101f02c8e4f7",
+          "name": "Accesibilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1b515d50-ca57-5962-8b5a-cce8d186054b",
+          "name": "Aislamiento de sesiones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "961ee1be-8068-52c8-bad4-fa256f8fd17e",
+          "name": "Captura de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "b6e1a9d2-14dc-5a48-b2c8-c1c54966b009",
+      "skills": [
+        {
+          "id": "512e20bc-92ff-56ee-b0a5-e4d2680d0a4f",
+          "name": "Compatibilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "69cde96e-83ea-58e2-9926-e9a66f51f81a",
+          "name": "Pruebas diferenciales",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "55f90616-ee70-578b-a633-68bab5d6e11d",
+          "name": "Matrices de entorno",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "1612b603-5b00-5126-9e0b-e53950baf49e",
+          "name": "Contratos API",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c927951e-97d4-53be-882e-331c450ba18c",
+          "name": "Regresión",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "d256860f-67f4-534a-a1e0-3db4e7d220d2",
+      "skills": [
+        {
+          "id": "e11177a5-c8ee-5bb5-9ab0-8d0e0c684edf",
+          "name": "Evaluación de agentes",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "0e8b9158-42c1-517a-909b-89b29cbabe62",
+          "name": "Diseño de herramientas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "afb3176d-14b0-5d94-8093-d89d4e1b1d88",
+          "name": "Inyección de instrucciones",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c0a82cf0-0d36-5d81-93e7-580462bcd2c2",
+          "name": "Habilidades versionadas",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "b55134d4-c59f-5e00-a39a-452da9bb1e1c",
+          "name": "Análisis de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "d59b0906-7517-59bb-a0d2-0c0fb8215ba2",
+      "skills": [
+        {
+          "id": "83c1b322-68a2-582e-9f74-9f66ba816f05",
+          "name": "Ingeniería de requisitos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "d28299ed-8153-55b3-90d8-2015baa491bc",
+          "name": "Trazabilidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "85298e2d-e91c-557f-90d2-f202972f7cd4",
+          "name": "Especificación formal",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "baf04abd-bb65-543a-b217-6053e78a7757",
+          "name": "Documentación técnica",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "ccfc9a55-d3cc-5543-9550-ae2a48c4fc72",
+          "name": "Gestión de cambios",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    },
+    {
+      "id": "ff0d8395-2a3a-5d1d-9185-63c3aa3c19e7",
+      "skills": [
+        {
+          "id": "aecc69cf-cee2-56a4-a7c0-acbdd0c210f7",
+          "name": "Pruebas de carga",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "b7c4fbbb-db25-5701-8b17-008a00ecfee2",
+          "name": "Análisis de latencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "45dbfef1-159f-5559-884e-5226d1efe586",
+          "name": "Perfilado",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "7dcf25e9-0625-5f9a-8ac4-d4e6c9fce9f0",
+          "name": "Capacidad",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "3905d181-ee6d-5201-afcb-149a1b021cc5",
+          "name": "Presupuestos de recursos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "6531302e-9901-547a-bc84-fd5205e287bc",
+          "name": "Gestión de mandatos",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "edd544b1-1e79-5fcf-8288-c1ff88e004ef",
+          "name": "Trazabilidad de evidencia",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        },
+        {
+          "id": "c9125256-8d9d-5e0e-aaa3-2578149f9395",
+          "name": "Gestión de errores",
+          "level": "objetivo experto; competencia no verificada",
+          "target_level": 5,
+          "verified_level": null,
+          "evidence": "Pendiente de evaluación práctica independiente.",
+          "source": "role_seed"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  CRÍTICO — NO ELIMINAR NI MODIFICAR SIN RE-SELLAR EL MANIFIESTO
+# ─────────────────────────────────────────────────────────────────────────────
+#  EQUIPO_ENTERPRISE_24_COUNCIL_ADN/ está sellado por SHA-256 en:
+#      EQUIPO_ENTERPRISE_24_COUNCIL_ADN/MANIFIESTO_SHA256.txt   (301 entradas)
+#      EQUIPO_ENTERPRISE_24_COUNCIL_ADN/03_CATALOGO_DOCUMENTAL.json (300)
+#
+#  El sello se calcula sobre los BYTES EXACTOS de cada archivo. Este host tiene
+#  core.autocrlf=true en el gitconfig de sistema (C:/Program Files/Git/etc/
+#  gitconfig), y además init.defaultbranch=master. Sin la regla de abajo, Git
+#  convertiría LF -> CRLF al hacer checkout y TODO hash del manifiesto dejaría
+#  de verificar en un clon limpio.
+#
+#  `* -text` desactiva la conversión de fin de línea en ambos sentidos: los
+#  bytes que entran son los bytes que salen. Los archivos de este árbol son
+#  LF puro (0 CRLF medidos en las 301 entradas del manifiesto).
+#  El atributo `diff` NO se desactiva: los diffs de texto siguen funcionando.
+# ─────────────────────────────────────────────────────────────────────────────
+* -text
+
+# Binarios declarados explícitamente (documental: ya cubiertos por `* -text`)
+*.exe   binary
+*.xlsx  binary
+*.sqlite3 binary

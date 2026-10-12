@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:receipt-extension:1",
+  "title": "ReceiptExtension v1 - contrato congelado R0",
+  "description": "Extension aditiva del recibo de solicitud ya existente. Consumidores: Artifact Factory (flujo I5, engine/artifact_factory.py) y Reliability Plane / Connector Gateway (flujo I6, engine/reliability.py y engine/connector_gateway.py). El recibo compuesto es base + extension; la extension nunca reescribe un campo base.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "R0",
+  "frozen_at": "2026-10-10",
+  "version_field": "receipt_version",
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). El recibo base ya descarta cuerpo remoto, URL y cabeceras (engine/generation_pipeline.py:25); la extension no reintroduce ninguno.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false + campos de composicion de solo lectura.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Declarativo por defecto. La presencia de una extension no escribe ningun ledger, no persiste nada por si sola y no autoriza reintentos: la suite V8 documenta que los recibos viven en memoria hasta Guardar proyecto o descargar diagnostico (LEEME_V8.txt:53-56).",
+  "base_receipt_compatibility": {
+    "base_format": "recibo de solicitud seguro (generation request receipt)",
+    "base_version": 1,
+    "base_source": "engine/generation_pipeline.py:24-57 (safe_request_receipts)",
+    "base_top_level_keys": [
+      "index",
+      "provider",
+      "model",
+      "payload_sha256",
+      "max_output_tokens",
+      "status",
+      "usage",
+      "latency_ms",
+      "http_status",
+      "error_code",
+      "response_id_sha256"
+    ],
+    "base_usage_keys": ["prompt_tokens", "completion_tokens", "total_tokens"],
+    "base_usage_keys_source": "engine/generation_pipeline.py:20 (USAGE_FIELDS) y :52",
+    "base_status_enum": [
+      "billing_outcome_unknown",
+      "response_received_not_yet_validated",
+      "validated"
+    ],
+    "base_status_enum_source": "engine/generation_pipeline.py:21 (RECEIPT_STATUSES)",
+    "base_terminal_states": ["completed", "failed", "cancelled"],
+    "base_terminal_states_source": "engine/generation_pipeline.py:18 (TERMINAL)",
+    "composition": "recibo_compuesto = recibo_base UNION extension; claves disjuntas",
+    "redefinition_forbidden": true,
+    "existing_formats_unchanged": [
+      "orgdna-local-project v1 (engine/project_store.py:126,163)",
+      "orgdna/export-manifest v1 (engine/export_artifacts.py:124)"
+    ]
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "receipt_version": {
+      "const": "1",
+      "description": "Campo de version de la extension. Un valor distinto de \"1\" se rechaza con unsupported_version."
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+      "description": "Clave de deduplicacion. Repetirla devuelve el mismo recibo y no repite el efecto."
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 16,
+      "description": "Numero de intento declarado. Un intento nuevo de una operacion pagada exige autorizacion nueva, no un reintento automatico."
+    },
+    "result_outcome": {
+      "enum": ["completed", "failed", "cancelled", "unknown"],
+      "description": "Resultado observado del intento. unknown es un valor legitimo y no se sustituye por completed."
+    },
+    "retry_class": {
+      "enum": [
+        "none",
+        "rate_limit",
+        "transient",
+        "permanent",
+        "policy",
+        "budget",
+        "unknown"
+      ],
+      "description": "Clasificacion declarada del fallo. Clasificar no reintenta: la suite no implementa backoff ni circuit breaker."
+    },
+    "produced_by": {
+      "enum": [
+        "task_graph",
+        "agent_registry",
+        "evidence_graph",
+        "policy_engine",
+        "memory_governance",
+        "tenants",
+        "evaluation_harness",
+        "artifact_factory",
+        "reliability",
+        "connector_gateway"
+      ],
+      "description": "Modulo de plataforma que produce el recibo. Debe ser un modulo declarado, no una etiqueta libre."
+    },
+    "artifact": {
+      "oneOf": [
+        {"$ref": "#/$defs/artifact_ref"},
+        {"type": "null"}
+      ],
+      "description": "Artefacto producido por el intento, con hash y tamano. null significa que no hubo artefacto."
+    },
+    "consent_ref": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$",
+      "default": null,
+      "description": "SHA-256 del consentimiento o de la aprobacion humana que autorizo el intento. null significa que no se registro."
+    },
+    "null_is_not_zero": {
+      "const": true,
+      "description": "Invariante heredada de la suite: un valor desconocido se representa null y nunca 0."
+    },
+    "side_effects_performed": {
+      "const": false,
+      "description": "Invariante: registrar la extension no ejecuta la operacion ni abre ninguna conexion."
+    },
+    "recorded_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "receipt_version",
+    "idempotency_key",
+    "attempt",
+    "result_outcome",
+    "retry_class",
+    "produced_by",
+    "null_is_not_zero",
+    "side_effects_performed",
+    "recorded_at"
+  ],
+  "$defs": {
+    "artifact_ref": {
+      "title": "Referencia de artefacto local",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400,
+          "pattern": "^(?!/)(?!.*\\.\\.)(?!.*:).*$",
+          "description": "Ruta relativa bajo el directorio declarado. Sin rutas absolutas, sin '..' y sin unidad de disco."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "media_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": ["path", "sha256", "bytes"]
+    },
+    "extension_rules": {
+      "title": "Reglas congeladas de la extension v1",
+      "description": "Anotacion normativa para I5 e I6.",
+      "type": "object",
+      "properties": {
+        "additive_only": {"const": true},
+        "base_key_redefinition": {"const": false},
+        "automatic_retry_of_paid_operations": {"const": false},
+        "ledger_persistence": {
+          "const": "no autorizada por R0; depende de la decision A-1 registrada en docs/PLATAFORMA_DECISIONES.md"
+        },
+        "provider_request_id_storage": {
+          "const": "solo hash sha256 (response_id_sha256); el identificador en claro depende de la decision A-5"
+        },
+        "provider_headers_storage": {
+          "const": "no autorizada; depende de la decision A-4"
+        },
+        "error_codes": {
+          "const": [
+            "base_key_collision",
+            "unsupported_version",
+            "unknown_producer",
+            "retry_not_authorized",
+            "artifact_hash_mismatch",
+            "null_coerced_to_zero"
+          ]
+        }
+      }
+    }
+  }
+}

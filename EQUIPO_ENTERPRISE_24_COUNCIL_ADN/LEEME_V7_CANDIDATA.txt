@@ -1,0 +1,69 @@
+ORGDNA V7 CANDIDATA: INSTALACIÓN Y ACTUALIZACIÓN
+
+Estado: candidato V7 disponible para inspección y uso con los límites indicados.
+Chromium real: NOT_RUN. La aceptación E2E completa sigue pendiente; no se certifica
+la interfaz completa ni la causa concreta del fallo observado con tu proveedor.
+
+QUÉ CAMBIA EN V7
+Diagnósticos de generación más precisos; controles de tokens, lotes y formato;
+recuperación explícita del diseño conservado; reintento manual con plan nuevo;
+una sola casilla de consentimiento por plan exacto. No hay reintentos de pago
+ni cambio de proveedor/modelo automáticos.
+
+INSTALAR O ACTUALIZAR EN WINDOWS
+1. Guarda el proyecto en la versión anterior. Detén sólo el servidor de OrgDNA
+   y cierra sus ventanas. No reinicies DSH ni cambies su configuración.
+2. Conserva una copia de seguridad completa de la carpeta anterior.
+   Descomprime este ZIP completo en una carpeta nueva; no mezcles motores.
+3. Con ambas instancias de OrgDNA cerradas, copia la carpeta data/projects
+   completa de la instalación anterior a data/projects de la nueva, incluidas
+   _capabilities, bases SQLite y archivos auxiliares presentes. No copies sólo
+   un JSON ni un proyecto aislado. Si el destino ya contiene proyectos, respalda
+   ambos lados y no sobrescribas sin resolver antes los nombres.
+4. No copies claves API, tokens, sesiones ni otros archivos de credenciales.
+   Abre launch.cmd en la carpeta nueva con Python 3.10 o posterior instalado.
+5. Carga el proyecto y comprueba nombre, número de perfiles y diseño antes de
+   modificarlo. Guarda y vuelve a abrir para comprobar la persistencia.
+   Conserva la copia anterior hasta comprobarlo en tu equipo.
+
+SI FALLA LA GENERACIÓN
+Lee la etapa y el código. Descarga el diagnóstico JSON, que no contiene la API key
+ni el cuerpo crudo del proveedor. No atribuyas una causa que el informe no prueba.
+Corrige el dato señalado y usa Preparar otro intento · sin cargo de IA.
+Preparar no hace una nueva llamada de generación; el envío necesita revisar y
+aprobar el plan nuevo. Una solicitud ya enviada puede tener coste aunque falle.
+
+RECUPERAR Y REINTENTAR
+Si aparece Tu diseño conservado, revisa la configuración y usa Restaurar
+configuración y diseño. Revisa y guarda el resultado. La configuración que
+estabas probando queda como borrador y puede retomarse; retomarla puede bloquear
+exports hasta generar un diseño válido o restaurar el anterior. La recuperación
+no reconstruye proyectos privados perdidos a partir del snapshot del ZIP.
+
+UN SOLO CONSENTIMIENTO POR PLAN
+Revisa cobertura, proveedor/modelo, perfiles, solicitudes, tokens y formato.
+Marca la casilla del plan y pulsa Autorizar este plan y generar una vez.
+Cambiar el plan o reintentar exige un plan y consentimiento nuevos; los límites
+de tokens no garantizan un tope de dinero. No hay aprobación automática.
+
+ALCANCE Y DSH
+El ZIP conserva el equipo histórico de 24 agentes y sus mismos IDs, JSON, ADN,
+prompts y Excel. Tus proyectos guardados se trasladan mediante data/projects.
+El código funcional es idéntico al candidato V7 probado offline. La única
+excepción de código fuente es la lista literal RUNTIME_ALLOWLIST, ampliada
+para distribuir siete archivos nuevos de pruebas y documentación. Se conservan byte a
+byte los archivos protegidos y las secciones de conexión DSH. No se ha probado
+la instalación DSH del usuario, Windows/Excel COM ni una API de proveedor real.
+Cerrar OrgDNA no garantiza conservar una conexión efímera de la sesión.
+
+PRUEBAS DE NAVEGADOR PENDIENTES
+Incluye 92 casos Chromium escritos, todavía NOT_RUN, y matriz de 403 filas:
+179 vinculadas a comprobaciones escritas y 224 de verificación específica manual.
+No son 403 funcionalidades independientes. La presencia de pruebas, las pruebas
+Python y el DOM simulado no acreditan píxeles, layout ni comportamiento Chromium.
+La ampliación de pruebas documentada como parche ya está incorporada en este ZIP.
+Su registro histórico no implica que se haya ejecutado el navegador.
+
+Consulta docs/USO_RECUPERACION_V7.md para más detalle y VALIDACION_ORGDNA.txt
+externo para las pruebas de este ZIP, hashes e historial. Repite la comprobación
+estructural desde la carpeta extraída con: python validate_imports_portable.py

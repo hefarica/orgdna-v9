@@ -1,0 +1,26 @@
+# Artefactos de bytecode de Python.
+#  Verificado antes de crear este archivo: MANIFIESTO_SHA256.txt contiene
+#  0 entradas __pycache__ y 0 entradas *.pyc, por lo que excluirlos NO altera
+#  la verificabilidad del paquete sellado. Python los regenera al ejecutar.
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cachés de herramientas de test
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Bloqueos temporales de Excel (el libro ADN_Organizacional.xlsx SÍ está versionado)
+~$*.xlsx
+~$*.xlsm
+~$*.xlsb
+
+# Volcados y temporales del sistema
+Thumbs.db
+desktop.ini
+*.tmp
+*.swp
+*~

@@ -1,0 +1,307 @@
+{
+  "status": "PASS",
+  "label": "REAL_NATIVE_AGENTTEAMS_STAGING_COMPOSITION_WITH_EXPLICIT_INERT_FIXTURES",
+  "measured_at_utc": "2026-10-07T05:36:12.483Z",
+  "versions": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-subagent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.0-rc.2",
+    "@nanmicoder/dsh-agent-teams": "0.1.22"
+  },
+  "provenance": {
+    "test_script_sha256": "c55ae718a10fb572afc79b08b9fd9af9552292818a6553faa42b7498f516947e",
+    "native_orchestration_sha256": "e02b8fd86e8a7fc37e3c48445613238fd24af04803596740123fec28d52f5b59",
+    "addon_plugin_sha256": "923df6a1672a264ab97b7f75f4ab479c3252fb3c2ca7964b125ad30d0beb8455",
+    "addon_runtime_sha256": "4187d4fd4b81a53bcd4fb96e180430ab669671db5868e4a536a0bf6000552985",
+    "dependency_lock_sha256": "0e409b39496acbb59f0aa31c7b54fcab8c3f1c3724161492192dfa30592d6a60",
+    "agentteams_entry_sha256": "4d6e07b0f5107dad672868576e3a1ec178271db7141424b9db712fc7e4975ef6"
+  },
+  "native_plugin_config": {
+    "maxMembers": 23,
+    "memberMaxDepth": 0,
+    "slashCommand": false,
+    "stateDir": "ephemeral isolated fixture-team-store"
+  },
+  "real_components": [
+    "Cordis Context/plugin lifecycle",
+    "DSH ToolRuntime schema/guard/execution pipeline",
+    "DSH AgentRegistry serial agent/created dispatch",
+    "DSH LlmRuntime metadata routing",
+    "DSH SubagentRuntime service and public descriptor APIs",
+    "DSH SystemPrompt and scoped tools",
+    "AgentTeams public plugin registration, create, edit_plan and durable staged store",
+    "OrgDNA prepare/stage/scope helpers",
+    "OrgDNA addon mount and all six production tool registrations in the same Context",
+    "OrgDNA SharedLedger durable messages and bindRuntimeSession wired directly to the verified serial scope hook"
+  ],
+  "fixtures": [
+    "24 Teams v2 profiles with unique long Unicode DNA",
+    "inert captain Agent/Session in official registry",
+    "two metadata-only LlmAdapter routes; stream throws",
+    "23 inert child lifecycle Agent/Session objects, explicitly registered after staging for separate scope verification",
+    "host-owned reviewed-plan consent fixture; no claim of real user or GUI approval",
+    "no Teams GUI service; trusted fixture callback reports zero active GUI runs"
+  ],
+  "staging": {
+    "profile_count": 24,
+    "captain_count": 1,
+    "new_native_member_count": 23,
+    "total_members": 24,
+    "task_count": 24,
+    "all_unspawned": true,
+    "all_tasks_pending": true,
+    "active_child_agents_after_staging": 0,
+    "phase": "staged",
+    "plan_review_state": "awaiting_review",
+    "registry_tool_calls": [
+      "agent_teams_create",
+      "agent_teams_edit_plan"
+    ],
+    "metadata_reads": 48,
+    "provider_model_preserved": true,
+    "full_prompt_bytes_preserved": true,
+    "prompt_sha256": [
+      {
+        "alias": "m-940781f99c0546f683c3446097a79498",
+        "bytes": 30644,
+        "sha256": "9ba05c52f9fc44e0150a287d52d0712955b63a7a2ceec39b11983271c592fcd9"
+      },
+      {
+        "alias": "m-82cc80dca63045e497002ff5cbd3159c",
+        "bytes": 32344,
+        "sha256": "5ce9289e1217dbf4f4879bc8dffaa06cd228e4254cd9dfcf019c2b7bbe462e93"
+      },
+      {
+        "alias": "m-226b7f98bf804974a37ee2d8d22e9595",
+        "bytes": 28944,
+        "sha256": "22693d9f687aa3d173ec3bd66dbcb2dfd74c1281cdd9d147a47a490ea7511b32"
+      },
+      {
+        "alias": "m-4430087daddb42ae984ca80f8facf076",
+        "bytes": 30644,
+        "sha256": "f69bb8463fad0ab54a276bcd6144d9e7da353c505fac7ab86ef19542e708c4c7"
+      },
+      {
+        "alias": "m-8cabd06db5384769ac0038c06d7c6dd6",
+        "bytes": 32344,
+        "sha256": "65e81abbc6b532ab27d03d41ad336313600a0386f95fb5fa46c7e3368a458a86"
+      },
+      {
+        "alias": "m-0769e618c80349719fd5777f257929ca",
+        "bytes": 28944,
+        "sha256": "0d017e84f3b7f4eee5dbed6ffc91f72c579db90e3f9b1fa6c074c47bded11486"
+      },
+      {
+        "alias": "m-8ecf12ca4d164ac0ad934c7c817da333",
+        "bytes": 30644,
+        "sha256": "fe8f80988b9b7881d1fb8cbfcd2df6df6fa3e53e419c76c0662c3bacc50d4392"
+      },
+      {
+        "alias": "m-31b3ef6f62774d0999a36d8d5bc0ee24",
+        "bytes": 32344,
+        "sha256": "7439746363b62744d330c303136559f2eed2fb47e31438357f60abadd7600a8c"
+      },
+      {
+        "alias": "m-727a8a272f8c441f952d95a32e9846cb",
+        "bytes": 28944,
+        "sha256": "77b8aff77a441cdac6a405976f0fca1e1e93dac60be027514c7c60c7ba8fe6bb"
+      },
+      {
+        "alias": "m-be990e6ffd084276b3f121b70cd03187",
+        "bytes": 32346,
+        "sha256": "581bc9d270e2347be9617305bf9cbb760d9049ce47d914003e4ea629951c9b94"
+      },
+      {
+        "alias": "m-06be11b292eb4bbc9c0b99927bb18d0e",
+        "bytes": 34046,
+        "sha256": "b4e78e8b7c521b114169e0fe2c4380165252bc0a521934448a8bbdc2deff8fd1"
+      },
+      {
+        "alias": "m-5825145939a84f04b86a1eb64b1e0638",
+        "bytes": 30646,
+        "sha256": "58724a5fa2edef9baed6ba8f37e6422b8fe74185c865e67983955627379cedfa"
+      },
+      {
+        "alias": "m-57a3d61e49394c7fb087b85abc4ed2ea",
+        "bytes": 32346,
+        "sha256": "4289efed6c82af2ca19982b0c733e0aeb6662806eb53e8dfd4bf1197e838c563"
+      },
+      {
+        "alias": "m-6ad50853f66a4e02a1091584a485066a",
+        "bytes": 34046,
+        "sha256": "7d6f19743eb02424dd630736f8ae51144e7ef0bdac266fdf3408f465eae8182c"
+      },
+      {
+        "alias": "m-37aaad77582f4d60a87cdae06fdd940c",
+        "bytes": 30646,
+        "sha256": "14fe8730bebe725809fccbd3a4542346dc426c916ecd6f24428e81137b80544c"
+      },
+      {
+        "alias": "m-9550315fc4aa4a52836a59095284a2c0",
+        "bytes": 32346,
+        "sha256": "3e4676d6b53037ef13b685d1295375557834b9a3ba2a66258af524765111764a"
+      },
+      {
+        "alias": "m-371fb01947574beab50cd69260d6c8c6",
+        "bytes": 34046,
+        "sha256": "0038748ee2a056772bebb33e63cbbea1447b0761baa3f5dfec05c85cd5f6a309"
+      },
+      {
+        "alias": "m-973027f1ed09469d862717baedef7213",
+        "bytes": 30646,
+        "sha256": "1fc807a6c5fd907de25e9d2d4337bfe7283bc61be024206a6c624de70e359bcb"
+      },
+      {
+        "alias": "m-088a81b4a864478b82cb9ab912a2d941",
+        "bytes": 32346,
+        "sha256": "8ec19b5a66d9d1c19a85c51919fc953c4812b07390061cf185b75e5be96b1836"
+      },
+      {
+        "alias": "m-707240ffa2354164a0a2a4ad2f18f6f5",
+        "bytes": 34046,
+        "sha256": "a81e65fd143920d257af2026434a134c174bcce5139cd8f65ef9a3ebbc5b8760"
+      },
+      {
+        "alias": "m-fc63d2dbed4a4062aedb8688ebac149b",
+        "bytes": 30646,
+        "sha256": "de5d5cb63b4f6316129417e64b5bdc3284df2ce5074366802987e9f0211fd623"
+      },
+      {
+        "alias": "m-82f66ae42e61402c8c6cbd15be385fac",
+        "bytes": 32346,
+        "sha256": "d13b2e729a8a57996822031c023c111cf2bf25ec98c7c4f833c15a311b95f6eb"
+      },
+      {
+        "alias": "m-cd34dc18456648beac7702ff81f8ace4",
+        "bytes": 34046,
+        "sha256": "5a2a19abadbc07d455645a4d7b6188b21f70a70eab8c4c3ffb196fef7048708e"
+      }
+    ],
+    "captain_prompt": {
+      "full_bytes_preserved": true,
+      "interpolation_disabled": true,
+      "bytes": 28944,
+      "sha256": "fa3e5ed0bc1b73fa4de76b4086ba5a27d4a42b89e8cbb8782e248c82ca487f3f"
+    },
+    "dependency_mapping_preserved": true,
+    "team_captain_identity_preserved": true,
+    "definitions_unchanged": true,
+    "model_approve_resume_tools_hidden": true
+  },
+  "native_messaging": {
+    "scope": "native_durable_mailbox_only",
+    "member_tools": [
+      "agent_teams_claim_task",
+      "agent_teams_update_task",
+      "agent_teams_send_message",
+      "agent_teams_status"
+    ],
+    "native_send_tool_available": true,
+    "actual_tool_calls": 2,
+    "new_messages": 1,
+    "duplicate_reuses_message_id": true,
+    "correct_sender_and_recipient": true,
+    "content_bytes_preserved": true,
+    "delivered": "mailbox",
+    "read_or_live_delivery_recorded": false,
+    "delivery_lease_released": true,
+    "phase_stayed_staged": true,
+    "new_agent_registry_entries": 0,
+    "new_model_calls": 0,
+    "new_provider_metadata_reads": 0,
+    "live_conversation_verified": false,
+    "source_contract": "AgentTeams 0.1.22 tools.js dispatchMember checks phase === staged before resolveMemberLlmSelection/spawnMember; send_message releases the mailbox delivery lease when dispatch returns false."
+  },
+  "combined_native_and_addon": {
+    "same_cordis_context": true,
+    "same_tool_runtime": true,
+    "agentteams_plugin_active": true,
+    "six_addon_tools_registered": true,
+    "all_six_visible_in_all_24_reviewed_fixture_profiles": true,
+    "initial_captain_bindings": 1,
+    "teammate_bindings_from_serial_native_hook": 23,
+    "verified_bound_sessions": 24,
+    "addon_message_calls_through_tool_runtime": 24,
+    "distinct_bound_authors": 24,
+    "readback_from_teammate": true,
+    "durable_messages": 24,
+    "unrelated_parent_session_rejected": true,
+    "model_supplied_actor_rejected": true,
+    "failed_calls_leave_version_24": true,
+    "native_team_store_unchanged": true,
+    "native_mailbox_separate": true,
+    "addon_is_coordination_only": true,
+    "model_calls": 0,
+    "subagent_spawns": 0,
+    "real_agent_conversation_verified": false,
+    "cleanup": {
+      "six_addon_tools_removed": true,
+      "addon_ownership_lock_released": true,
+      "native_agentteams_tools_preserved": true,
+      "unrelated_fixture_tools_preserved": true
+    }
+  },
+  "negative_preflight": {
+    "missing_review_zero_native_calls": true,
+    "active_gui_scheduler_zero_native_calls": true,
+    "changed_profiles_zero_native_calls": true,
+    "existing_team_zero_duplicate_native_calls": true
+  },
+  "lifecycle_scope_fixture": {
+    "count": 23,
+    "public_serial_hook": true,
+    "bindings_before_register_returns": true,
+    "allowed_tool_callbacks": 23,
+    "forbidden_tool_callbacks": 0,
+    "manual_denies_preserved": true,
+    "local_tool_escape_rejected": true,
+    "unrelated_parent_not_bound": true,
+    "captain_and_global_scopes_unchanged": true,
+    "staged_store_unchanged": true
+  },
+  "actual_model_or_provider_api_calls": 0,
+  "actual_subagent_spawns": 0,
+  "actual_native_team_approved": false,
+  "actual_dsh_application_started": false,
+  "actual_user_profiles_read": false,
+  "user_computer_used": false,
+  "not_verified": [
+    "live DSH host startup and authenticated UI flow",
+    "real Teams service and user profile IDs",
+    "Subagent spawn/provider integration and actual session persistence",
+    "Captain receives hola through model and coordinates real children",
+    "native user approval and post-approval task execution",
+    "provider credentials and network responses"
+  ],
+  "deployment_constraints": [
+    "Native AgentTeams maxMembers must allow N-1 teammates; its unmodified default is 8, so a 24-profile team needs an explicitly reviewed limit of at least 23."
+  ],
+  "diagnostics": [],
+  "default_capacity": {
+    "configured_max_members_omitted": true,
+    "observed_max_members": 8,
+    "required_teammates": 23,
+    "observed_via": "public_Cordis_registry_active_fiber_config",
+    "helper_rejected": "CAPACITY_LIMIT",
+    "helper_native_calls": 0,
+    "native_tool_called": 1,
+    "native_tool_rejected": true,
+    "native_error": "profile \"inline-plan\" has 23 members but maxMembers is 8",
+    "state_root_created": false,
+    "existing_staged_team_unchanged": true,
+    "new_agent_registry_entries": 0,
+    "new_provider_metadata_reads": 0,
+    "new_model_calls": 0,
+    "settings_changed": false
+  },
+  "disposal": {
+    "profile_bindings_removed": true,
+    "captain_profile_section_removed": true,
+    "agentteams_tools_removed": true,
+    "unrelated_fixture_plugin_preserved": true
+  }
+}

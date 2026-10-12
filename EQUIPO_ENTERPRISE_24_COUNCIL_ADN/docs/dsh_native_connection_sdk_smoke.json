@@ -1,0 +1,36 @@
+{
+  "status": "PASS",
+  "measured_at_utc": "2026-10-07T05:06:58.724Z",
+  "versions": {
+    "@deepseek-ai/cordis": "4.0.4",
+    "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2"
+  },
+  "real_sdk_components": [
+    "Cordis Context/Service/effects",
+    "Connection browser token/cookie signing and verification",
+    "Host/Origin admission",
+    "authenticated fetch registry",
+    "OrgDNA production startLiveBridge version checks",
+    "loopback single-use pairing"
+  ],
+  "fixtures": [
+    "memory-only credential storage",
+    "tools.schemas read-only test registry"
+  ],
+  "actual_dsh_application_started": false,
+  "actual_agent_teams_or_teams_started": false,
+  "actual_model_or_provider_called": false,
+  "user_computer_used": false,
+  "checks": [
+    "unauthenticated401",
+    "untrustedHost403",
+    "signedcookieaccepted",
+    "crossOrigin403",
+    "registrationidempotent",
+    "pairingnativeconsent",
+    "productionversioncheck",
+    "loopbacktokenissued",
+    "revocation"
+  ]
+}

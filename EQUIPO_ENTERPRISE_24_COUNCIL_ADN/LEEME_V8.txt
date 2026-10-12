@@ -1,0 +1,83 @@
+ORGDNA V8 — PARCHE DE GENERACIÓN, MODELOS Y EVIDENCIA
+Actualización del 10 de octubre de 2026 sobre el ZIP V7 entregado.
+
+ALCANCE DE ESTA ENTREGA
+Aplicación actualizada y pruebas offline. Consulta VALIDACION_ORGDNA.txt adjunto
+para los resultados de la revisión final. Chromium real, proveedor LLM real y
+la instalación Windows/DSH del usuario no están verificados en esta entrega.
+Los tests con transportes sintéticos no acreditan generación real ni ganancias.
+Los documentos V6/V7 conservados son históricos; esta guía describe el parche V8.
+
+QUÉ CAMBIA
+1. El modelo de generación debe contar con verificación para la cuenta actual
+   cuando el proveedor dispone de catálogo. Se separan ID API y nombre visible.
+   Cambiar la credencial exige renovar la verificación. No se cambia el modelo
+   silenciosamente ni se modifican alias, conexiones o configuración de DSH.
+2. Los recibos seguros de solicitudes incluyen tokens comunicados por el
+   proveedor, latencia y estado incluso cuando la validación falla o se cancela.
+   Los valores ausentes siguen siendo desconocidos, no se sustituyen por cero.
+3. La lectura prioriza rutas de subsistemas y rebaja documentación auxiliar.
+   Sustituye archivos descartados dentro de los límites. El plan reparte
+   evidencia común y específica y valida referencias por el lote que la recibe.
+4. La interfaz distingue entrada estimada, salida máxima, uso observado y coste
+   desconocido. Un presupuesto de referencia no es un límite de facturación.
+
+ACTUALIZAR SIN TOCAR DSH
+1. Guarda el proyecto actual. Conserva una copia completa de la carpeta V7.
+2. Detén únicamente OrgDNA y extrae este ZIP completo en una carpeta nueva.
+   No mezcles archivos de motor de versiones distintas. No cierres DSH.
+3. Con ambas instancias de OrgDNA cerradas, copia data/projects completa de la
+   instalación anterior a la nueva, incluyendo _capabilities y SQLite auxiliares.
+   Si el destino ya tiene proyectos, respalda ambos lados antes de resolver
+   conflictos; no sobrescribas proyectos de nombres iguales a ciegas.
+4. No copies secretos, tokens, claves, sesiones ni ficheros de credenciales.
+5. Ejecuta launch.cmd con Python 3.10 o posterior. Carga tu proyecto y comprueba
+   su nombre, configuración, número de agentes y diseño. Guarda y vuelve a abrir.
+   Conserva el respaldo. Las conexiones efímeras de OrgDNA pueden requerir
+   reconexión; el parche no reinstala ni reinicia DSH.
+
+CORREGIR EL INTENTO DEEPSEEK
+1. Configura la credencial en el campo local correspondiente.
+2. Consulta el catálogo del proveedor y selecciona un ID de API disponible.
+   Para el modelo visible DeepSeek-V4.1-Flash la documentación consultada indica
+   deepseek-flash. No copies DeepSeek-V41-Flash como si fuera su identificador.
+   Comprueba siempre el catálogo actual de tu cuenta.
+3. Conserva N=30 si ése es tu objetivo. Un ensayo pequeño es opcional; la app
+   no disminuye N automáticamente para ocultar errores.
+4. Prepara el ADN. Revisa los archivos leídos, los que faltan y cada paquete
+   de evidencia, además de modelo, número de solicitudes y límites.
+5. Autoriza el plan exacto una vez. Sólo este paso inicia la generación de IA.
+6. Si falla, descarga el diagnóstico. Corrige el dato indicado y prepara un
+   plan nuevo; no hay reenvío pagado automático ni cambio de proveedor oculto.
+7. Guarda el proyecto y conserva el diagnóstico con los recibos del intento.
+   Si cancelas mientras el proveedor aún responde, espera el recibo tardío y
+   guarda otra vez. Los recibos nuevos viven en memoria hasta Guardar proyecto
+   o descargar el diagnóstico: un cierre abrupto puede perderlos. No es un
+   ledger inmutable ni un registro durable automático.
+   La ausencia de usage no demuestra que no haya cargo; consulta al proveedor.
+8. Cuando exista un diseño válido, revisa perfiles y genera Recipe DSH, Backup
+   DSH y el ZIP mediante los controles de exportación. Un JSON validado no
+   demuestra que DSH ya lo haya importado o ejecutado.
+
+PROVEEDORES SIN CATÁLOGO DOCUMENTADO
+La aceptación manual de un ID de referencia se muestra como tal; no demuestra
+acceso de cuenta ni capacidades. No se inventa un endpoint /models para esos
+proveedores. La verificación mediante inferencia es una operación distinta.
+
+QUÉ NO DEBE CONFUNDIRSE
+- Inventario parcial no significa lectura completa del repositorio.
+- Los paquetes de evidencia no inventan contenido de archivos que no se leyeron.
+- La selección por rutas y familias es heurística, no un análisis AST completo.
+- Archivos de más de 40.000 bytes siguen siendo huecos explícitos; este parche
+  no incorpora lectura fragmentada de esos archivos.
+- 77.120 tokens era el máximo de salida del plan anterior, no su gasto real.
+- Las reducciones de bytes no garantizan igual reducción de tokens o coste.
+- El equipo histórico de ejemplo sigue teniendo 24 agentes y sus mismos IDs.
+  Es distinto de un proyecto nuevo de 30 perfiles que tú generes en la suite.
+- Los archivos de DSH y sus formatos históricos se preservan. No se certifica
+  una instalación DSH viva, una generación pagada real ni una rentabilidad.
+
+VALIDACIÓN LOCAL REPRODUCIBLE
+Desde la carpeta extraída: python validate_imports_portable.py
+Las pruebas nuevas se distribuyen con el paquete. El informe adjunto distingue
+PASS, FAIL y NOT_RUN y contiene el SHA-256 exacto del ZIP entregado.

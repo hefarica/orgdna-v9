@@ -1,0 +1,21 @@
+{
+  "reviewed_at": "2026-10-07",
+  "harness_commit": "5badb15009ae1756c3afe0ae0cef1faafc290ccc",
+  "agentteams_commit": "98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd",
+  "sources": [
+    {"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/docs/user/develop/basic/index.md","supports":"Native apply/inject, ctx.effect lifecycle, absolute plugin paths and additive --patch overlay."},
+    {"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/docs/user/develop/basic/tool.md","supports":"Real defineTool parameters/output/execute registration."},
+    {"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/core/tools/src/index.ts","blob_sha":"ca89f370febac1fa24f84cc25351a186866fe7e7","supports":"ToolRunContext.agent; register returns disposer; scoped get and execute pipeline."},
+    {"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/core/agent/src/types.ts","blob_sha":"5cbc81df38c81be4f5c4d85e6a2c8acd5108ed95","supports":"Agent.id is session identity, not profile definition identity."},
+    {"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/extensions/tool-cordis/src/index.ts","blob_sha":"eddc643cb996ab076329ba0d1480212b2d2eddc0","supports":"Current tool-cordis supplies inspect_list/query, not legacy define/run."},
+    {"url":"https://github.com/NanmiCoder/dsh-agent-teams/blob/98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd/src/types.ts","blob_sha":"e1244c0a1f9b64c97babbcf619e7284a61373e6d","supports":"TeamState captainSessionId, members session IDs, tasks attempt capabilities."},
+    {"url":"https://github.com/NanmiCoder/dsh-agent-teams/blob/98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd/src/tools.ts","blob_sha":"01050b93da8bbb38116f8b8ae065fe974e7eec77","supports":"Status kicks scheduler for captain and acknowledges mailboxes; result omits member session IDs. Never treated as pure read-only preflight."},
+    {"url":"https://github.com/NanmiCoder/dsh-agent-teams/blob/98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd/compatibility.json","blob_sha":"fa651867e45dd4b322a5140b69e2e380d312fe9e","supports":"AgentTeams0.1.22 recommended host0.2.0-rc.2; current0.2.1-alpha.1 not listed."}
+    ,{"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/core/agent/src/runtime-types.ts","supports":"Serial agent/created awaited before first request; Agent options/session/ctx are public native properties."}
+    ,{"url":"https://github.com/deepseek-ai/deepseek-harness/blob/5badb15009ae1756c3afe0ae0cef1faafc290ccc/packages/subagent/subagent/src/descriptor.ts","supports":"foldSubagentDescriptor uses model-hidden host session events, including continuable label/provider/model/persona."}
+    ,{"url":"https://github.com/NanmiCoder/dsh-agent-teams/blob/98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd/src/members.ts","blob_sha":"e9270151fe9e3cf8f842c26bd692439747252fe6","supports":"Native label agent-teams:teamId:memberName; parent session binding; full executionPrompt in member persona; native depth/toolFilter policy retained."}
+    ,{"url":"https://www.npmjs.com/package/@deepseek-ai/cordis","supports":"Reviewed installed official Cordis 4.0.4/4.0.5-alpha.1 public registry.get(plugin).fibers, Fiber.state and validated Fiber.config; active configuration read only."}
+  ],
+  "installed_user_runtime_verified": false,
+  "note": "GitHub connector source was preferred over a stale raw README that still described the legacy seven-tool dynamic API. No installed runtime version is inferred from screenshots."
+}

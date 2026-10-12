@@ -1,0 +1,230 @@
+{
+  "catalog_entries": 271,
+  "roles": 24,
+  "source_sha256": "200e65f85602ee9205d97526662e211116dc3afd52c7fd79d86ee36ad6974953",
+  "all_names_csv_characters": 3730,
+  "risk_counts": {
+    "high": 52,
+    "low": 160,
+    "medium": 56,
+    "critical": 3
+  },
+  "policy_counts": {
+    "conditional_candidate": 85,
+    "allow_candidate": 160,
+    "excluded_from_member_default": 26
+  },
+  "role_counts": [
+    {
+      "role": "Planner",
+      "candidate_count": 63,
+      "allow_count": 40,
+      "low_risk_count": 18,
+      "conditional_count": 22,
+      "excluded_count": 23
+    },
+    {
+      "role": "Architect",
+      "candidate_count": 35,
+      "allow_count": 35,
+      "low_risk_count": 33,
+      "conditional_count": 2,
+      "excluded_count": 0
+    },
+    {
+      "role": "QA",
+      "candidate_count": 35,
+      "allow_count": 35,
+      "low_risk_count": 17,
+      "conditional_count": 18,
+      "excluded_count": 0
+    },
+    {
+      "role": "PersonalOps",
+      "candidate_count": 43,
+      "allow_count": 27,
+      "low_risk_count": 12,
+      "conditional_count": 15,
+      "excluded_count": 16
+    },
+    {
+      "role": "Implementer",
+      "candidate_count": 28,
+      "allow_count": 28,
+      "low_risk_count": 11,
+      "conditional_count": 17,
+      "excluded_count": 0
+    },
+    {
+      "role": "Backend",
+      "candidate_count": 40,
+      "allow_count": 37,
+      "low_risk_count": 26,
+      "conditional_count": 11,
+      "excluded_count": 3
+    },
+    {
+      "role": "Frontend",
+      "candidate_count": 30,
+      "allow_count": 30,
+      "low_risk_count": 10,
+      "conditional_count": 20,
+      "excluded_count": 0
+    },
+    {
+      "role": "Reviewer",
+      "candidate_count": 33,
+      "allow_count": 26,
+      "low_risk_count": 11,
+      "conditional_count": 15,
+      "excluded_count": 7
+    },
+    {
+      "role": "Security",
+      "candidate_count": 55,
+      "allow_count": 52,
+      "low_risk_count": 35,
+      "conditional_count": 17,
+      "excluded_count": 3
+    },
+    {
+      "role": "EvidenceAuditor",
+      "candidate_count": 37,
+      "allow_count": 37,
+      "low_risk_count": 14,
+      "conditional_count": 23,
+      "excluded_count": 0
+    },
+    {
+      "role": "SRE",
+      "candidate_count": 30,
+      "allow_count": 28,
+      "low_risk_count": 19,
+      "conditional_count": 9,
+      "excluded_count": 2
+    },
+    {
+      "role": "Ledger",
+      "candidate_count": 79,
+      "allow_count": 77,
+      "low_risk_count": 40,
+      "conditional_count": 37,
+      "excluded_count": 2
+    },
+    {
+      "role": "Release",
+      "candidate_count": 18,
+      "allow_count": 18,
+      "low_risk_count": 9,
+      "conditional_count": 9,
+      "excluded_count": 0
+    },
+    {
+      "role": "Data",
+      "candidate_count": 42,
+      "allow_count": 40,
+      "low_risk_count": 27,
+      "conditional_count": 13,
+      "excluded_count": 2
+    },
+    {
+      "role": "Integration",
+      "candidate_count": 16,
+      "allow_count": 15,
+      "low_risk_count": 10,
+      "conditional_count": 5,
+      "excluded_count": 1
+    },
+    {
+      "role": "Contracts",
+      "candidate_count": 49,
+      "allow_count": 49,
+      "low_risk_count": 31,
+      "conditional_count": 18,
+      "excluded_count": 0
+    },
+    {
+      "role": "Quant",
+      "candidate_count": 162,
+      "allow_count": 155,
+      "low_risk_count": 113,
+      "conditional_count": 42,
+      "excluded_count": 7
+    },
+    {
+      "role": "GraphRouting",
+      "candidate_count": 31,
+      "allow_count": 31,
+      "low_risk_count": 23,
+      "conditional_count": 8,
+      "excluded_count": 0
+    },
+    {
+      "role": "MarketMicrostructure",
+      "candidate_count": 61,
+      "allow_count": 61,
+      "low_risk_count": 35,
+      "conditional_count": 26,
+      "excluded_count": 0
+    },
+    {
+      "role": "BrowserE2E",
+      "candidate_count": 16,
+      "allow_count": 16,
+      "low_risk_count": 6,
+      "conditional_count": 10,
+      "excluded_count": 0
+    },
+    {
+      "role": "ModeParity",
+      "candidate_count": 29,
+      "allow_count": 29,
+      "low_risk_count": 16,
+      "conditional_count": 13,
+      "excluded_count": 0
+    },
+    {
+      "role": "AIEngineering",
+      "candidate_count": 54,
+      "allow_count": 47,
+      "low_risk_count": 30,
+      "conditional_count": 17,
+      "excluded_count": 7
+    },
+    {
+      "role": "Specification",
+      "candidate_count": 45,
+      "allow_count": 38,
+      "low_risk_count": 20,
+      "conditional_count": 18,
+      "excluded_count": 7
+    },
+    {
+      "role": "Performance",
+      "candidate_count": 43,
+      "allow_count": 43,
+      "low_risk_count": 32,
+      "conditional_count": 11,
+      "excluded_count": 0
+    }
+  ],
+  "unassigned_tools": [],
+  "invalid_names": [],
+  "runtime_verified": false,
+  "integrity_checks": {
+    "inputs_identical": true,
+    "source_hash_match": true,
+    "all_271_exact_names_descriptions": true,
+    "all_tools_unknown": true,
+    "24_unique_role_ids": true,
+    "allow_under_ceiling": true,
+    "conditional_subset": true,
+    "allow_union": true,
+    "allow_excluded_disjoint": true,
+    "all_candidates_known": true,
+    "no_skill_names_as_tools": true,
+    "no_nested_dispatch_in_allow": true,
+    "preconditions_present": true,
+    "no_runtime_changes_claimed": true
+  }
+}

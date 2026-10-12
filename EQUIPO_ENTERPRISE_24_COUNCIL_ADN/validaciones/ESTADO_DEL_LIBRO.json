@@ -1,0 +1,8 @@
+{
+  "filename": "ADN_Organizacional.xlsx",
+  "role": "portable_template",
+  "sha256": "fe24c8cedd13698e90ef630e0068593ee4370909ddec4f4314b75632004b88d4",
+  "synchronized_with_current_org": false,
+  "live_workbook_saved_by_download": false,
+  "instruction": "Los JSON y prompts reflejan la organización actual. El XLSX es la plantilla distribuida; aplicar y verificar la configuración antes de usar sus celdas como estado actual."
+}

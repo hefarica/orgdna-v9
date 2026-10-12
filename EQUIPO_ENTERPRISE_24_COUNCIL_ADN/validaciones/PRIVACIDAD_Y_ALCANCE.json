@@ -1,0 +1,16 @@
+{
+  "local_records_included": false,
+  "performance_history_included": false,
+  "promotion_history_included": false,
+  "live_leases_included": false,
+  "initial_scores_are_project_scores": false,
+  "local_history_deleted": false,
+  "runtime_permissions_verified": false,
+  "dsh_execution_performed": false,
+  "filesystem_lock_enforced": false,
+  "integration_operational_state_included": false,
+  "plugin_catalog_cache_included": false,
+  "connection_credentials_included": false,
+  "cordis_activation_performed": false,
+  "note": "El paquete distribuye contratos de organización, políticas y catálogo. Actas, puntajes, promociones y reservas permanecen en el proyecto local y no se incluyen."
+}

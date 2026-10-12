@@ -1,0 +1,46 @@
+APRENDIZAJE Y COMPETENCIAS
+
+{
+  "trigger": "Sólo un fallo demostrado: test_id, SHA, entorno, esperado, observado, evidencia y reproducción.",
+  "states": [
+    "FAIL_OBSERVED",
+    "ROOT_CAUSE_REVIEWED",
+    "SKILL_DRAFTED",
+    "SUPERVISOR_APPROVED",
+    "RETEST_PASS",
+    "INDEPENDENT_APPROVED",
+    "PUBLISHED_VERSION"
+  ],
+  "required_evidence": [
+    "failure_id",
+    "test_id",
+    "candidate_sha",
+    "environment",
+    "expected",
+    "observed",
+    "evidence_paths",
+    "root_cause",
+    "skill_diff",
+    "retest_result",
+    "supervisor_id",
+    "independent_reviewer_id"
+  ],
+  "rules": [
+    "El fallo del producto no prueba por sí solo una carencia del agente: analizar causa raíz.",
+    "No crear o instalar skills por suposición, intuición o métricas sin baseline.",
+    "Skill correctiva = instrucciones, ejemplos, checklist o harness versionado; no entrenamiento de pesos LLM.",
+    "El supervisor aprueba alcance y retest; un revisor independiente distinto del autor firma eficacia.",
+    "Si supervisor o auditor tiene conflicto, el Owner nombra sustituto independiente antes de aprobar.",
+    "La nueva versión conserva caso fallido, regresión, límites, hash y rollback; nunca amplía permisos."
+  ],
+  "weights_training": false,
+  "automatic_publication": false
+}
+
+COMPETENCIAS NUEVAS PROPUESTAS
+[]
+
+PROFESIONES PROPUESTAS
+[]
+
+Las guías portables webapp-testing y systematic-debugging son propuestas nuevas del paquete, no skills oficiales ni instaladas. Leer skills/README.md para integración y límites. Un nombre o ruta en prompt no carga automáticamente un archivo. Nunca añadir claves de skills al JSON DSH si su esquema no las admite.

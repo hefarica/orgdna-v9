@@ -1,0 +1,10 @@
+{
+  "started_at": "2026-10-10T22:21:23Z",
+  "runner": "captain / pwsh / Python 3.12.10",
+  "python_utf8": "unset",
+  "parallelism": 1,
+  "suite_scope": "full",
+  "pattern": "tests_*.py",
+  "tree_digest_manifiesto": "768184b80b9c734c4b8165feded8cfe36ebef630753a7121c1b5a7f0cc74a1fc",
+  "file_count": 302
+}

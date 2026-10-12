@@ -1,0 +1,284 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orgdna:platform:policy:1",
+  "title": "PolicyDecision v1 - contrato congelado R0",
+  "description": "Contrato declarativo del Policy Engine y de las puertas de aprobacion humana (flujo I3, modulo destino engine/policy_engine.py). La raiz es la decision evaluada: allow, deny o require_human_approval. Una decision es datos puros y no ejecuta la accion evaluada.",
+  "frozen_by": "docs/PLATAFORMA_CONTRATOS_V1.md",
+  "frozen_in_round": "R0",
+  "frozen_at": "2026-10-10",
+  "version_field": "policy_contract_version",
+  "prohibited_fields": [
+    "credentials",
+    "api_key",
+    "api_keys",
+    "pending_consent",
+    "csrf",
+    "cookie",
+    "password",
+    "access_token",
+    "refresh_token",
+    "client_secret",
+    "private_key",
+    "authorization",
+    "bearer_token"
+  ],
+  "prohibited_fields_source": "engine/project_store.py:19 (FORBIDDEN_FIELDS, lista literal reutilizada sin alteracion)",
+  "prohibited_fields_rule": "El guard de engine/project_store.py:38-46 compara el nombre normalizado (camelCase->snake_case, '-'->'_' y variante sin caracteres no alfanumericos). Los aprobadores se identifican por rol o referencia opaca, nunca por un valor de credencial.",
+  "name_guard": "propertyNames negativo sobre todos los objetos + additionalProperties=false.",
+  "inert_by_default": true,
+  "inert_by_default_note": "Una decision allow no ejecuta, no firma, no gasta, no abre conectores y no escribe nada: solo declara que la accion propuesta no esta prohibida por la politica vigente. La ejecucion sigue siendo un paso humano o de runtime separado, fuera de este contrato.",
+  "type": "object",
+  "additionalProperties": false,
+  "propertyNames": {
+    "not": {
+      "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+    }
+  },
+  "properties": {
+    "policy_contract_version": {
+      "const": "1",
+      "description": "Campo de version del contrato de decision. Un valor distinto de \"1\" se rechaza con unsupported_version."
+    },
+    "policy_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,63}$",
+      "description": "Identidad de la politica organizacional aplicada."
+    },
+    "policy_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Revision positiva de la politica. Una decision sin revision declarada no es reproducible."
+    },
+    "action": {"$ref": "#/$defs/action"},
+    "decision": {
+      "enum": ["allow", "deny", "require_human_approval"],
+      "description": "Resultado unico de la evaluacion. No existe un cuarto estado ni un 'permitido provisional'."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600,
+      "description": "Razon especifica y no vacia. Un deny o require_human_approval sin razon no es valido."
+    },
+    "gate": {
+      "type": ["string", "null"],
+      "enum": [
+        "secrets",
+        "spend",
+        "connectors",
+        "write",
+        "install",
+        "push",
+        "merge",
+        "deploy",
+        null
+      ],
+      "description": "Puerta humana disparada. Obligatoria y no nula cuando decision=require_human_approval."
+    },
+    "matched_rules": {
+      "type": "array",
+      "default": [],
+      "items": {"$ref": "#/$defs/matched_rule"},
+      "description": "Trazabilidad de las reglas evaluadas. Una decision sin regla coincidente solo es valida si es deny por defecto cerrado."
+    },
+    "limits": {"$ref": "#/$defs/limits"},
+    "approval": {
+      "oneOf": [
+        {"$ref": "#/$defs/approval_record"},
+        {"type": "null"}
+      ],
+      "description": "Registro de aprobacion humana vigente para esta accion y este scope. null significa que no existe."
+    },
+    "side_effects_performed": {
+      "const": false,
+      "description": "Invariante del contrato: evaluar una politica no ejecuta la accion."
+    },
+    "evaluated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "policy_contract_version",
+    "policy_id",
+    "policy_revision",
+    "action",
+    "decision",
+    "reason",
+    "gate",
+    "matched_rules",
+    "limits",
+    "side_effects_performed",
+    "evaluated_at"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {"decision": {"const": "require_human_approval"}},
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {"gate": {"type": "string"}},
+        "required": ["gate"]
+      }
+    },
+    {
+      "if": {
+        "properties": {"decision": {"const": "allow"}},
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {"approval": {"type": "object"}},
+        "required": ["approval"]
+      }
+    }
+  ],
+  "$defs": {
+    "action": {
+      "title": "Accion propuesta (declarativa)",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "action_kind": {
+          "enum": [
+            "read_repo",
+            "write_file",
+            "run_tests",
+            "call_provider",
+            "install_package",
+            "open_connector",
+            "spend_money",
+            "store_memory",
+            "push",
+            "merge",
+            "deploy",
+            "send_message_out"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "scope_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "SHA-256 del alcance exacto propuesto. El mismo hash ata la aprobacion a esta accion concreta."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$"
+        }
+      },
+      "required": ["action_kind", "target"]
+    },
+    "matched_rule": {
+      "title": "Regla coincidente",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$"
+        },
+        "outcome": {
+          "enum": ["allow", "deny", "require_human_approval"]
+        },
+        "limit_ref": {
+          "type": ["string", "null"],
+          "default": null
+        }
+      },
+      "required": ["rule_id", "outcome"]
+    },
+    "limits": {
+      "title": "Limites vigentes declarados por la politica",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "write_allowed": {"type": "boolean"},
+        "network_allowed": {
+          "const": false,
+          "description": "Restriccion dura del encargo: el plano de plataforma no tiene red. Este contrato no admite un valor true."
+        },
+        "spend_usd_max": {
+          "type": "number",
+          "minimum": 0
+        },
+        "autonomy_ceiling": {
+          "enum": ["observe", "propose", "prepare", "execute-approved"]
+        },
+        "approvals_required": {
+          "type": "array",
+          "items": {
+            "enum": ["secrets", "spend", "connectors", "write", "install", "push", "merge", "deploy"]
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": ["write_allowed", "network_allowed", "autonomy_ceiling", "approvals_required"]
+    },
+    "approval_record": {
+      "title": "Aprobacion humana",
+      "type": "object",
+      "additionalProperties": false,
+      "propertyNames": {
+        "not": {
+          "pattern": "(?i)(credential|api[_-]?key|access[_-]?token|refresh[_-]?token|bearer[_-]?token|client[_-]?secret|private[_-]?key|password|cookie|csrf|pending[_-]?consent|authorization)"
+        }
+      },
+      "properties": {
+        "gate": {
+          "enum": ["secrets", "spend", "connectors", "write", "install", "push", "merge", "deploy"]
+        },
+        "approver_role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Rol del aprobador humano. No se almacena ningun dato de autenticacion."
+        },
+        "approved_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,6})?Z$"
+        },
+        "scope_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Debe coincidir con action.scope_hash. Una aprobacion de otro alcance no autoriza esta accion."
+        },
+        "one_shot": {
+          "const": true,
+          "description": "La aprobacion cubre una unica accion exacta y no se reutiliza."
+        }
+      },
+      "required": ["gate", "approver_role", "approved_at", "scope_hash", "one_shot"]
+    },
+    "mandatory_gates": {
+      "title": "Puertas humanas obligatorias v1",
+      "description": "Anotacion normativa para I3: para estas ocho puertas la unica salida distinta de deny exige aprobacion humana registrada con el mismo scope_hash.",
+      "type": "object",
+      "properties": {
+        "gates": {
+          "const": ["secrets", "spend", "connectors", "write", "install", "push", "merge", "deploy"]
+        },
+        "default_outcome": {"const": "require_human_approval"},
+        "executes_on_allow": {"const": false}
+      }
+    }
+  }
+}

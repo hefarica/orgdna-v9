@@ -1,0 +1,11 @@
+{
+  "name": "orgdna-cordis-addon",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "entry.mjs",
+  "description": "Additive shared coordination for one existing OrgDNA roster; explicit activation only",
+  "engines": {"node": ">=22.19.0"},
+  "peerDependencies": {"@deepseek-ai/dsh-tools": "0.2.1-alpha.1 || 0.2.0-rc.2 || 0.0.1-rc.1"},
+  "scripts": {"test": "node --test tests/*.test.mjs", "preflight": "node preflight.mjs"}
+}
