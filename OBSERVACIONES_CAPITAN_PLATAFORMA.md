@@ -572,3 +572,74 @@ NO VERIFICADA en este host**; `no_links()` sí contempla junctions vía `st_file
 **BUG 5 no estaba cerrado**: el respaldo era inoperante en Windows. Con esta reparación la suite del lanzador queda
 verde, el defecto está localizado, reparado y falsificado, y el paquete re-sellado (302 entradas). Lo que **sigue en
 `NOT_RUN`** es el lanzamiento real de DSH: la suite es offline y **no ejecuta ningún proceso de Windows**.
+
+---
+
+## O-25 · P3‑C — techo de agentes 32 → 40: fuente única, y lo que el barrido de literales no ve
+
+**Decisión del propietario:** escuadrón **plano** de N (no escuadrones encadenados). La declaración explícita de
+`autonomy.py:158` (squads pasivos para impedir doble dispatch) **no se toca**: lo que no existe es el relevo
+entre escuadrones, y eso queda como producto siguiente.
+
+### La corrección que desmonta el método del barrido
+
+La cota **no viaja siempre como literal comparable**. `autonomy.py:43` la pasa **como argumento**:
+
+```python
+n=_integer(n,'agent_count',1,32)                                   # :43  <- el 32 es un ARGUMENTO
+raise ValueError(f'{field}: entero {minimum}..{maximum} requerido.')  # :20  <- el mensaje se COMPONE aquí
+```
+
+El literal no aparece junto al mensaje, así que **un grep no lo encuentra**. Comprobado con números: un parche de
+**30 sitios** que no incluía `autonomy.py` **seguía fallando** con `agent_count: entero 1..32 requerido.` Esto es
+la prueba de que editar N literales a un valor nuevo reproduce el fallo en el siguiente cambio; de ahí la fuente
+única `engine/limits.py`.
+
+### Alcance real medido
+
+**13 archivos, 51 reglas, 54 sustituciones** — no 4 archivos y 5 puntos. Verificado que
+`core.MAX_AGENTS is limits.MAX_AGENTS` → **`True`**: es literalmente el mismo objeto, no una copia.
+
+### Cuatro guardas que el cambio desplazó (y que se movieron DECLARADAMENTE)
+
+La primera pasada de P3‑C dio `failures=4`. Ninguna era un defecto del cambio: las cuatro fijaban fronteras
+viejas. **Dos de ellas —hashes pinneados en `qa_v7/dsh_baseline.json`— no estaban en ningún inventario previo**
+(`engine/cordis_extension.py` y `engine/integration_recommendations.py`). Las otras dos:
+
+| Guarda | Qué fijaba | Movida a |
+|---|---|---|
+| `tests_bridge.py:187` | `{'agent_count':33}` inválido | `41` |
+| `tests_org_design.test_invalid_n_and_budgets_are_not_coerced` | `33` inválido | `41` |
+| `qa_v7/test_generation_failures_independent.py` | `{'profiles_per_request':33}` inválido | `41` |
+| `tests_platform_integration.py:362` | `47` módulos de `engine/` | `48` |
+
+**Había TRES fronteras de N, no dos.** Y se **añadió un positivo N=40** que antes no existía: sin él, subir el
+techo quedaría declarado pero no probado.
+
+### El mensaje que habría pasado a mentir
+
+`core.py:112` decía «Más de 32 agentes requiere diseño multi-squad». Con el techo en 40 eso sería **falso**:
+`multi-squad` en este producto son los dos escuadrones fijos —implementación y Council— (`bundle.py:837`), no N
+escuadrones encadenados. El mensaje pasa a decir la verdad: escuadrón plano de N, encadenado **no implementado**.
+
+### Evidencia
+
+| Medición | Resultado |
+|---|---|
+| N=40, modo API (`tests_org_design`, positivo nuevo) | **`OK`** — 40 perfiles, `len(agents)==40`, organización válida |
+| N=41 | `Más de 40 agentes no está soportado: … no se trunca el equipo.` |
+| `autonomy` con 41 (la cota-argumento) | `agent_count: entero 1..40 requerido.` |
+| Prompt del proveedor | `Use 1-40 professions` — deja de instruir al modelo con el techo viejo |
+| Cotas `32` supervivientes | **0** |
+| Suite completa (1035) | `failures=0, errors=4, skipped=3` |
+
+### Declarado, no resuelto
+
+1. **Modo plantilla sin IA: sigue en 32.** `ROLE_SEEDS` y `PERSONAS` son 32 y `core.py:947` rechaza N=40 por ahí.
+   Falla cerrado, no trunca. Ampliarlo exige **8 semillas nuevas**: contenido de producto, decisión separada.
+2. **`RUNTIME_UNVERIFIED`:** AgentTeams tendría que admitir **1 Captain + 39 teammates**. Este repositorio
+   **genera** el diseño; **no ejecuta** AgentTeams ni DSH.
+3. **Inestabilidad HTTP (O‑3), medida y NO atribuida.** El cuarto error de la suite es
+   `qa_v7...RecoveryHttpIndependent` con `WinError 10053`. Repetido en aislamiento: **1/12 en el árbol previo a
+   P3‑C y 3/12 en el actual**. Ambos fallan, así que el mecanismo es preexistente; **la diferencia de tasa no
+   queda establecida** (Fisher exacto, p ≈ 0,59 con n=12). Queda como cuestión abierta, no como «sin diferencia».

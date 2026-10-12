@@ -191,7 +191,7 @@ RUNTIME_ALLOWLIST = (
     'engine/task_graph.py', 'engine/agent_registry.py', 'engine/evidence_graph.py',
     'engine/policy_engine.py', 'engine/memory_governance.py', 'engine/tenants.py',
     'engine/reliability.py', 'engine/connector_gateway.py', 'engine/evaluation_harness.py',
-    'engine/artifact_factory.py', 'engine/approval_receipt.py',
+    'engine/artifact_factory.py', 'engine/approval_receipt.py', 'engine/limits.py',
     'tests_platform_task_graph.py', 'tests_platform_registry_evidence.py',
     'tests_platform_policy.py', 'tests_platform_memory_tenants.py',
     'tests_platform_eval_artifacts.py', 'tests_platform_reliability_connectors.py',

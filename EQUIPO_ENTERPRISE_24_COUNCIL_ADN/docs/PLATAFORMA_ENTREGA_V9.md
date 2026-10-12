@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 239 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 302 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por la reparación P3‑A |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (301 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 240 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 303 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (302 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `302` |
-| `file_count` que reportará `validate_imports_portable.py` | `303` (incluye el propio manifiesto) |
-| Allowlist | `239` entradas |
+| Entradas del manifiesto | `303` |
+| `file_count` que reportará `validate_imports_portable.py` | `304` (incluye el propio manifiesto) |
+| Allowlist | `240` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 302 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **300** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 303 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **301** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 302
-MANIFIESTO_SHA256_SIN_ESPEJO 9f165c9b07d6d31adc1d7ebe54a78fed62720e3d9113628a9a62d9bb1836d4fc
+MANIFIESTO_FILE_COUNT 303
+MANIFIESTO_SHA256_SIN_ESPEJO 6291c3d7a73f484ad492005a474f416561bbb0c9f866d2dc287bdce409af8448
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -444,6 +444,65 @@ procedencia del ZIP de origen y ningún test lo consume. Verificado tras la enmi
 `WinError 1314` antes de ejercitar nada. Se declara **skip con motivo explícito** en lugar de quedar en rojo, de modo
 que la carencia de cobertura sea visible y no un fallo aparente del producto. **La ruta de rechazo de reparse points
 queda NO VERIFICADA en este host**; `no_links()` sí contempla junctions vía `st_file_attributes & 0x400`.
+
+---
+
+## 9-quater. Cambio P3‑C — techo de agentes de 32 a 40 (decisión del propietario)
+
+**Qué cambia y por qué.** El techo de N era un literal `32` **duplicado**. No era una frontera de orquestación: era
+una constante repetida, y por eso estaba **desincronizada entre capas**. Se sustituye por una **fuente única**,
+`engine/limits.py`, del que todas las capas importan `MAX_AGENTS`. Ninguna capa lo redefine.
+
+**El alcance no eran cuatro archivos.** Inventario medido: **13 archivos**, 51 reglas de sustitución, 54
+sustituciones. Incluye `core.py` (el gate que salta primero, `_normalize_config:111`), `autonomy.py` (dos sitios
+donde la cota viaja **como argumento**), `bridge.py:156` (validación en servidor), `dna.py`, `org_design.py`,
+`providers.py`, `capability_deployment.py`, `capability_recommendations.py`, `integration_recommendations.py`,
+`resource_workflows_adapter.py`, `resource_workflows.py`, `cordis_extension.py`, `generation_pipeline.py` y la UI.
+
+**Por qué un barrido de literales no bastaba.** `autonomy.py:43` pasa `1,32` como **argumento** a `_integer`, y el
+mensaje se compone en `:20` (`f'{field}: entero {minimum}..{maximum} requerido.'`). El literal no aparece junto al
+mensaje, así que un grep no lo encuentra. Comprobado: un parche de **30 sitios** que no incluía `autonomy.py`
+seguía fallando con `agent_count: entero 1..32 requerido.`
+
+**La UI deja de tener literales.** Los tres `max="32"` pasan a `max="__MAX_AGENTS__"` y `bridge.py:1644` los
+rellena al servir, junto al `__CSRF_TOKEN__` que ya se sustituía. `tests_bridge.py` afirma ahora que **ninguno** de
+los dos marcadores sobrevive en el cuerpo servido.
+
+**El mensaje que habría mentido, corregido.** `core.py:112` decía «Más de 32 agentes requiere diseño multi-squad».
+Con el techo en 40 eso sería **falso**: `multi-squad` en este producto significa los dos escuadrones fijos
+—implementación y Council— (`bundle.py:837`), no N escuadrones encadenados. El mensaje dice ahora la verdad: un
+escuadrón plano de N perfiles, con el encadenado **no implementado**.
+
+**Los dos tests de frontera, movidos de forma declarada y no silenciada:** `tests_bridge.py:187` (`33`→`41`) y
+`tests_org_design.test_invalid_n_and_budgets_are_not_coerced` (`33`→`41`). Y se **añade un positivo N=40**: sin él,
+subir el techo quedaría declarado pero no probado.
+
+**Evidencia**
+
+| Medición | Resultado |
+|---|---|
+| N=41 rechazado | `Más de 40 agentes no está soportado: … no se trunca el equipo.` |
+| `autonomy` con 41 (la cota-argumento) | `agent_count: entero 1..40 requerido.` |
+| `autonomy` con 40 | aceptado |
+| **Positivo N=40, modo API** (`tests_org_design`) | **`OK`** — 40 perfiles, `len(agents)==40`, organización válida |
+| Prompt del proveedor | `Use 1-40 professions` — deja de instruir al modelo con el techo viejo |
+| Cotas `32` supervivientes | **0** (el único resto es el docstring de `limits.py` que explica el patrón) |
+
+### 9-quater.1 Limitación declarada: el modo plantilla sigue en 32
+
+`core.py:947` (`check(config.get('agent_count')==n, 'agent_count no coincide con agents.')`) rechaza N=40 en el
+modo **plantilla sin IA**, porque `ROLE_SEEDS` y `PERSONAS` son **32** y el generador offline produce 32 perfiles.
+Falla **cerrado** —no trunca en silencio—, que es la conducta correcta, pero el mensaje no explica la causa real.
+
+- **Modo API: N=40 funciona**, probado (tabla anterior).
+- **Modo plantilla: sigue en 32.** Ampliarlo exige **8 semillas nuevas** en `ROLE_SEEDS`/`PERSONAS`, que son
+  contenido de producto y no una reparación. **Decisión pendiente y separada**, no incluida en P3‑C.
+
+### 9-quater.2 `RUNTIME_UNVERIFIED` que este cambio NO resuelve
+
+AgentTeams tendría que admitir **1 Captain + 39 teammates**. Este repositorio **genera** el diseño y los
+artefactos; **no ejecuta** AgentTeams ni DSH. Esa frontera queda declarada como `RUNTIME_UNVERIFIED`, igual que el
+resto de capacidades operativas: `NOT_RUN`.
 
 ---
 

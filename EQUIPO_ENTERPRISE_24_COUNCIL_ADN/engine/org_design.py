@@ -21,7 +21,11 @@ else:
     from tool_permissions import ROLE_NAMES
 
 SCHEMA_VERSION = "org-design-1.0"
-MAX_AGENTS = 32
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 MAX_REQUESTS = 16
 MAX_OUTPUT_TOKENS = 131_072
 DEFAULT_OUTPUT_TOKENS = 16_384
@@ -274,7 +278,7 @@ def _config_view(config):
             if key in ("repo_ref", "objective", "project_objective") and config[key] in (None, ""):
                 continue
             clean[key] = p.redact_text(p._text(config[key], maximum))
-    for key, maximum in (("max_direct_reports", 8), ("implementation_concurrency", 3), ("council_concurrency", 32)):
+    for key, maximum in (("max_direct_reports", 8), ("implementation_concurrency", 3), ("council_concurrency", MAX_AGENTS)):
         if key in config:
             clean[key] = p._bounded_int(config[key], 1, maximum, key)
     if "template" in config:

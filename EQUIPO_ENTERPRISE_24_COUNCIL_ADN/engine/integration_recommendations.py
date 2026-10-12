@@ -4,6 +4,12 @@ No recommendation changes selected capabilities, library assignments, runtime
 permissions or agent profiles. Paid consent/idempotency never enters exports.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import re
 import threading
@@ -96,7 +102,7 @@ class IntegrationRecommendations:
         selection = s.capabilities_hub.selection(body.get('selection', {'mode': 'all'}))
         ids = select_agents(s.organization, selection)
         if len(ids) > rec.MAX_AGENTS:
-            raise ValueError('Selecciona un lote de hasta 32 agentes.')
+            raise ValueError('Selecciona un lote de hasta %d agentes.' % rec.MAX_AGENTS)
         library = s.capabilities_hub.library
         explicit_shortlist = 'candidate_ids' in body or 'catalog_candidate_ids' in body
         candidate_ids = body.get('candidate_ids', [] if explicit_shortlist else None)

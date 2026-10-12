@@ -44,8 +44,8 @@ Resultado medido en el árbol congelado que originó este repositorio:
 
 ```
 verifica_manifiesto.py
-  entradas manifiesto : 302
-  hashes coincidentes : 302
+  entradas manifiesto : 303
+  hashes coincidentes : 303
   hashes divergentes  : 0
   faltantes           : 0
   exentos declarados  : 14     (data/ y el expediente de verificación, por diseño)
@@ -53,13 +53,13 @@ verifica_manifiesto.py
   RESULTADO           : OK
 
 validate_imports_portable.py
-  valid: true | errors: [] | checks: 1801 | file_count: 303
+  valid: true | errors: [] | checks: 1807 | file_count: 304
   agent_count: 24 | tool_catalog_count: 271 | export_hashes_valid: true
 ```
 
-`MANIFIESTO_SHA256.txt` → `a29ec9e2e4a39a5a7f4c5d3dd4790abd7787b92db34b953905820b841ba5d867`
+`MANIFIESTO_SHA256.txt` → `b4e54be3b7a2831bcd0230c1f38d692f1c6a512fd2da8851c124ec768161c983`
 
-El sello cubre **302** archivos; el archivo 303 es el propio manifiesto. `data/` y
+El sello cubre **303** archivos; el archivo 304 es el propio manifiesto. `data/` y
 `docs/PLATAFORMA_VERIFICACION_V1.md` quedan fuera del sello **deliberadamente**: el primero es estado
 de ejecución que el producto reescribe al usarse —verificado: la suite completa lo modifica y los 302
 hashes siguen coincidiendo—, el segundo un expediente que debe poder revisarse sin re-sellar el paquete.
@@ -73,7 +73,7 @@ este árbol son **LF puro**.
 
 Este host trae `core.autocrlf=true` en el gitconfig de sistema (`C:/Program Files/Git/etc/gitconfig`).
 Sin la regla `* -text` de [`.gitattributes`](.gitattributes), Git convertiría LF → CRLF al hacer
-checkout y **los 302 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
+checkout y **los 303 hashes dejarían de verificar en un clon limpio**. La regla viaja con el repo, así
 que cualquier clon queda protegido. `* -text` desactiva solo la conversión de fin de línea: el atributo
 `diff` sigue activo y los diffs de texto funcionan con normalidad.
 
@@ -123,31 +123,41 @@ esa variable; con ella pasan. Está medido y documentado en el expediente de ver
 ### 5.1 Medición final sobre el árbol congelado
 
 Descubrimiento completo (`test*.py`, 44 módulos), `PYTHONUTF8=1`, sin paralelismo, huella del árbol
-`a29ec9e2e4a39a5a7f4c5d3dd4790abd7787b92db34b953905820b841ba5d867`:
+`b4e54be3b7a2831bcd0230c1f38d692f1c6a512fd2da8851c124ec768161c983`:
 
 ```
-Ran 1035 tests in 240.995s
-FAILED (errors=3, skipped=3)          ← failures=0
+Ran 1035 tests in 187.616s
+FAILED (errors=4, skipped=3)          ← failures=0
 ```
 
-Los **3 errores restantes son de entorno puro**, verificado uno a uno por su traza:
+Los **4 errores restantes son de entorno**, verificado uno a uno por su traza:
 
 | Caso | Causa raíz | Naturaleza |
 |---|---|---|
 | `qa_v6.test_evaluation_independent.test_symlink_in_test_tree_rejected` | `OSError WinError 1314` — sin privilegio para crear enlaces simbólicos | entorno |
 | `tests_capability_deployment.test_namespace_traversal_symlink` | `OSError WinError 1314` — ídem | entorno |
 | `tests_bridge.test_workbook_stale_blocks_export` | *Mark-of-the-Web* + `RemoteSigned` bloquean el `.ps1` sin firma; el puente Excel lanza si el libro no está abierto | línea base V8 |
+| `qa_v7.test_design_recovery_independent.RecoveryHttpIndependent` | `ConnectionAbortedError WinError 10053` — carrera de socket local | **inestabilidad preexistente (O‑3)** |
+
+El cuarto es **intermitente y preexistente**, y está medido, no supuesto: repetido en aislamiento falla
+**1/12 en el árbol anterior a P3‑C y 3/12 en el actual**. Ambos árboles fallan, así que el mecanismo no es de
+P3‑C; la diferencia de tasa **no queda establecida** (prueba exacta de Fisher, p ≈ 0,59 con n=12) y se declara
+como cuestión abierta, no como «sin diferencia».
 
 Los **3 skips son declarados**, no silenciosos: dos por capacidad de plataforma (grupo de procesos
 POSIX; symlinks) y uno por el privilegio de symlink anterior. **Cero fallos atribuibles al producto.**
 
-Comparación controlada de las tres mediciones (misma huella de medición, mismo host):
+Comparación controlada de las mediciones (mismo host, misma huella de medición en cada par):
 
 | Medición | Resultado |
 |---|---|
 | Clon limpio, antes de la reparación P3‑B (1026 casos) | `failures=1, errors=9, skipped=2` |
-| Árbol re-sellado, primera pasada (1035) | `failures=1, errors=5, skipped=3` |
-| **Árbol final (1035)** | **`failures=0, errors=3, skipped=3`** |
+| Árbol final de P3‑B (1035) | `failures=0, errors=3, skipped=3` |
+| P3‑C primera pasada (1035) — las 4 guardas lo detectan | `failures=4, errors=3, skipped=3` |
+| **P3‑C con las guardas cerradas (1035)** | **`failures=0, errors=4, skipped=3`** |
+
+Las 4 guardas de la tercera fila no son un defecto del cambio: son tests que **fijaban las fronteras viejas** y
+que se movieron de forma declarada. Dos de ellas eran hashes pinneados que nadie había listado.
 
 Además: la suite de plataforma **391 OK (skipped=1)**, y `tests_dsh_launcher.py` pasó de
 `FAILED (failures=1, errors=5)` a **`OK (skipped=1)`**.
@@ -190,7 +200,49 @@ es `/` y el defecto es invisible.
 **Esto significa que BUG 5 no estaba cerrado.** Lo que sigue en `NOT_RUN` es el lanzamiento real de
 DSH: la suite es offline y no ejecuta ningún proceso de Windows.
 
-### 5.3 Independencia de la verificación: degradada
+### 5.3 Cambio P3‑C — techo de agentes: de un literal duplicado a una fuente única
+
+El techo de N era un literal `32` **repetido**, no una frontera de orquestación, y por eso estaba desincronizado
+entre capas: subirlo por partes fallaba. Ahora hay **una sola definición** —`engine/limits.py`, `MAX_AGENTS = 40`—
+y todas las capas la importan. Verificado que `core.MAX_AGENTS is limits.MAX_AGENTS` → **`True`**: es el mismo
+objeto.
+
+**Alcance real medido: 13 archivos, 51 reglas, 54 sustituciones** — no 4 archivos y 5 puntos.
+
+**Por qué un barrido de literales no bastaba.** `autonomy.py:43` pasa la cota **como argumento**
+(`_integer(n,'agent_count',1,32)`) y el mensaje se compone en `:20`. El literal no está junto al mensaje, así que
+un grep no lo ve. Comprobado: un parche de **30 sitios** que no incluía `autonomy.py` seguía fallando con
+`agent_count: entero 1..32 requerido.`
+
+**La UI pierde los literales.** Los tres `max="32"` pasan a `max="__MAX_AGENTS__"`, que `bridge.py:1644` rellena
+al servir junto al `__CSRF_TOKEN__`. Un test afirma ahora que **ningún** marcador sobrevive en el cuerpo servido.
+
+**Un mensaje que habría pasado a mentir, corregido.** `core.py:112` decía «>32 requiere diseño multi-squad». Con
+el techo en 40 eso sería falso: `multi-squad` aquí son los dos escuadrones fijos —implementación y Council—
+(`bundle.py:837`), no N escuadrones encadenados. Ahora dice la verdad: escuadrón plano de N, encadenado **no
+implementado**.
+
+**Tres fronteras movidas declaradamente** (`33`→`41` en `tests_bridge.py`, `tests_org_design.py` y
+`qa_v7/test_generation_failures_independent.py`), **una de conteo** (`47`→`48` módulos de `engine/`) y **dos
+hashes pinneados con enmienda registrada** dentro de `qa_v7/dsh_baseline.json`. Más un positivo **N=40** que
+antes no existía: sin él, subir el techo quedaría declarado pero no probado.
+
+| Medición | Resultado |
+|---|---|
+| N=41 | `Más de 40 agentes no está soportado: … no se trunca el equipo.` |
+| `autonomy` con 41 (la cota-argumento) | `agent_count: entero 1..40 requerido.` |
+| **Positivo N=40, modo API** | **`OK`** — 40 perfiles, `len(agents)==40`, organización válida |
+| Prompt del proveedor | `Use 1-40 professions` |
+| Cotas `32` supervivientes | **0** |
+
+**Limitación declarada, no resuelta:** el modo **plantilla sin IA** sigue en 32, porque `ROLE_SEEDS` y `PERSONAS`
+son 32 y `core.py:947` rechaza N=40 por ahí. Falla cerrado, no trunca en silencio. Ampliarlo exige 8 semillas
+nuevas: contenido de producto, decisión separada.
+
+**Lo que sigue sin verificar:** AgentTeams tendría que admitir **1 Captain + 39 teammates**. Este repositorio
+genera el diseño y los artefactos; **no ejecuta** AgentTeams ni DSH. `RUNTIME_UNVERIFIED`.
+
+### 5.4 Independencia de la verificación: degradada
 
 La verificación V1 la firmó el propio capitán, que no implementó ninguno de los 11 módulos de
 plataforma, pero tampoco es un tercero independiente. Las capacidades operativas siguen en `NOT_RUN`.

@@ -33,7 +33,11 @@ else:  # python engine/bridge.py imports its sibling core directly.
 
 OWNER = 'OWNER_EXTERNAL'
 SCHEMA_VERSION = '1.0'
-MAX_AGENTS = 32
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 MAX_PROMPT_UTF16 = 50000
 MAX_COLLAB_UTF16 = 8000
 MAX_RECIPE_BYTES = 4 * 1024 * 1024
@@ -109,7 +113,7 @@ def _normalize_config(config):
     raw = copy.deepcopy(config)
     n = raw.get('agent_count', raw.get('n', raw.get('num_agents', 24)))
     if (type(n) is int and n > MAX_AGENTS) or (isinstance(n, str) and n.isdigit() and int(n) > MAX_AGENTS):
-        raise ValueError('Más de 32 agentes requiere diseño multi-squad y presupuesto explícito; no se trunca el equipo.')
+        raise ValueError('Más de %d agentes no está soportado: el diseño es un escuadrón plano de N perfiles y el encadenado de escuadrones no está implementado; no se trunca el equipo.' % MAX_AGENTS)
     n = _integer(n, 'agent_count', 1, MAX_AGENTS)
     span = _integer(raw.get('max_direct_reports', raw.get('span', 3)), 'max_direct_reports', 1, 8)
     repo_url = raw.get('repo_url', raw.get('repository', ''))
@@ -133,7 +137,7 @@ def _normalize_config(config):
             'template':template, 'provider':provider, 'model':model,
             'implementation_concurrency':min(n,concurrency),
             'model_assignments':raw.get('model_assignments',raw.get('model_overrides',{})),
-            'council_concurrency':_integer(raw.get('council_concurrency',n),'council_concurrency',1,32),
+            'council_concurrency':_integer(raw.get('council_concurrency',n),'council_concurrency',1,MAX_AGENTS),
             'owner_name':_text(raw.get('owner_name','Owner externo'),'owner_name',120),
             'language':'es', 'profile_version':'1.0','hierarchy_mode':hierarchy_mode,
             **normalize_autonomy_config(dict(raw,agent_count=n),enabled=True),
@@ -942,7 +946,7 @@ def _validate_organization(org):
     mode=config.get('hierarchy_mode','automatic')
     check(mode in ('automatic','manual'),'Modo de jerarquía inválido.')
     check(type(org.get('state_version',1)) is int and org.get('state_version',1)>=1,'state_version inválido.')
-    check(1<=n<=32,'El equipo debe tener entre 1 y 32 agentes; >32 requiere multi-squad.')
+    check(1<=n<=MAX_AGENTS,'El equipo debe tener entre 1 y %d agentes.' % MAX_AGENTS)
     check(type(span) is int and 1<=span<=8,'max_direct_reports inválido.')
     check(config.get('agent_count')==n,'agent_count no coincide con agents.')
     ids=[a.get('id') for a in agents]
@@ -1067,7 +1071,7 @@ def _validate_recipe(recipe):
     if recipe.get('format')!='agent-team-gui/recipe' or type(recipe.get('version')) is not int or recipe.get('version')!=1: errors.append('Envelope DSH v1 inválido.')
     if type(recipe.get('exportedAt')) is not int or recipe['exportedAt']<0: errors.append('exportedAt inválido.')
     agents=recipe.get('agents',[]); squad=recipe.get('squad',{})
-    if not isinstance(agents,list) or not 1<=len(agents)<=32: errors.append('Recipe debe tener 1..32 agentes.'); agents=[]
+    if not isinstance(agents,list) or not 1<=len(agents)<=MAX_AGENTS: errors.append('Recipe debe tener 1..%d agentes.' % MAX_AGENTS); agents=[]
     ids=[]
     for a in agents:
         if not isinstance(a,dict) or not AGENT_KEYS<=set(a) or set(a)-AGENT_KEYS-AGENT_OPTIONAL_KEYS: errors.append('Campos de agente no admitidos.'); continue
@@ -1102,7 +1106,7 @@ def _validate_recipe(recipe):
                 if gate['reviewerAgentId'] not in ids or gate['repairAgentId'] not in ids or gate['reviewerAgentId']==gate['repairAgentId']: errors.append('qualityGate requiere revisor e implementador distintos dentro de N.')
                 if type(gate['maxRounds']) is not int or gate['maxRounds'] not in (0,1,2): errors.append('qualityGate.maxRounds inválido.')
                 if 'criteria' in gate and (not isinstance(gate['criteria'],str) or utf16_len(gate['criteria'])>20000): errors.append('qualityGate.criteria inválido.')
-        if type(squad.get('maxConcurrency')) is not int or not 1<=squad.get('maxConcurrency',0)<=32: errors.append('maxConcurrency inválido.')
+        if type(squad.get('maxConcurrency')) is not int or not 1<=squad.get('maxConcurrency',0)<=MAX_AGENTS: errors.append('maxConcurrency inválido.')
         if squad.get('memberSelectionMode') not in ('all','adaptive'): errors.append('Selección inválida.')
         note=squad.get('collabNote','')
         if not isinstance(note,str) or utf16_len(note)>=8000: errors.append('collabNote >=8000 UTF16.')
@@ -1222,8 +1226,8 @@ def validate_definitions(document):
         if type(document.get('exportedAt')) is not int or document['exportedAt']<0:
             errors.append('exportedAt inválido.')
         agents=document.get('agents',[]); squads=document.get('squads',[])
-        if not isinstance(agents,list) or not 1<=len(agents)<=32:
-            raise ValueError('Definitions generado debe contener 1..32 agentes únicos.')
+        if not isinstance(agents,list) or not 1<=len(agents)<=MAX_AGENTS:
+            raise ValueError('Definitions generado debe contener 1..%d agentes únicos.' % MAX_AGENTS)
         if not isinstance(squads,list) or len(squads)!=2:
             raise ValueError('Definitions generado debe contener exactamente implementación y Council.')
         ids=[a.get('id') for a in agents if isinstance(a,dict)]

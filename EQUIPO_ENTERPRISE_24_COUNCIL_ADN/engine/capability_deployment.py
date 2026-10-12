@@ -4,6 +4,12 @@ A successful publication only means verified bytes in a new namespace/version;
 activation remains pending until native identity/tool/manifest readback succeeds.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import hashlib
 import json
 import os
@@ -52,8 +58,8 @@ def build_deployment_plan(library_manifest, organization_id, member_ids):
     if not isinstance(library_manifest, dict) or library_manifest.get('organization_id') != identifier:
         raise ValueError('Library belongs to a different organization')
     ids = [str(uuid.UUID(value)) for value in member_ids]
-    if len(ids) != len(set(ids)) or not 1 <= len(ids) <= 32:
-        raise ValueError('Existing roster requires 1–32 unique members')
+    if len(ids) != len(set(ids)) or not 1 <= len(ids) <= MAX_AGENTS:
+        raise ValueError('Existing roster requires 1–%d unique members' % MAX_AGENTS)
     return {'protocol': PROTOCOL, 'organization_id': identifier, 'namespace': namespace,
             'member_ids': ids, 'manifest_sha256': _sha(_bytes(library_manifest)),
             'status': 'PREVIEW_ONLY', 'runtime_activated': False,
@@ -160,7 +166,7 @@ def export_skillhub_library(library, organization):
     """Snapshot a paginated registry; revisions must stay stable throughout export."""
     identifier = str(uuid.UUID(organization['organization_id']))
     ids = [str(uuid.UUID(a['id'])) for a in organization['agents']]
-    if len(ids) != len(set(ids)) or not 1 <= len(ids) <= 32:
+    if len(ids) != len(set(ids)) or not 1 <= len(ids) <= MAX_AGENTS:
         raise ValueError('Invalid existing roster')
     items, assignments, revisions = [], [], set()
     for method, target, maximum in ((library.search, items, 10000), (library.manifest_page, assignments, 320000)):
@@ -204,7 +210,7 @@ def validate_skillhub_manifest(manifest, organization):
     ids = [str(uuid.UUID(a['id'])) for a in organization['agents']]
     if (not isinstance(manifest, dict) or manifest.get('protocol') != 'orgdna-skillhub/1' or
         manifest.get('organization_id') != identifier or manifest.get('namespace') != 'orgdna_' + identifier.replace('-', '') or
-        manifest.get('member_ids') != ids or len(ids) != len(set(ids)) or not 1 <= len(ids) <= 32):
+        manifest.get('member_ids') != ids or len(ids) != len(set(ids)) or not 1 <= len(ids) <= MAX_AGENTS):
         raise ValueError('SkillHub organization/roster mismatch')
     if set(manifest) - {'protocol','organization_id','namespace','member_ids','revision','items','assignments','context_budget_bytes','permission_grants','runtime_verified','connectors'}:
         raise ValueError('Unknown SkillHub manifest fields')

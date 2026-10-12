@@ -6,6 +6,12 @@ Only inert skill_instructions are produced; existing library review/activation
 is required to embed them. Source text never grants permissions.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import math
 import re
@@ -219,7 +225,7 @@ def _prepare(organization, reference, provider, model, *, agent_ids=None, max_ou
     limits, effective = _model_limits(model_metadata, config['name'], model, cap)
     if cap != effective:
         raise WorkflowError('El límite excede el máximo declarado del modelo.')
-    size = p._bounded_int(batch_size, 1, 32, 'batch_size')
+    size = p._bounded_int(batch_size, 1, MAX_AGENTS, 'batch_size')
     maximum = p._bounded_int(max_requests, 1, 32, 'max_requests')
     requests = []
     for start in range(0, len(data['agents']), size):

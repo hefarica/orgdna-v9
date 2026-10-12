@@ -18,6 +18,10 @@ htmlcov/
 ~$*.xlsm
 ~$*.xlsb
 
+# Estado del arnes DSH (rollback de sesion: sessionId, checkpoints, rolls, undos).
+# No es producto: cambia solo, por sesion, y no aporta nada al entregable.
+.dsh/
+
 # Volcados y temporales del sistema
 Thumbs.db
 desktop.ini

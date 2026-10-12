@@ -184,7 +184,7 @@ class BridgeStateTests(unittest.TestCase):
         self.assertIn('if ($cell.HasFormula)',script)
         self.assertNotIn('ExecutionPolicy Bypass',script)
     def test_invalid_config_rejected(self):
-        for raw in ({'agent_count':33},{'max_direct_reports':0},{'api_key':'secret'},{'repo_url':'https://127.0.0.1/x/y'},{'repo_url':'https://github.com/a/b?token=x'},{'implementation_concurrency':4}):
+        for raw in ({'agent_count':41},{'max_direct_reports':0},{'api_key':'secret'},{'repo_url':'https://127.0.0.1/x/y'},{'repo_url':'https://github.com/a/b?token=x'},{'implementation_concurrency':4}):
             with self.subTest(raw=raw),self.assertRaises(BridgeError):normalize_config(raw)
     def test_local_verification_requires_separate_consent(self):
         self.state.credentials['deepseek-official']='fixture-key'
@@ -214,7 +214,7 @@ class HTTPTests(unittest.TestCase):
     def test_html_assets_and_csp(self):
         status,headers,body=self.request('GET','/')
         self.assertEqual(status,200);self.assertIn(b'OrgDNA',body)
-        self.assertNotIn(b'__CSRF_TOKEN__',body);self.assertEqual(headers['X-Frame-Options'],'DENY')
+        self.assertNotIn(b'__CSRF_TOKEN__',body);self.assertNotIn(b'__MAX_AGENTS__',body);self.assertEqual(headers['X-Frame-Options'],'DENY')
         for path in ('/app.js','/style.css'):self.assertEqual(self.request('GET',path)[0],200)
     def test_bad_host_origin_csrf_cookie_blocked(self):
         self.assertEqual(self.request('GET','/',headers={'Host':'evil.example'})[0],403)

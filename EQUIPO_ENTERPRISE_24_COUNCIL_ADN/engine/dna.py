@@ -4,6 +4,12 @@ No network, repository execution, tool installation, or permission grants occur 
 The API design boundary is deliberately different from the explicit offline template.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import hashlib
 import json
@@ -203,8 +209,8 @@ def _cv(value,field):
 
 def validate_profile_specs(specs,n,analysis):
     """Return a fully checked copy, or raise; incomplete API output never uses seeds."""
-    if type(n) is not int or not 1<=n<=32:
-        raise ValueError('agent_count debe ser entero 1..32.')
+    if type(n) is not int or not 1<=n<=MAX_AGENTS:
+        raise ValueError('agent_count debe ser entero 1..%d.' % MAX_AGENTS)
     if not isinstance(specs,list) or len(specs)!=n:
         raise ValueError(f'profile_specs debe contener EXACTAMENTE {n} perfiles, sin relleno ni truncamiento.')
     observed=observed_paths(analysis)
@@ -261,8 +267,8 @@ def validate_profile_specs(specs,n,analysis):
 
 
 def agent_id(organization_id,slot):
-    if type(slot) is not int or not 1<=slot<=32:
-        raise ValueError('slot debe ser entero 1..32.')
+    if type(slot) is not int or not 1<=slot<=MAX_AGENTS:
+        raise ValueError('slot debe ser entero 1..%d.' % MAX_AGENTS)
     return str(uuid.uuid5(uuid.UUID(organization_id),f'agent-slot:{slot}'))
 
 
@@ -318,11 +324,11 @@ def build_provenance(config,analysis,specs=None,provided=None):
             source[key]=provided[key]
     if 'request_hashes' in provided:
         hashes=provided['request_hashes']
-        if not isinstance(hashes,list) or not 1<=len(hashes)<=32 or any(not isinstance(x,str) or not re.fullmatch(r'[0-9a-f]{64}',x) for x in hashes):
+        if not isinstance(hashes,list) or not 1<=len(hashes)<=MAX_AGENTS or any(not isinstance(x,str) or not re.fullmatch(r'[0-9a-f]{64}',x) for x in hashes):
             raise ValueError('provenance.request_hashes: lista acotada de SHA256 requerida.')
         source['request_hashes']=list(hashes)
     if 'request_count' in provided:
-        if type(provided['request_count']) is not int or not 1<=provided['request_count']<=32:
+        if type(provided['request_count']) is not int or not 1<=provided['request_count']<=MAX_AGENTS:
             raise ValueError('provenance.request_count inválido.')
         source['request_count']=provided['request_count']
     source.setdefault('provider',config['provider']);source.setdefault('model',config['model'])
@@ -380,7 +386,7 @@ def validate_dna(org):
         anchors=org.get('identity_anchors',{})
         if anchors and not isinstance(anchors,dict): raise ValueError('identity_anchors debe ser objeto por slot.')
         for slot,anchor in anchors.items():
-            if not slot.isdigit() or not 1<=int(slot)<=32 or not isinstance(anchor,dict) or set(anchor)!={'id','name'}:
+            if not slot.isdigit() or not 1<=int(slot)<=MAX_AGENTS or not isinstance(anchor,dict) or set(anchor)!={'id','name'}:
                 raise ValueError('Ancla de identidad legacy inválida.')
             uuid.UUID(anchor['id'])
         for agent in org.get('agents',[]):

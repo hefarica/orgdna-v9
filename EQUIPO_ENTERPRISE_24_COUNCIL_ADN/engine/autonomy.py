@@ -4,6 +4,12 @@ Settings describe a selected-team runtime, never import-time execution or author
 The user's declared project goal is separate from authorization of its next action.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import json
 import re
@@ -40,7 +46,7 @@ def normalize_autonomy_config(raw,enabled=True):
     if response not in ('foreground','background'):raise ValueError('response_mode debe ser foreground o background.')
     n=raw.get('agent_count',raw.get('n',24))
     if isinstance(n,str) and n.isdigit():n=int(n)
-    n=_integer(n,'agent_count',1,32)
+    n=_integer(n,'agent_count',1,MAX_AGENTS)
     return {'autonomy_preset':preset,'orchestration_backend':backend,'planning_context':planning,'response_mode':response,
         'planner_max_tokens':_integer(raw.get('planner_max_tokens',8192),'planner_max_tokens',256,8192),
         'member_timeout_ms':_integer(raw.get('member_timeout_ms',900000),'member_timeout_ms',1000,3600000),
@@ -119,7 +125,7 @@ def build_autonomy(config,analysis=None,agents=None):
     backend=normalized['orchestration_backend']
     preset=normalized['autonomy_preset'];n=config.get('agent_count',config.get('n',24))
     if isinstance(n,str) and n.isdigit():n=int(n)
-    n=_integer(n,'agent_count',1,32)
+    n=_integer(n,'agent_count',1,MAX_AGENTS)
     concurrency=config.get('implementation_concurrency',3)
     concurrency=min(n,_integer(concurrency,'implementation_concurrency',1,3))
     base={'activationMode':'always' if preset=='autonomous' else preset,'triggerMode':'guaranteed',

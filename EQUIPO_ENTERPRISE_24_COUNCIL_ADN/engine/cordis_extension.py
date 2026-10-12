@@ -4,6 +4,12 @@ No imports/installations, runtime calls, credential reads, config mutations or
 agent creation. Optional extended DSH documents are explicit review artifacts.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import hashlib
 import io
@@ -104,8 +110,8 @@ def build_cordis_addon(organization, teams_config=None, capabilities=None, skill
     except (ValueError, TypeError, AttributeError):
         raise ValueError('La organización necesita UUID estable antes de preparar Cordis.') from None
     agents = organization.get('agents')
-    if not isinstance(agents, list) or not 1 <= len(agents) <= 32:
-        raise ValueError('Roster debe contener de 1 a 32 miembros existentes.')
+    if not isinstance(agents, list) or not 1 <= len(agents) <= MAX_AGENTS:
+        raise ValueError('Roster debe contener de 1 a %d miembros existentes.' % MAX_AGENTS)
     ids = [a.get('id') for a in agents if isinstance(a, dict)]
     if len(ids) != len(agents) or len(set(ids)) != len(ids):
         raise ValueError('Identidades de miembros duplicadas o inválidas.')

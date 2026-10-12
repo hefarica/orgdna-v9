@@ -111,8 +111,8 @@ class DesignTests(unittest.TestCase):
                 self.assertTrue(all(r["max_output_tokens"] <= d.DEFAULT_OUTPUT_TOKENS for r in requests))
                 self.assertEqual(consent["cost"], "unknown")
 
-    def test_profiles_24_and_32_are_rich_unique_core_compatible(self):
-        for n in (1, 24, 32):
+    def test_profiles_24_32_and_40_are_rich_unique_core_compatible(self):
+        for n in (1, 24, 32, 40):
             with self.subTest(n=n):
                 fixture = Fixture()
                 result = self.run_design(n, fixture)
@@ -175,7 +175,7 @@ class DesignTests(unittest.TestCase):
         self.assertIsNotNone(consent["limits_warning"])
 
     def test_invalid_n_and_budgets_are_not_coerced(self):
-        for value in (0, 33, True, "24", 1.5):
+        for value in (0, 41, True, "24", 1.5):
             with self.subTest(value=value), self.assertRaises(p.ProviderError):
                 self.prepare(value)
         for value in (True, "16384", 1024, 131073):

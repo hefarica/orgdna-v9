@@ -6,6 +6,12 @@ is performed after a provider request, including on cancellation or timeout.
 """
 from __future__ import annotations
 
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
+
 import copy
 import hashlib
 import json
@@ -164,10 +170,10 @@ class GenerationPipeline:
             value = source.get(key)
             if isinstance(value, str) and re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z', value):
                 job[key] = value
-        limits = {'agent_count': 32, 'progress': 100, 'max_requests': 16, 'sent_requests': 16,
-            'completed_requests': 16, 'completed_profiles': 32, 'max_output_tokens': 131072,
+        limits = {'agent_count': MAX_AGENTS, 'progress': 100, 'max_requests': 16, 'sent_requests': 16,
+            'completed_requests': 16, 'completed_profiles': MAX_AGENTS, 'max_output_tokens': 131072,
             'total_max_output_tokens': 16 * 131072, 'max_total_output_tokens': 16 * 131072,
-            'profiles_per_request': 32, 'read_files': 10000000, 'known_safe_files': 10000000}
+            'profiles_per_request': MAX_AGENTS, 'read_files': 10000000, 'known_safe_files': 10000000}
         for key, maximum in limits.items():
             value = source.get(key)
             if key in source and (value is None or type(value) is int and 0 <= value <= maximum):
@@ -310,8 +316,8 @@ class GenerationPipeline:
         if type(maximum) is not int or not 4096 <= maximum <= 131072:
             raise self._error('max_output_tokens debe ser un entero entre 4096 y 131072 por solicitud.')
         profiles_per_request = body.get('profiles_per_request')
-        if profiles_per_request is not None and (type(profiles_per_request) is not int or not 1 <= profiles_per_request <= 32):
-            raise self._error('profiles_per_request debe ser un entero entre 1 y 32, o dejarse automático.')
+        if profiles_per_request is not None and (type(profiles_per_request) is not int or not 1 <= profiles_per_request <= MAX_AGENTS):
+            raise self._error('profiles_per_request debe ser un entero entre 1 y %d, o dejarse automático.' % MAX_AGENTS)
         response_mode = body.get('response_mode', 'json_object')
         if response_mode not in ('json_object', 'text'):
             raise self._error('response_mode debe ser json_object o text.')
@@ -566,7 +572,7 @@ class GenerationPipeline:
             self._check_current(ctx)
             allowed = {k: v for k, v in update.items() if k in
                        ('completed_requests', 'max_requests', 'completed_profiles', 'total_profiles', 'total_requests', 'sent_requests', 'batch_index') and
-                       type(v) is int and 0 <= v <= (32 if k in ('completed_profiles', 'total_profiles') else 16)}
+                       type(v) is int and 0 <= v <= (MAX_AGENTS if k in ('completed_profiles', 'total_profiles') else 16)}
             maximum = allowed.get('total_requests', allowed.get('max_requests', job.get('max_requests'))) or 1
             completed = allowed.get('completed_requests', job.get('completed_requests', 0))
             self._update(job, **allowed, progress=min(78, 30 + int(48 * completed / maximum)))

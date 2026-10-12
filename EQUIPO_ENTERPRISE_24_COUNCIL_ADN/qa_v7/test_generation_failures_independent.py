@@ -271,7 +271,7 @@ class PlanOptionsIndependent(unittest.TestCase):
         self.assertTrue(all(item['max_output_tokens'] <= 8192 for item in consent['requests']))
 
     def test_invalid_plan_options_rejected_before_transport(self):
-        for options in ({'profiles_per_request': 0}, {'profiles_per_request': 33}, {'profiles_per_request': True},
+        for options in ({'profiles_per_request': 0}, {'profiles_per_request': 41}, {'profiles_per_request': True},
                         {'response_mode': 'arbitrary'}, {'max_output_tokens': 131073}, {'max_output_tokens': True}):
             with self.subTest(options=options), self.assertRaises((providers.ProviderError, ValueError)):
                 design.prepare_design_consent(self.summary, 'deepseek', 'fixture-model', self.cfg, **options)

@@ -6,6 +6,12 @@ use the separate COM adapter, only after an explicit apply action. No macros,
 VBOM access, security-policy changes, shell commands from a request, or Git jobs.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import argparse
 import ctypes
 import copy
@@ -153,7 +159,7 @@ def normalize_config(raw, previous=None):
     result = dict(DEFAULT_CONFIG)
     result.update(previous or {})
     result.update(raw)
-    for key, low, high in [('agent_count', 1, 32), ('max_direct_reports', 1, 8), ('implementation_concurrency', 1, 3), ('council_concurrency', 1, 32)]:
+    for key, low, high in [('agent_count', 1, MAX_AGENTS), ('max_direct_reports', 1, 8), ('implementation_concurrency', 1, 3), ('council_concurrency', 1, MAX_AGENTS)]:
         value = result[key]
         if isinstance(value, bool) or isinstance(value, float) and not value.is_integer():
             raise BridgeError(f'{key} debe ser un número entero.')
@@ -1641,7 +1647,8 @@ class LocalHandler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         try:
             if path == '/':
-                payload = (WEB / 'index.html').read_text('utf-8').replace('__CSRF_TOKEN__', self.server.state.csrf).encode('utf-8')
+                payload = (WEB / 'index.html').read_text('utf-8').replace(
+                '__CSRF_TOKEN__', self.server.state.csrf).replace('__MAX_AGENTS__', str(MAX_AGENTS)).encode('utf-8')
                 self._send(payload, 'text/html; charset=utf-8', cookie=True)
             elif path in ('/app.js', '/style.css'):
                 self._send((WEB / path[1:]).read_bytes(), 'application/javascript; charset=utf-8' if path.endswith('.js') else 'text/css; charset=utf-8')

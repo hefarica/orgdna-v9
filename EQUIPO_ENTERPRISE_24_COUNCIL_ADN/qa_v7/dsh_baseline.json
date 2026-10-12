@@ -29,11 +29,11 @@
     "cordis_extension/tests/runtime.test.mjs": "e5f4548edaf8aa58a9bd927c2724495351e6260b87ad68b1673854ad653bb5af",
     "cordis_extension/tests/skillhub.test.mjs": "40d6fc064d497b6c18b0df6faaf561e03dc1f15ac082e283eac866bb7f3dd9aa",
     "cordis_extension/tests/test_builder.py": "2a446bc42fda4072eee0783fee183303aa0c6a9574684da99ac39fac4bcee9cf",
-    "engine/cordis_extension.py": "f55744e84d3cefcbd65c732b2e0196b69aa2414ccb895d2864f92d58076f2f6d",
+    "engine/cordis_extension.py": "b8087cd449c7ed62294c0ba35b3a6e2d53d4c3aaa40b2d400ab48fb3f256a2a4",
     "engine/dsh_connection.py": "ddd7d8a9778f95bef5c93e3589d03aac75050dae6693fe034cb2ac2ecf7be390",
     "engine/dsh_harness.py": "1584a7747fac0ca7bc8d952685e8467b51eefde7ffdc9ffed7c59692755e2afd",
     "engine/dsh_launcher.py": "651274749334518afd66f9b757525017ba03bfa886ef0c29d67df8447505f939",
-    "engine/integration_recommendations.py": "c22fe2703f32e47af5751102bb6275b7c0e03a0b8ae796bc0a45031ce32883ed",
+    "engine/integration_recommendations.py": "dd32e294e0119bd2149a8428b6d3a829651babe2d8bddb62b674b6f7cc4ca563",
     "engine/integration_tools.py": "7757f5d2a8f9b51930d35becf1c99aaa2f5d4efa1b12fc6d8d37f6df798aa73a",
     "engine/launcher.py": "529a13a0c4ecd2bed872d4226780426495511ad5b12e73c998411e63c7788198",
     "launch.cmd": "2b502897ca341befd89424d338fcda919f2389227b3eac6ff35eed3ec5b2998b",
@@ -73,6 +73,22 @@
       "reason": "dsh-launch-backup era inoperante en Windows: los nombres de entrada del ZIP de respaldo se construian con os.sep (Path.__truediv__) y no coincidian con los que zipfile normaliza al escribir (ZipInfo), de modo que la verificacion del propio respaldo fallaba con KeyError \"no item named 0\\history.json\". Reparacion P3-B.",
       "declared": "Actualizacion DECLARADA, no silenciosa: se sustituye una sola entrada y quedan registrados el hash anterior y el nuevo, el motivo y la evidencia.",
       "evidence": "tests_dsh_launcher.py: 16 casos FAILED(failures=1,errors=5) -> OK(skipped=1). tests_platform_launcher_zip_names.py: 9/9 OK. Falsificacion con el codigo original en copia desechable: 25 casos FAILED(failures=4,errors=8,skipped=1)."
+    },
+    {
+      "file": "engine/cordis_extension.py",
+      "previous_sha256": "f55744e84d3cefcbd65c732b2e0196b69aa2414ccb895d2864f92d58076f2f6d",
+      "new_sha256": "b8087cd449c7ed62294c0ba35b3a6e2d53d4c3aaa40b2d400ab48fb3f256a2a4",
+      "reason": "P3-C: la cota de agentes pasa de un literal 32 duplicado a una fuente unica (engine/limits.py, MAX_AGENTS = 40). Este archivo contiene una de las cotas, asi que su contenido cambia. La enmienda queda registrada aqui con el hash anterior y el nuevo: reescribirla en silencio es lo que este contrato existe para impedir.",
+      "declared": "Actualizacion DECLARADA, no silenciosa.",
+      "evidence": "Positivo N=40 en modo API: tests_org_design.DesignTests.test_profiles_24_32_and_40_are_rich_unique_core_compatible -> OK. Fronteras movidas: tests_bridge.py (33->41), tests_org_design (33->41), qa_v7/test_generation_failures_independent (33->41), tests_platform_integration (47->48 modulos de engine/)."
+    },
+    {
+      "file": "engine/integration_recommendations.py",
+      "previous_sha256": "c22fe2703f32e47af5751102bb6275b7c0e03a0b8ae796bc0a45031ce32883ed",
+      "new_sha256": "dd32e294e0119bd2149a8428b6d3a829651babe2d8bddb62b674b6f7cc4ca563",
+      "reason": "P3-C: la cota de agentes pasa de un literal 32 duplicado a una fuente unica (engine/limits.py, MAX_AGENTS = 40). Este archivo contiene una de las cotas, asi que su contenido cambia. La enmienda queda registrada aqui con el hash anterior y el nuevo: reescribirla en silencio es lo que este contrato existe para impedir.",
+      "declared": "Actualizacion DECLARADA, no silenciosa.",
+      "evidence": "Positivo N=40 en modo API: tests_org_design.DesignTests.test_profiles_24_32_and_40_are_rich_unique_core_compatible -> OK. Fronteras movidas: tests_bridge.py (33->41), tests_org_design (33->41), qa_v7/test_generation_failures_independent (33->41), tests_platform_integration (47->48 modulos de engine/)."
     }
   ]
 }

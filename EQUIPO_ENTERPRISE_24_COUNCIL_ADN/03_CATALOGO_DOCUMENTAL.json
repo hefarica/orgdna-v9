@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 35632,
-      "sha256": "96f0298dd0b2a55fcd2cfc623a83bbedd5ccfbdcc4557306ea2bcaa1b6e62b3c"
+      "bytes": 39622,
+      "sha256": "5a73f37fea155b8bc0eb514bfe1a73cec127db70b9815a755fe808527c7d98dc"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -531,23 +531,23 @@
     },
     {
       "path": "engine/autonomy.py",
-      "bytes": 23091,
-      "sha256": "d040ca7ae0365051efd4873c6851375cf7cdf86f229be92b218aeeb93d2ea151"
+      "bytes": 23200,
+      "sha256": "f205d648c3e49e65437ca74c61a1ac00539b1d0dce4a34b539230398086d90e5"
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 113858,
-      "sha256": "70ab7f3d70eaaafec46d781c2fb224a849dacaece98c67c36bd9aef420c9338d"
+      "bytes": 114027,
+      "sha256": "e933cd1b8bb1f8d484f696c1e5fb166a50955312250a6badebdbca22bba03f52"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83062,
-      "sha256": "88f24f707276849959782a750d7f38b0cde9250585ecb39f374ed2573ced6a6c"
+      "bytes": 83082,
+      "sha256": "4260bfc6d5f56355be0aa10c4f78eb2b88312a88e9349e7ac4a8c71b0b373736"
     },
     {
       "path": "engine/capability_deployment.py",
-      "bytes": 25084,
-      "sha256": "5cba544326586d2ebd422c7f4de211b5aeb97e94daeeaa81e7ab750e18c85ca2"
+      "bytes": 25214,
+      "sha256": "d7536f331f48da01e4e11ee1531b9e3d56c95b856f79c402af8f340b72e74596"
     },
     {
       "path": "engine/capability_hub.py",
@@ -561,8 +561,8 @@
     },
     {
       "path": "engine/capability_recommendations.py",
-      "bytes": 20230,
-      "sha256": "1cf54abede476c7399baf4075386cbb282448038888f45d42ba7d42dfb839351"
+      "bytes": 20319,
+      "sha256": "d746fac97eb45388b1ab0d71e8e3edeffec79e71db864ec4b6116d9f1b541a20"
     },
     {
       "path": "engine/capability_sources.py",
@@ -581,18 +581,18 @@
     },
     {
       "path": "engine/cordis_extension.py",
-      "bytes": 21562,
-      "sha256": "f55744e84d3cefcbd65c732b2e0196b69aa2414ccb895d2864f92d58076f2f6d"
+      "bytes": 21676,
+      "sha256": "b8087cd449c7ed62294c0ba35b3a6e2d53d4c3aaa40b2d400ab48fb3f256a2a4"
     },
     {
       "path": "engine/core.py",
-      "bytes": 130837,
-      "sha256": "c0c1f4972dc8ed161df5a309d8ee2982114900d596e5202f0772f4922138012e"
+      "bytes": 131046,
+      "sha256": "8af3cb14e321d7ba4e19f5bee2c58c8199ca8bdc9fd585ee148cb2a99183d9b7"
     },
     {
       "path": "engine/dna.py",
-      "bytes": 23662,
-      "sha256": "163c8d4f87f8011085b1bbf77440d76d4ccf6fad74e9f54330b268e3639667b3"
+      "bytes": 23821,
+      "sha256": "b1a2cbdfb8647392f69d0e0e39ebcc0432db75dcffa107f7c5e1791dae923b0a"
     },
     {
       "path": "engine/dsh_connection.py",
@@ -636,8 +636,8 @@
     },
     {
       "path": "engine/generation_pipeline.py",
-      "bytes": 54349,
-      "sha256": "29739e108982bee1f640d6ae8f010f270b131d1677a02e2ba64b5b90d2bd44db"
+      "bytes": 54495,
+      "sha256": "61ef016c0eb99c3f4e4d870584da9adfa4cf9c0ea8f9857bc06560f8f3b7865e"
     },
     {
       "path": "engine/governance.py",
@@ -651,8 +651,8 @@
     },
     {
       "path": "engine/integration_recommendations.py",
-      "bytes": 15278,
-      "sha256": "c22fe2703f32e47af5751102bb6275b7c0e03a0b8ae796bc0a45031ce32883ed"
+      "bytes": 15388,
+      "sha256": "dd32e294e0119bd2149a8428b6d3a829651babe2d8bddb62b674b6f7cc4ca563"
     },
     {
       "path": "engine/integration_tools.py",
@@ -663,6 +663,11 @@
       "path": "engine/launcher.py",
       "bytes": 10708,
       "sha256": "529a13a0c4ecd2bed872d4226780426495511ad5b12e73c998411e63c7788198"
+    },
+    {
+      "path": "engine/limits.py",
+      "bytes": 615,
+      "sha256": "d367e947b04ecb9cf20e8b47750a165873de1689cef32702c674b085e34186c4"
     },
     {
       "path": "engine/local_records.py",
@@ -676,8 +681,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 66714,
-      "sha256": "e658c8b05cca75f8835b860f707499b5603903b6801a5396fba7fcabca9d819b"
+      "bytes": 66798,
+      "sha256": "e07184359bd58262413cfac3f1eb5e3bd02e582c21b78b1d2367bac80b9de380"
     },
     {
       "path": "engine/organization_design.py",
@@ -706,8 +711,8 @@
     },
     {
       "path": "engine/providers.py",
-      "bytes": 81686,
-      "sha256": "35d032c753d335e7c4caac54785d57d598dc05aeb3b78394d1e728fad62c83d9"
+      "bytes": 81812,
+      "sha256": "22e3860b555b3a5ddf249ba160345b3f074d991a2c61218aaa8c11c11e518e15"
     },
     {
       "path": "engine/reliability.py",
@@ -716,13 +721,13 @@
     },
     {
       "path": "engine/resource_workflows.py",
-      "bytes": 26264,
-      "sha256": "9ec4f1d634da4c05b9ddff97fda2ebb0136b9dca5e30bf88814a30daa8289e48"
+      "bytes": 26365,
+      "sha256": "f5b86813a0f9f4771d8ee18ecffdd36c724827db6afcd4490c14c3703f2e2c1b"
     },
     {
       "path": "engine/resource_workflows_adapter.py",
-      "bytes": 17832,
-      "sha256": "050a6577ff9a23bd97b96ddaf16316e410dd455b7c89a8beeeb9b40b3585389a"
+      "bytes": 17946,
+      "sha256": "35a8673ea879d8ab6476bd183e6752ea9edc5c7da154cce48ece1549428c3000"
     },
     {
       "path": "engine/task_graph.py",
@@ -1036,8 +1041,8 @@
     },
     {
       "path": "qa_v7/dsh_baseline.json",
-      "bytes": 7416,
-      "sha256": "6e63e38653e76abb3704b203355a29df8a51f003a74d00844fc1b58bdf8d2aec"
+      "bytes": 9347,
+      "sha256": "27c95ef677c91931c012a934b2250b53c2ae600aae49e8521922b67d054a9dcb"
     },
     {
       "path": "qa_v7/fixtures.py",
@@ -1067,7 +1072,7 @@
     {
       "path": "qa_v7/test_generation_failures_independent.py",
       "bytes": 17872,
-      "sha256": "6f2f2ae1601e09bf593d075a31387b4509dd6f8b844d075775ebd8a85fe45b4a"
+      "sha256": "5d1d30935761f2763c2dec8e9a43327c4993eb2132ebba9745cfb2f9d20c49b6"
     },
     {
       "path": "relanzador_dsh/DSH_REINICIAR.exe",
@@ -1281,8 +1286,8 @@
     },
     {
       "path": "tests_bridge.py",
-      "bytes": 16090,
-      "sha256": "af24e779eac8fc0d5ea07605e6c037b29ac46e3fa5f23f4fcac4be0c8d596e6c"
+      "bytes": 16131,
+      "sha256": "7ad1a59e288c0806140adf59394088cb054ddc1719e4816e0e6616e9b9433543"
     },
     {
       "path": "tests_capability_deployment.py",
@@ -1371,8 +1376,8 @@
     },
     {
       "path": "tests_org_design.py",
-      "bytes": 23328,
-      "sha256": "b011c79bddfc5cbfdcce69fa0d85a4cd787c82c6a5d11cd007b5457d244526fe"
+      "bytes": 23335,
+      "sha256": "4b368dd745b3e9f42b2c011d219c05feb3b1bb55cc10e275fe3e41e436c230e1"
     },
     {
       "path": "tests_org_design_website.py",
@@ -1392,7 +1397,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "6857be3c70e35db05f98aacb5dc8be9814db1f7285e8d2048a8b40afeb9ce73d"
+      "sha256": "269c18da37c910b26b5afcc1559c72f24e99d9fc57bde20e718aaf30eac395ee"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",
@@ -1496,8 +1501,8 @@
     },
     {
       "path": "web/index.html",
-      "bytes": 94258,
-      "sha256": "0813fe391b62e3e48583b1843a2b6d7d72d343a481f775aa47b462256dbfa41e"
+      "bytes": 94306,
+      "sha256": "a967420175290f512f4f55ddc4cb2bab26af6cffd54035e45aa6154b11212513"
     },
     {
       "path": "web/style.css",

@@ -19,7 +19,11 @@ else:
     import providers as p
     from org_design import _model_limits
 
-MAX_AGENTS = 32
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 MAX_CANDIDATES = 64
 MAX_REQUESTS = 32
 MAX_INPUT_BYTES = 600_000
@@ -66,7 +70,7 @@ def _context(organization, candidates, agent_ids=None):
     ids = list(by_id) if agent_ids is None else agent_ids
     if (not isinstance(ids, list) or not 1 <= len(ids) <= MAX_AGENTS or
             any(not isinstance(i, str) for i in ids) or len(set(ids)) != len(ids) or not set(ids) <= set(by_id)):
-        raise RecommendationError('Selecciona entre 1 y 32 agentes existentes sin duplicados.')
+        raise RecommendationError('Selecciona entre 1 y %d agentes existentes sin duplicados.' % MAX_AGENTS)
     agents = []
     for identifier in ids:
         raw = by_id[identifier]

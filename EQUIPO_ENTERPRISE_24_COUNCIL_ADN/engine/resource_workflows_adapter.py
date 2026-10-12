@@ -4,6 +4,12 @@ Planning is inert. Reviewed application changes local instruction assignments
 only, never runtime permissions or external resources. Paid consent stays local.
 """
 from __future__ import annotations
+
+if __package__:
+    from .limits import MAX_AGENTS
+else:
+    from limits import MAX_AGENTS
+
 import copy
 import threading
 import uuid
@@ -39,7 +45,7 @@ class ResourceWorkflows:
                 job['result'] = None
                 job['consent'] = None
         return {'job': job, 'advisory_only': True, 'automatic_installation': False,
-                'max_agents': 32, 'preview': copy.deepcopy(self.preview),
+                'max_agents': MAX_AGENTS, 'preview': copy.deepcopy(self.preview),
                 'mode_notice': 'Baseline local sin API; IA sólo tras revisar y confirmar el plan exacto.'}
 
     def _current(self, ctx):
@@ -62,7 +68,7 @@ class ResourceWorkflows:
         selection = s.capabilities_hub.selection(body.get('selection', {'mode': 'all'}))
         ids = select_agents(s.organization, selection)
         if len(ids) > 32:
-            raise ValueError('Selecciona hasta 32 agentes actuales.')
+            raise ValueError('Selecciona hasta %d agentes actuales.' % MAX_AGENTS)
         reference = copy.deepcopy(s.capabilities_hub.reference)
         if not reference or body.get('reference_hash') != reference.get('source_hash'):
             raise ValueError('Consulta y revisa una referencia o el ejemplo antes de preparar workflows.')
