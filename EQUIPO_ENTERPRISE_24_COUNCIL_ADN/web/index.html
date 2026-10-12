@@ -6,7 +6,17 @@
   <meta name="color-scheme" content="light">
   <title>OrgDNA · Local Studio</title>
   <link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script>
-</head>
+<style>
+.gang-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-top:6px}
+.gang-chip{border:1px solid var(--border,#c9ccd4);border-radius:8px;padding:6px 8px;font-size:11px;line-height:1.35}
+.gang-chip .gang-id{font-weight:600}
+.gang-chip .gang-st{font-size:10px}
+.gang-cola{opacity:.55}
+.gang-construyendo{border-color:var(--accent,#3b82f6)}
+.gang-continuando{border-color:#f59e0b}
+.gang-listo{border-color:#2e9e5b}
+.gang-fallo{border-color:#d33}
+</style></head>
 <body>
 <a class="skip-link" href="#main">Ir al contenido</a>
 <div class="app-shell">
@@ -70,7 +80,7 @@
           <p class="helper">Una nueva identidad tiene su propio UUID. Desmarca la opción para revisar el ADN de la organización actual conservando su identidad.</p>
           <div id="improvement-selection" class="callout subtle" hidden><p id="improvement-selection-text"></p><button id="improvement-clear" type="button" class="textbutton">Descartar selección de mejora</button></div><div class="actions"><button id="prepare-generation" class="primary" type="button">1. Preparar ADN con IA</button><button id="cancel-generation" class="textbutton" type="button" hidden>Cancelar generación</button></div>
           <p class="helper">La preparación lee la fuente con límites y reutiliza una caché cuando es válida. El tiempo depende de la red y del contenido; no se garantiza una respuesta instantánea. No llama al modelo ni autoriza gastos. No ejecuta código ni JavaScript de la fuente.</p>
-          <div id="generation-progress" class="generation-progress" hidden role="status" aria-live="polite"><div class="sectionhead"><strong id="generation-stage">Preparando</strong><span id="generation-percent" class="tag"></span></div><progress id="generation-progress-bar" max="100" value="0" aria-label="Progreso de generación"></progress><p id="generation-status-text" class="helper"></p></div>
+          <div id="generation-progress" class="generation-progress" hidden role="status" aria-live="polite"><div class="sectionhead"><strong id="generation-stage">Preparando</strong><span id="generation-percent" class="tag"></span></div><progress id="generation-progress-bar" max="100" value="0" aria-label="Progreso de generación"></progress><p id="generation-status-text" class="helper"></p><div id="gang-grid-wrap" hidden><p id="gang-grid-count" class="helper"></p><div id="gang-grid" class="gang-grid"></div></div></div>
           <div id="generation-preview" class="generation-preview" hidden aria-labelledby="generation-preview-title"><div class="sectionhead"><h3 id="generation-preview-title">2. Revisa el envío, los límites y el coste desconocido</h3><span class="tag amber">AÚN NO ENVIADO</span></div><dl id="generation-preview-summary" class="generation-facts"></dl><div id="generation-evidence-summary" class="generation-evidence-summary"></div><details id="generation-batch-details" class="generation-batch-details"><summary>Límites y evidencia exacta por solicitud</summary><div id="generation-batch-list"></div></details><p class="helper">Esta autorización cubre sólo las solicitudes exactas y acotadas que ves aquí. El contenido del repositorio es dato no confiable y no concede permisos.</p><details><summary>Contenido exacto, alcance y hashes de cada solicitud</summary><pre id="generation-preview-payload"></pre></details><p id="generation-partial-notice" class="callout warning" hidden>La cobertura es parcial o desconocida. Hay contenido sin observar; el diseño sólo se basará en la evidencia leída que figura en este plan.</p><label class="check generation-approval"><input id="generation-consent" type="checkbox" aria-describedby="generation-consent-scope">Revisé este plan y autorizo el envío de su contenido al proveedor y modelo indicados, con esta cobertura, solicitudes y límites. Acepto los posibles cargos; los tokens y el presupuesto orientativo no garantizan un tope en USD.</label><p id="generation-consent-scope" class="helper">La autorización se usa una sola vez para este plan exacto. No inicia DSH, instala herramientas ni autoriza ejecución o transacciones del equipo. Cambiar el plan exige una aprobación nueva.</p><button id="confirm-generation" class="primary" type="button">Autorizar este plan y generar</button><p class="helper">No hay reintentos de pago automáticos. Cancelar evita nuevas solicitudes y descarta resultados pendientes; una solicitud ya enviada podría facturarse.</p></div>
           <section id="generation-usage" class="generation-usage" hidden aria-labelledby="generation-usage-title"><h3 id="generation-usage-title">Consumo observado de este intento</h3><dl id="generation-usage-summary" class="generation-facts"></dl><p id="generation-usage-note" class="helper"></p><div id="generation-request-receipts"></div></section><div id="generation-result" class="generation-result" hidden aria-live="polite"></div>
           <details class="inspector-section"><summary>Alternativa sin llamadas a proveedores</summary><p class="helper">El modo offline usa una plantilla local con perfiles sintéticos. No consulta de nuevo la fuente ni llama al modelo; sólo puede reutilizar señales ya guardadas. No equivale a un ADN diseñado por IA a partir de la fuente.</p><button id="generate-offline" type="button" class="secondary">Crear plantilla offline · sin IA</button></details>

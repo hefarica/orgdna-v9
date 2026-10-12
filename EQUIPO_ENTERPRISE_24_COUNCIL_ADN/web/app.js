@@ -444,6 +444,44 @@ function updateGenerationControls(transient=false){
   if(active)$$('a[download]').forEach(a=>a.setAttribute('aria-disabled','true'));
 }
 function generationMessage(text,kind='',jobId=null){message(text,kind);generationNoticeOwned=true;generationNoticeJobId=jobId;}
+
+// --- Gang de agentes: el panel en vivo -------------------------------------
+// Un agente = una solicitud, asi que el indice de cada recibo ES el agente.
+// Estados: cola -> construyendo -> (continuando -> construyendo)* -> listo | fallo.
+function renderGangGrid(job){
+  const wrap=$('#gang-grid-wrap');if(!wrap)return;
+  const total=Number(job.agent_count)||0;
+  if(!total){wrap.hidden=true;return;}
+  wrap.hidden=false;
+  const receipts=job.request_receipts||[];
+  // El ULTIMO recibo de cada agente manda: uno que trunco y continuo queda
+  // 'continuando' solo mientras su continuacion no llega.
+  const porAgente=new Map();
+  for(const r of receipts){if(r&&typeof r.index==='number')porAgente.set(r.index,r);}
+  const fracaso=generationTerminal.has(job.status)&&job.status!=='completed';
+  const estados=[];let listos=0,continuando=0;
+  for(let i=1;i<=total;i++){
+    const r=porAgente.get(i);let est='cola';
+    if(r){
+      if(r.status==='validated'){est='listo';}
+      else if(r.status==='continued_truncated'||r.status==='split_reissued'){est='continuando';}
+      else if(fracaso&&r.status!=='billing_outcome_unknown'){est='fallo';}
+      else{est='construyendo';}
+    }else if(fracaso){est='fallo';}
+    if(est==='listo')listos++;if(est==='continuando')continuando++;
+    estados.push(est);
+  }
+  $('#gang-grid-count').textContent=listos+' / '+total+' agentes listos'+(continuando?' · '+continuando+' continuando donde cortaron':'')+' · ningún agente se recorta';
+  const grid=$('#gang-grid');grid.replaceChildren();
+  estados.forEach((est,i)=>{
+    const chip=document.createElement('div');
+    chip.className='gang-chip gang-'+est;
+    const id=document.createElement('div');id.className='gang-id';id.textContent='a'+String(i+1).padStart(2,'0');
+    const st=document.createElement('div');st.className='gang-st';st.textContent=est;
+    chip.append(id,st);grid.append(chip);
+  });
+}
+
 function syncGenerationNotice(job){
   if(!generationNoticeOwned||!job||(generationNoticeJobId&&generationNoticeJobId!==job.job_id))return;
   generationNoticeJobId=job.job_id;
@@ -465,6 +503,7 @@ function renderGeneration(){
     $('#generation-progress').classList.toggle('generation-interrupted',generationTerminal.has(job.status)&&job.status!=='completed');
     const stageLabels={inventory:'Inventario de sólo lectura de la fuente pública',preparing_consent:'Preparando el contenido exacto para tu revisión',review:'Revisa el alcance antes de autorizar el envío',api_design:'Solicitud al proveedor en curso',validating_profiles:'Validando CV, N exacto, jerarquía y modelos',building_exports:'Construyendo y verificando los dos JSON nativos y el ZIP',ready:'Archivos preparados; DSH no se ha iniciado'};
     $('#generation-status-text').textContent=(generationTerminal.has(job.status)?'Intento finalizado':job.message||stageLabels[job.stage]||job.stage||'')+(job.max_requests?' · Iniciadas: '+generationRequestCount(job.sent_requests)+' · Completadas: '+generationRequestCount(job.completed_requests)+' / '+job.max_requests:'')+(generationReviewStale?' La configuración cambió. Cancela y prepara un plan nuevo.':'')+(job.potentially_billed?' Puede haber cargos por solicitudes enviadas.':'');
+    renderGangGrid(job);
   }
   if(pending?.job_id&&job?.status==='awaiting_consent'){
     const fingerprint=[pending.job_id,pending.approval_id,pending.payload_sha256,pending.coverage_sha256,pending.config_version].join(':');if(generationConsentId!==fingerprint){$('#generation-consent').checked=false;generationConsentId=fingerprint;}
