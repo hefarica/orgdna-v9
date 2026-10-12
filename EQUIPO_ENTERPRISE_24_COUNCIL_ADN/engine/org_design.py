@@ -26,10 +26,14 @@ if __package__:
 else:
     from limits import MAX_AGENTS
 
+# Medido en produccion (deepseek-flash, recibo real): la salida por perfil ronda los
+# 2 570 tokens, no los 2 400 presupuestados — y un lote dimensionado al 100% del tope
+# TRUNCA la respuesta a 4 tokens del limite (output_truncated, BUG-2 original). Con
+# 3 200 por perfil el lote deja ~20% de margen y la salida real cabe entera.
+PROFILE_TOKEN_BUDGET = 3_200
 MAX_REQUESTS = 16
 MAX_OUTPUT_TOKENS = 131_072
 DEFAULT_OUTPUT_TOKENS = 16_384
-PROFILE_TOKEN_BUDGET = 2_400
 BATCH_TOKEN_OVERHEAD = 1_024
 MAX_AGGREGATE_INPUT_BYTES = 8_000_000
 MAX_RESPONSE_BYTES = 2_000_000

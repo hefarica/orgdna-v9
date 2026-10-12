@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 55828,
-      "sha256": "8c7e81b7401586a769c57a4f888e2bc67630b1870828c6465c4b383cd5a87d6d"
+      "bytes": 57189,
+      "sha256": "bbcc118612f1a8a7f152de7a65204202dc2ba5985979d3846778ace3bc569292"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -721,8 +721,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 66798,
-      "sha256": "e07184359bd58262413cfac3f1eb5e3bd02e582c21b78b1d2367bac80b9de380"
+      "bytes": 67132,
+      "sha256": "72e0eabba722ec07c9b776027f9118ff78534598c3b9eaf833abb00fba1abc81"
     },
     {
       "path": "engine/organization_design.py",
@@ -1122,7 +1122,7 @@
     {
       "path": "qa_v7/test_design_recovery_independent.py",
       "bytes": 14744,
-      "sha256": "2444b2b0166433e7650f46ef182327bc9cf9fc296d41ac8b4b3b81b253d0e53a"
+      "sha256": "0880ea0b38141f9719b0b67db56976f36958962f1d94867a83e9197ccc6a8cb3"
     },
     {
       "path": "qa_v7/test_dsh_preservation_independent.py",
@@ -1132,7 +1132,7 @@
     {
       "path": "qa_v7/test_generation_failures_independent.py",
       "bytes": 17872,
-      "sha256": "5d1d30935761f2763c2dec8e9a43327c4993eb2132ebba9745cfb2f9d20c49b6"
+      "sha256": "0e62a0a853de24be58a420ec4683d8abd194ad9030b28d9061040f78fd3f1963"
     },
     {
       "path": "relanzador_dsh/DSH_REINICIAR.exe",
@@ -1466,8 +1466,8 @@
     },
     {
       "path": "tests_org_design.py",
-      "bytes": 23335,
-      "sha256": "4b368dd745b3e9f42b2c011d219c05feb3b1bb55cc10e275fe3e41e436c230e1"
+      "bytes": 23501,
+      "sha256": "7e8fb572a17b71b702864b8a397a2b51ecf274a2e9b6b9853c0eac5801475207"
     },
     {
       "path": "tests_org_design_website.py",
@@ -1551,8 +1551,8 @@
     },
     {
       "path": "tests_v8_evidence.py",
-      "bytes": 16756,
-      "sha256": "53a851cafbfdd1db480c0e6d14b781b9ee037ce645f4dc3232eb8df1c45c9eac"
+      "bytes": 17006,
+      "sha256": "579383db751e7dbe2da2f49b60130ec22422065f4833a7b99272d02f56b328ca"
     },
     {
       "path": "tests_v8_models_receipts.py",

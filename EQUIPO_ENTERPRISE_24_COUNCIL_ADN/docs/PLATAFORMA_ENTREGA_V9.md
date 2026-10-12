@@ -69,7 +69,7 @@ de escribirla, y se verifica después por recomputación:
 
 ```text
 MANIFIESTO_FILE_COUNT 322
-MANIFIESTO_SHA256_SIN_ESPEJO b03e77826c4002f55ac2428e67ba1f0394d7b11f042e1a9128043a549a5fcf06
+MANIFIESTO_SHA256_SIN_ESPEJO 9eb25329256e67b148260e23a86241b46e4d4767844cd5a01b31023b5160870e
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -743,6 +743,33 @@ clientes que colaboran, no impide que un editor externo escriba.
 `passed: 0`, `pending: 2`, `not_run: 1` — y el evento `DISPATCH_UNAVAILABLE` **cita el stub real**
 (`CAPABILITY_UNAVAILABLE` en `dsh_connection.py:303-304`). El ciguenal **existe y gira**; lo que no existe es
 el runtime al que despachar. Esa es la frontera, y no se cruza simulando.
+
+---
+
+## 9-duodecies. BUG-2 cerrado con medicion real: el presupuesto de salida por perfil
+
+**La primera generacion REAL con clave** (deepseek-official / deepseek-flash)consumio
+**15 420 tokens de salida en 6 perfiles** contra un tope enviado de **15 424** — truncado
+a 4 tokens del limite (`output_truncated`). El estimador presupuestaba 2 400 por perfil;
+lo real fue ~2 570 (un 7% mas). Un lote dimensionado al 100% del tope estimado TRUNCA
+siempre: no hay margen.
+
+**Correccion:** `PROFILE_TOKEN_BUDGET` 2 400 -> 3 200 (~26% de margen sobre lo medido).
+Con N=30: 4 perfiles por solicitud, 8 solicitudes (dentro del tope de 16).
+
+**Y el operador tiene el mando sin tocar codigo:** "Perfiles por solicitud" en el panel
+reduce el lote a voluntad — con 4, el tope por solicitud es 10 624 tokens reales y la
+salida cabe con margen.
+
+| Medicion | Antes | Despues |
+|---|---|---|
+| Tope por lote de 6 perfiles | 15 424 enviados, salida real >= 15 420 -> TRUNCA | (ya no se alcanza ese lote) |
+| Lote de 4 perfiles | — | tope 13 824, salida real ~10 280 -> margen 26% |
+| Solicitud con usage completo | 1 (truncada) | integral |
+
+Los recibos del intento truncado se conservan: 20 915 entrada / 15 420 salida, SHA-256
+de la solicitud y del ID de respuesta registrados. El coste real lo factura el
+proveedor: consulta su consumo antes de autorizar otro intento.
 
 ---
 

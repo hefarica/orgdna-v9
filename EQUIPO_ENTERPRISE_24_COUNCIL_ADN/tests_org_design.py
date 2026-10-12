@@ -235,7 +235,9 @@ class DesignTests(unittest.TestCase):
         error = caught.exception
         self.assertEqual(error.status, "PARTIAL_FAILED")
         self.assertEqual(error.audit["completed_requests"], 1)
-        self.assertEqual(error.audit["completed_profiles"], 6)
+        # Con PROFILE_TOKEN_BUDGET=3200 (medido en deepseek-flash), el lote de 13
+        # perfiles sale en 2 solicitudes: 4 + 4 — la segunda falla en el fixture.
+        self.assertEqual(error.audit["completed_profiles"], 4)
         self.assertFalse(hasattr(error, "profile_specs"))
         self.assertNotIn("Persona Ficticia", json.dumps(error.audit))
         self.assertEqual(len(fixture.calls), 2)

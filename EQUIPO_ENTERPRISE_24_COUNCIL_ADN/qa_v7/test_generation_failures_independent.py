@@ -225,7 +225,7 @@ class RealTransportDiagnostics(PipelineCase):
 
     def test_late_cancelled_response_never_commits_or_sends_next_batch(self):
         self.provider.transport.release.clear()
-        self.plan(max_output_tokens=4096)
+        self.plan(max_output_tokens=4224)
         self.state.execute('generation-confirm', self.approval())
         self.assertTrue(self.provider.transport.entered.wait(3))
         job_id = self.state.generation.public()['job_id']

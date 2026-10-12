@@ -79,7 +79,7 @@ class DesignRecoveryIndependent(PipelineCase):
     def test_restore_blocked_during_review_and_running_then_allowed_after_cancel(self):
         prior = self.offline_baseline()
         self.change_config()
-        self.plan(max_output_tokens=4096)
+        self.plan(max_output_tokens=4224)
         with self.assertRaises(BridgeError):
             self.state.execute('design-restore', self.restore_body())
         self.provider.transport.release.clear()
