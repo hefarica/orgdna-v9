@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 253 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 316 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (315 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 255 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 318 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (317 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `316` |
-| `file_count` que reportará `validate_imports_portable.py` | `317` (incluye el propio manifiesto) |
-| Allowlist | `253` entradas |
+| Entradas del manifiesto | `318` |
+| `file_count` que reportará `validate_imports_portable.py` | `319` (incluye el propio manifiesto) |
+| Allowlist | `255` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 316 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **314** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 318 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **316** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 316
-MANIFIESTO_SHA256_SIN_ESPEJO 298e570f949ba6f4f4d0a11360f8071f040f7ef5579fb4c94e47fb63964763ee
+MANIFIESTO_FILE_COUNT 318
+MANIFIESTO_SHA256_SIN_ESPEJO b1cc2f6702f0db8da3e5e84a95a010f359a8b2c548bbf17b5f0e5d5275cd2430
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -580,6 +580,52 @@ herramientas), así que `unknown_in_catalog` es `[]` y el preflight **no** sale 
 componentes reales**, pero el llamador que lo invoca en producción **no existe**: no hay punto de entrada que
 dispare el bucle. La señal de recompensa sigue fuera. Nada de esto toca pesos, instala, activa ni ejecuta un
 agente: `RUNTIME_UNVERIFIED` y `NOT_RUN` no se mueven.
+
+---
+
+## 9-septies. Diagnostico de notacion de modelos (P3‑F)
+
+**El caso real.** La configuracion guardada tenia `model = 'DeepSeek-V41-Flash'`, que es el **nombre visible**,
+mientras el ID de API es `deepseek-flash`. El producto fallaba cerrado -correctamente- con «El ID elegido para la
+API no esta verificado», y el operador quedaba en un callejon sin salida: el mensaje no decia cual era el ID.
+
+**`engine/model_resolver.py`** resuelve la notacion para **DIAGNOSTICAR, nunca para aceptar**. La forma canonica
+(casefold + solo alfanumericos) hace coincidir la MISMA notacion escrita distinto:
+
+    'DeepSeek-V41-Flash' -> 'deepseekv41flash' -> nombre 'DeepSeek-V4.1-Flash' -> ID 'deepseek-flash'
+
+No hay parecido, ni subcadena, ni eleccion entre varios: `DeepSeek-V41`, `deepseek`, `flash` y `gpt-4` dan
+`unknown`; un caso ambiguo devuelve `ambiguous` y **no elige**.
+
+### Lo que NO se hizo, y por que
+
+**La primera version AUTO-ADOPTABA el ID resuelto. Se retiro.** El arbol tiene **dos** guardianes deliberados
+que lo prohiben, y uno de ellos no se habia leido antes:
+
+  tests_model_catalog_scopes.py:43  test_api_display_name_or_alias_rejected_even_if_manual_preference_exists
+  tests_model_catalog_scopes.py:62  test_provider_alias_does_not_bypass_exact_api_catalog
+
+El fixture de esos tests lleva `'name': 'DeepSeek-V4.1-Flash'` **a proposito**, para que el nombre exista y
+**aun asi no se use**. La regla del producto —«never reinterpret a display name... never silently pick another
+model»— es una propiedad de seguridad, no una limitacion: un nombre visible puede ser ambiguo o cambiar.
+
+**Lo que si cambia:** el error deja de ser un callejon sin salida y **nombra el ID exacto**. Eso es lo que se
+cablea. La regla de aceptacion **no se mueve**.
+
+### El segundo muro, que este modulo NO tumba
+
+Para `deepseek` el proveedor tiene `discovery=True`, de modo que la rama manual es inalcanzable: **solo una fila
+`live_api`** —el catalogo real de la cuenta— satisface la verificacion. Las filas guardadas son
+`saved_project_reference` y **nunca cuentan**. Resolver la notacion elimina el primer muro; el segundo exige
+**una consulta real del catalogo con la clave**, y eso no lo hace este modulo.
+
+| Medicion | Resultado |
+|---|---|
+| `tests_model_resolver.py` (15 casos) | **15/15 OK** |
+| `tests_model_catalog_scopes.py` (los 2 guardianes) | **2/2 OK** — la regla de aceptacion intacta |
+| `tests_v8_models_receipts.py` (19 casos) | **19/19 OK** |
+| `DeepSeek-V41-Flash` | **rechazado**, y el error nombra `deepseek-flash` |
+| `DeepSeek-V41`, `deepseek`, `gpt-4`, `INVENTED` | `unknown` — no se inventa coincidencia |
 
 ---
 

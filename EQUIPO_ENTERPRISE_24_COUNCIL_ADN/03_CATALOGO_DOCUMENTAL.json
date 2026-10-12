@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 46041,
-      "sha256": "34338566a5802997499855cc02fa707fff87abf1b71a74657d0a517d443312ea"
+      "bytes": 48684,
+      "sha256": "af804a6a576bdee40d31ad8e45bc3f5f02b8371b728b8f85240b08d623ae5380"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -546,13 +546,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 114027,
-      "sha256": "e933cd1b8bb1f8d484f696c1e5fb166a50955312250a6badebdbca22bba03f52"
+      "bytes": 114833,
+      "sha256": "1d026fbdfa35f5007527772fc13106b31ac1e215a2d06cd3665d2e2a9d797fc7"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83488,
-      "sha256": "042e45a4d8db85f46a89eef26ae468baa6bd8190b7c568bf56b866f4766580d9"
+      "bytes": 83551,
+      "sha256": "034c6b7b87165f46d0212cd728d817294d4656eb96f905a58fe5dac6fdfaf9f5"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -703,6 +703,11 @@
       "path": "engine/memory_governance.py",
       "bytes": 39860,
       "sha256": "3ea4b2771ecf01a0dd5cd31304012b9791aafa954562eb0e941add615f41876a"
+    },
+    {
+      "path": "engine/model_resolver.py",
+      "bytes": 6373,
+      "sha256": "180eab3366e8db36455acc8a3beadd0f54d6626b389d27f23c740a13c2ed5bad"
     },
     {
       "path": "engine/operational_gate.py",
@@ -1440,6 +1445,11 @@
       "sha256": "e6d724bc3c9abd5bd2cbeb8db7846010e227ded26e0f1748ee7bbaefd7bb3f48"
     },
     {
+      "path": "tests_model_resolver.py",
+      "bytes": 7085,
+      "sha256": "9e06078d0c22c341b9fa7cf361506f7aefd68e0992fbd4985f0d258faa85d5e3"
+    },
+    {
       "path": "tests_org_design.py",
       "bytes": 23335,
       "sha256": "4b368dd745b3e9f42b2c011d219c05feb3b1bb55cc10e275fe3e41e436c230e1"
@@ -1462,7 +1472,7 @@
     {
       "path": "tests_platform_integration.py",
       "bytes": 42357,
-      "sha256": "ab616cc7bb8c83a08b5483ad92217d9b0a1461bf78363f9a7aabe873e252224b"
+      "sha256": "69393661f3fe087b5b43a53387e30c8cbca671246de377fc187742dc905ac2de"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",

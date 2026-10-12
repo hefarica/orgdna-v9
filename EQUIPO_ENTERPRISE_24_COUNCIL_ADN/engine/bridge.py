@@ -9,8 +9,10 @@ from __future__ import annotations
 
 if __package__:
     from .limits import MAX_AGENTS
+    from . import model_resolver
 else:
     from limits import MAX_AGENTS
+    import model_resolver
 
 import argparse
 import ctypes
@@ -905,9 +907,18 @@ class BridgeState:
         # Exact provider API IDs only. Never reinterpret a display name or a DSH
         # alias, and never silently pick another model from the catalog.
         route = PROVIDER_ROUTES[config['provider']]
-        rows = [m for m in self.models if isinstance(m, dict) and PROVIDER_ROUTES.get(m.get('provider')) == route
-                and m.get('model', m.get('id')) == config['model']
-                and m.get('catalog_scope') not in ('dsh_runtime', 'dsh_runtime_reference')]
+        route_rows = [m for m in self.models if isinstance(m, dict) and
+                      PROVIDER_ROUTES.get(m.get('provider')) == route and
+                      m.get('catalog_scope') not in ('dsh_runtime', 'dsh_runtime_reference')]
+        # La notacion se RESUELVE para DIAGNOSTICAR, nunca para aceptar. Dos tests
+        # del repositorio prohiben expresamente que un nombre visible pase por un ID
+        # ('test_api_display_name_or_alias_rejected_even_if_manual_preference_exists'
+        # y 'test_provider_alias_does_not_bypass_exact_api_catalog'), y el catalogo
+        # de prueba lleva 'name' a proposito para que exista y aun asi no se use.
+        # Este modulo NO cambia esa regla: solo hace que el error diga cual es el ID
+        # exacto, en vez de dejar al operador en un callejon sin salida.
+        resolution = model_resolver.resolve(config['model'], route_rows)
+        rows = [m for m in route_rows if m.get('model', m.get('id')) == config['model']]
         api_rows = [m for m in rows if m.get('available') is True and
                     self._api_row_current(m, config) and
                     (m.get('source') == 'live_api' or m.get('status') == 'VERIFIED_INFERENCE' or
@@ -929,7 +940,8 @@ class BridgeState:
                 raise BridgeError('Este proveedor no tiene un catálogo de cuenta documentado. Confirma explícitamente el ID de la referencia oficial; disponibilidad de cuenta y capacidades siguen sin verificar.')
             return {'status': 'manual_documented', 'provider': config['provider'], 'model': config['model'],
                 'account_verified': False, 'capabilities_verified': False, 'documentation_url': policy.get('docs')}
-        raise BridgeError('El ID elegido para la API no está verificado. Consulta el catálogo y elige un ID exacto antes de preparar el consentimiento; un nombre visible o alias local DSH puede ser distinto. No se cambió ningún modelo ni se inició una llamada de diseño.')
+        raise BridgeError('El ID elegido para la API no está verificado. Consulta el catálogo y elige un ID exacto antes de preparar el consentimiento; un nombre visible o alias local DSH puede ser distinto. No se cambió ningún modelo ni se inició una llamada de diseño. ' + model_resolver.describe(resolution))
+
 
 
     def _provider(self):
