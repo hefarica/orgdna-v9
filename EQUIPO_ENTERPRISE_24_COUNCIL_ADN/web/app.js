@@ -468,13 +468,17 @@ function renderGangServices(gang){
   }
   const grid=$('#gang-services-grid');grid.replaceChildren();
   (gang.servicios||[]).forEach(s=>{
+    const url=(gang.urls||{})[s.id];
     const chip=document.createElement('div');chip.className='gang-chip '+(s.recorded_sha256?'gang-listo':'gang-cola');
     const id=document.createElement('div');id.className='gang-id';id.textContent=s.id;
     const st=document.createElement('div');st.className='gang-st';
     st.textContent=s.recorded_sha256?String(s.recorded_sha256).slice(0,8):'sin despliegue';
-    const mount=document.createElement('div');mount.className='gang-st';mount.textContent='no montado';
+    const mount=document.createElement('div');mount.className='gang-st';
+    mount.textContent=url?('montado · '+url.replace('http://','')):'no montado';
     chip.append(id,st,mount);grid.append(chip);
   });
+  const montadoBtn=$('#gang-mount'),desmontarBtn=$('#gang-unmount'),tickBtn=$('#gang-tick');
+  if(montadoBtn){montadoBtn.hidden=!!gang.montado;desmontarBtn.hidden=!gang.montado;tickBtn.hidden=!gang.montado;}
   // Auditoria: historial de publicaciones — versiones commiteadas, abortos y rollbacks.
   const audit=$('#gang-audit');
   if(audit){
@@ -553,6 +557,13 @@ function renderGeneration(){
   renderGangServices(state?.gang);
   const gangPublishBtn=$('#gang-publish');
   if(gangPublishBtn&&!gangPublishBtn.dataset.wired){gangPublishBtn.dataset.wired='1';gangPublishBtn.onclick=()=>{if(busy||generationActive())return;action('gang-publish',{},'Artefacto registrado en los 3 objetivos.');};}
+  const gangMountBtn=$('#gang-mount'),gangUnmountBtn=$('#gang-unmount'),gangTickBtn=$('#gang-tick');
+  if(gangMountBtn&&!gangMountBtn.dataset.wired){
+    gangMountBtn.dataset.wired='1';
+    gangMountBtn.onclick=()=>{if(busy||generationActive())return;action('gang-mount',{},'Servicios montados: el registro publica por 2PC real contra ellos.');};
+    gangUnmountBtn.onclick=()=>{if(busy||generationActive())return;action('gang-unmount',{},'Servicios desmontados; el journal conserva la historia.');};
+    gangTickBtn.onclick=()=>{if(busy||generationActive())return;action('gang-tick',{},'Tick del supervisor ejecutado.');};
+  }
   if(pending?.job_id&&job?.status==='awaiting_consent'){
     const fingerprint=[pending.job_id,pending.approval_id,pending.payload_sha256,pending.coverage_sha256,pending.config_version].join(':');if(generationConsentId!==fingerprint){$('#generation-consent').checked=false;generationConsentId=fingerprint;}
     $('#generation-partial-notice').hidden=!pending.partial_inventory_required;

@@ -10,12 +10,12 @@ from __future__ import annotations
 if __package__:
     from .limits import MAX_AGENTS
     from . import model_resolver
-    from . import gang_assembly, gang_journal
+    from . import gang_assembly, gang_journal, gang_services, gang_supervisor
     from . import gang_registry as _gang_registry_module
 else:
     from limits import MAX_AGENTS
     import model_resolver
-    import gang_assembly, gang_journal
+    import gang_assembly, gang_journal, gang_services, gang_supervisor
     import gang_registry as _gang_registry_module
 
 import argparse
@@ -531,6 +531,8 @@ class BridgeState:
         self.credentials = {}
         self.gang_registry = gang_registry or _gang_registry_module.GangRegistry(
             journal=gang_journal.Journal(self.project_store.root / '_gang_journal.jsonl'))
+        self.gang_servers = None      # {id: ServidorGang} cuando el operador los monta
+        self.gang_supervisor = None   # Supervisor vivo mientras esten montados
         self._last_gang_artifact = None
         self._sensitive_values = set()
         self.persisted = False
@@ -832,7 +834,11 @@ class BridgeState:
                 ensamblado = {'error': exc.code, 'detail': str(exc)}
         return {'ensamblado': ensamblado, 'servicios': self.gang_registry.snapshot(),
                 'sync': self.gang_registry.sync_verdict(sha),
-                'auditoria': self.gang_registry.history()[-12:]}
+                'auditoria': self.gang_registry.history()[-12:],
+                'montado': bool(self.gang_servers),
+                'urls': ({sid: servidor.url() for sid, servidor in self.gang_servers.items()}
+                         if self.gang_servers else {}),
+                'epoch': (self.gang_supervisor.epoch if self.gang_supervisor else None)}
 
     def public(self):
         with self.lock:
@@ -1310,6 +1316,47 @@ class BridgeState:
                              'Artefacto %s registrado de forma atómica en los %d objetivos%s. Los servicios no están montados en este árbol: se registra el hash del artefacto, no se ejecuta nada.'
                              % (sha[:12], resultado['objetivos'],
                                 ' — idempotente: ya estaba registrado, no se tocó nada' if resultado.get('idempotente') else ''))
+            elif action == 'gang-mount':
+                # El operador monta los 3 servicios DESDE LA APLICACION: procesos
+                # HTTP reales en puertos locales. El registro pasa de grabador a
+                # coordinador 2PC REAL contra ellos; el journal no se toca.
+                if self.gang_servers:
+                    raise BridgeError('Los servicios ya están montados.')
+                nodos = {sid: gang_services.ServicioGang(sid) for sid in _gang_registry_module.TARGETS}
+                self.gang_servers = {sid: gang_services.ServidorGang(nodo) for sid, nodo in nodos.items()}
+                urls = {sid: servidor.url() for sid, servidor in self.gang_servers.items()}
+                self.gang_supervisor = gang_supervisor.Supervisor(
+                    journal=self.gang_registry.journal, urls=urls,
+                    owner='panel-%s' % (self.project.get('id') or 'local'))
+                self.gang_registry = _gang_registry_module.GangRegistry(
+                    transport=gang_services.transporte_http(urls, epoch=lambda: self.gang_supervisor.epoch),
+                    journal=self.gang_registry.journal)
+                self.receipt(action, 'success',
+                             'Tres servicios montados como procesos HTTP locales (%s). El registro ahora publica por 2PC real contra ellos; el journal en disco conserva toda la historia.'
+                             % ', '.join('%s=%s' % (sid, url.replace('http://', '')) for sid, url in sorted(urls.items())))
+            elif action == 'gang-unmount':
+                if not self.gang_servers:
+                    raise BridgeError('Los servicios no están montados.')
+                journal = self.gang_registry.journal
+                for servidor in self.gang_servers.values():
+                    servidor.stop()
+                self.gang_servers = None
+                self.gang_supervisor = None
+                self.gang_registry = _gang_registry_module.GangRegistry(journal=journal)
+                self.receipt(action, 'success',
+                             'Servicios desmontados. El registro vuelve a grabar localmente; el journal conserva la historia completa para reanudar cuando se vuelvan a montar.')
+            elif action == 'gang-tick':
+                # El tick del supervisor, disparado desde el panel. Revalida el
+                # epoch, adopta si el lease vencio y reanuda lo que quedo en duda.
+                if not self.gang_supervisor:
+                    raise BridgeError('Monta primero los servicios: sin nodos no hay nada que supervisar.')
+                reporte = self.gang_supervisor.tick()
+                reanudados = len(reporte.get('reanudados', []))
+                errores = sum(1 for fila in reporte.get('reanudados', []) if 'error' in fila)
+                self.receipt(action, 'success' if not errores else 'warning',
+                             'Tick: epoch %d, lease %s, reanudados %d%s. Los servicios siguen no-montados-para-DSH: esto coordina los nodos locales, no ejecuta nada en DSH.'
+                             % (reporte.get('epoch', 1), reporte.get('lease') or 'sin store',
+                                reanudados, ' (%d con error)' % errores if errores else ''))
             elif action == 'forget-credentials':
                 self.secret_store.delete()
                 self.credentials.clear()

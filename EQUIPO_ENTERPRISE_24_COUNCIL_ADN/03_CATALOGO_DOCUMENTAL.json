@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 64658,
-      "sha256": "21c7ce7bd2257db679be6a0c9e3b0b509511c5ba12dff06121144e7c0f3b1cd1"
+      "bytes": 65676,
+      "sha256": "a13a1f286c0dfe39e9c5fbe8ba1c827dd542f33ca022389667f24dc5ef4a2516"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -546,13 +546,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 118769,
-      "sha256": "a95bf7dd1a12424124c53f886a30f331929683b3a230afd0af37c6330e39b04a"
+      "bytes": 122512,
+      "sha256": "337484827d21e94a0d8ffe871738e60c9a45524ee42a88ae890921965cbd1d8b"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83950,
-      "sha256": "49ba64c4f4c44d37306079ad4405a418d62c70107471f281db326762db0072ba"
+      "bytes": 83977,
+      "sha256": "225f44d8094d91cdc42cf0fced9f2773d6db3a242667ccfa47042beb5e15a266"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1371,8 +1371,8 @@
     },
     {
       "path": "tests/test_web_sources.py",
-      "bytes": 8816,
-      "sha256": "b9c1606e7772b837216f4b5ad2229125719edf1729bb4447128b5c9e113d1cb4"
+      "bytes": 9137,
+      "sha256": "339979a43be3358c8376d0ec45fe32aaa372f6005fb6763b39d75e15defc09b9"
     },
     {
       "path": "tests_agent_layer_contracts.py",
@@ -1443,6 +1443,11 @@
       "path": "tests_gang_fitness.py",
       "bytes": 3231,
       "sha256": "f9cce8ffe70e4e29d2aaa07986fa90ffba7a203c04386d61bbffff2050dee0c3"
+    },
+    {
+      "path": "tests_gang_mount.py",
+      "bytes": 4562,
+      "sha256": "ca4c0cff2d7ca9b4ed05524e9026af18f0f16e008de163461743f3406e587d65"
     },
     {
       "path": "tests_gang_services.py",
@@ -1646,13 +1651,13 @@
     },
     {
       "path": "web/app.js",
-      "bytes": 225240,
-      "sha256": "67886bd5730150a6fc435a91f2d79c51d6d6b5260b033ce2233c5d2fa23c0857"
+      "bytes": 226164,
+      "sha256": "4e88cf9a8dc3c00e604cda9198e2fbcd06c29af9562fb7b27c096349a82b9838"
     },
     {
       "path": "web/index.html",
-      "bytes": 95636,
-      "sha256": "4b740dbfb119baa713adc05fe5b115ed0eaa54827dc0ba14ef086a7e09aeb1c4"
+      "bytes": 95906,
+      "sha256": "37d7869ae3c8e4ed2d5774f553f7b5a43aa934d214cc76a2e98a370e53825785"
     },
     {
       "path": "web/style.css",

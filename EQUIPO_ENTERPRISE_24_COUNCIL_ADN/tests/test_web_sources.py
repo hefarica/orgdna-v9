@@ -100,7 +100,11 @@ class WebEvidenceTests(unittest.TestCase):
         root=b'<h1>Home page</h1>'+b''.join(('<a href="/p%d">page</a>'%n).encode() for n in range(5))
         routes={'/':(200,{'Content-Type':'text/html'},root)}
         routes.update({'/p%d'%n:(200,{'Content-Type':'text/html'},b'<h1>Other page</h1>') for n in range(5)})
-        fixture=Fixture(routes,delay=.01)
+        # La ventana de solape era de 10 ms y bajo carga de suite completa (1200+
+        # tests con servidores de fondo) el GIL podia serializar las dos descargas:
+        # fluje por contencion, no por regression. Con 50 ms el solape es robusto y
+        # la asercion NO se debilita: sigue exigiendo pico 2 en vuelo.
+        fixture=Fixture(routes,delay=.05)
         result=web.analyze_website(BASE,concurrency=2,transport=fixture)
         self.assertEqual(result['coverage']['pages_fetched'],6)
         self.assertEqual(fixture.peak,2)

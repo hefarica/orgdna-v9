@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 270 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 333 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (332 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 271 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 334 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (333 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `333` |
-| `file_count` que reportará `validate_imports_portable.py` | `334` (incluye el propio manifiesto) |
-| Allowlist | `270` entradas |
+| Entradas del manifiesto | `334` |
+| `file_count` que reportará `validate_imports_portable.py` | `335` (incluye el propio manifiesto) |
+| Allowlist | `271` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 333 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **331** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 334 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **332** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 333
-MANIFIESTO_SHA256_SIN_ESPEJO 1d285b708fdba4c1ef7055e8b73d1ee34ef7a96224db6fd3d730c5f0075337bf
+MANIFIESTO_FILE_COUNT 334
+MANIFIESTO_SHA256_SIN_ESPEJO 4491d01a3517c2ef4c27a19ab47be47bcaef9c9ee9d160cb1fe13287f759a6ee
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -859,6 +859,17 @@ contaminacion del _raw; A3 cancelacion en plena ola -> DesignCancelled sin olas 
 con transporte determinista, la corrida paralela produce los MISMOS recibos, el MISMO orden de perfiles y el
 mismo usage que la secuencial (identidad del plan excluida: declara la concurrencia, difiere por diseno);
 A5 el tope nunca se pisa (pico <= K, medido con instrumentacion en vuelo).
+
+**La ultima milla (P3-XV): el PANEL monta los servicios y todo queda en la aplicacion.** Tres acciones
+nuevas en el bridge: `gang-mount` monta los 3 objetivos como PROCESOS HTTP reales (puertos locales) y el
+registro pasa de grabador a coordinador 2PC REAL contra ellos — el journal en disco no se toca, la historia
+sigue siendo la misma; `gang-unmount` los detiene y devuelve el registro a grabador local CONSERVANDO el
+journal para reanudar; `gang-tick` dispara el tick del supervisor desde el panel (revalida epoch, reanuda lo
+en duda). El estado `gang` expone `montado`, las `urls` y el `epoch`; los chips del panel muestran el puerto
+de cada servicio montado. La honestidad no cambia: `mounted` del snapshot sigue siendo False — son procesos
+LOCALES de la aplicacion, no un runtime DSH. Que llega a DSH HOY: los 4 artefactos exportables (recipe v1 +
+definitions v2 + council + ZIP sellado) y el addon; el envio al runtime sigue CAPABILITY_UNAVAILABLE por
+diseno y el preflight sigue declarando sus bloqueos.
 
 ---
 
