@@ -24,9 +24,9 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Módulos de plano (`engine/`) | 11 | Integrados; **ninguno modificado** en esta ronda |
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
-| Allowlist literal | 271 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 334 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (333 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Allowlist literal | 272 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
+| Manifiesto | 335 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2) y de nuevo por las reparaciones P3‑A, P3‑B y P3‑C |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (334 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `334` |
-| `file_count` que reportará `validate_imports_portable.py` | `335` (incluye el propio manifiesto) |
-| Allowlist | `271` entradas |
+| Entradas del manifiesto | `335` |
+| `file_count` que reportará `validate_imports_portable.py` | `336` (incluye el propio manifiesto) |
+| Allowlist | `272` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 334 entradas, solo los
-digest de esas dos dependen del valor publicado; las otras **332** no. La huella se calcula, por tanto, antes
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 335 entradas, solo los
+digest de esas dos dependen del valor publicado; las otras **333** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 334
-MANIFIESTO_SHA256_SIN_ESPEJO 2767527cc06ff2b6e6898649f53f383508dceef909d99c266eb22ba1f6aba4cf
+MANIFIESTO_FILE_COUNT 335
+MANIFIESTO_SHA256_SIN_ESPEJO 143cf8323f295f898b5e70284c1987b62fa88c756a539d14364db2cb6973c658
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -870,6 +870,16 @@ de cada servicio montado. La honestidad no cambia: `mounted` del snapshot sigue 
 LOCALES de la aplicacion, no un runtime DSH. Que llega a DSH HOY: los 4 artefactos exportables (recipe v1 +
 definitions v2 + council + ZIP sellado) y el addon; el envio al runtime sigue CAPABILITY_UNAVAILABLE por
 diseno y el preflight sigue declarando sus bloqueos.
+
+**Rescate del 403 de GitHub (P3-XVII): el inventario ya usa el token del operador.**
+La cuota anonima de la API de GitHub es 60 solicitudes/hora por IP y se agota con cualquier sesion de
+pruebas repetidas: el 403 de `tree_subtree` era eso (verificado en vivo: `remaining: 0`, reset en 31 min).
+El producto YA soportaba `github_token` en toda su cadena (analyze_repository -> _repo_request -> Bearer),
+pero NADIE lo alimentaba. Ahora el pipeline lee `GITHUB_TOKEN`/`GH_TOKEN` del entorno y lo pasa al
+inventario; los tests prueban que TODAS las llamadas van autenticadas y que sin token van anonimas. Y el
+mensaje del 403 deja de decir "comprueba disponibilidad": ahora dice la verdad — cuota anonima agotada,
+como crear el token gratuito y donde definirlo, y los minutos hasta el reset (preservado desde la cabecera
+X-RateLimit-Reset, que _http_failure ya no descarta).
 
 ---
 

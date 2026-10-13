@@ -306,8 +306,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 65676,
-      "sha256": "4881f6d899e0e16148ecf93f8fb4782ebbfec3205d53f3ffb7fbd44ee54e9a2b"
+      "bytes": 66549,
+      "sha256": "85f30ad0024fc8a33205b8a5fb03a6e5700fb48a5f49d4afe4184575339f32c7"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -551,8 +551,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 83977,
-      "sha256": "225f44d8094d91cdc42cf0fced9f2773d6db3a242667ccfa47042beb5e15a266"
+      "bytes": 84004,
+      "sha256": "8502883e3f7577e68f863445d44ee08447e9d10bb47b314dc080d8f9752c08b6"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -681,8 +681,8 @@
     },
     {
       "path": "engine/generation_pipeline.py",
-      "bytes": 54656,
-      "sha256": "94be65ae3c8f7aef798a8653d2643ad8a7a4a46f0ea59aa2efd12fce4e23c344"
+      "bytes": 55816,
+      "sha256": "d16094d15ef6c1e4eabee50840cda88d8b0091fc8c6dfefedfa7455201b8235b"
     },
     {
       "path": "engine/governance.py",
@@ -786,8 +786,8 @@
     },
     {
       "path": "engine/providers.py",
-      "bytes": 81812,
-      "sha256": "22e3860b555b3a5ddf249ba160345b3f074d991a2c61218aaa8c11c11e518e15"
+      "bytes": 82318,
+      "sha256": "0a2355ef5cbe621a747bece7b54f0ccca74706c99ba865401cb137e7012984a2"
     },
     {
       "path": "engine/readiness_gate.py",
@@ -1473,6 +1473,11 @@
       "path": "tests_generation_robustness_v7.py",
       "bytes": 13790,
       "sha256": "ce4301ab99dd2dd9f11a4a9effef2f4677c07caf141f73190b7a8d447a5a1868"
+    },
+    {
+      "path": "tests_github_rescate.py",
+      "bytes": 2979,
+      "sha256": "ffce1ecd00895fc6365d52755be6f528c8131d364966c4779a91ad83923a3640"
     },
     {
       "path": "tests_improvement.py",

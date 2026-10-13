@@ -105,7 +105,7 @@ HTTP_ERROR_PARAMETERS = frozenset({"response_format", "response_format.type", "m
     "max_completion_tokens", "model", "messages", "temperature", "top_p", "stream"})
 
 
-def _http_failure(status, data):
+def _http_failure(status, data, headers=None):
     """Extract bounded allowlisted metadata, then discard all remote text."""
     code = parameter = None
     if isinstance(data, bytes) and len(data) <= 8192:
@@ -119,7 +119,17 @@ def _http_failure(status, data):
                 parameter = candidate if isinstance(candidate, str) and candidate in HTTP_ERROR_PARAMETERS else None
         except (ValueError, UnicodeError, RecursionError):
             pass
-    return HTTPFailure(status, code, parameter)
+    fallo = HTTPFailure(status, code, parameter)
+    # Los limites de cuota viajan en cabeceras, no en el cuerpo: preservar el
+    # reset para que el operador sepa CUANDO podra reintentar.
+    if isinstance(headers, dict):
+        reset = headers.get("X-RateLimit-Reset") or headers.get("x-ratelimit-reset")
+        if reset and str(reset).isdigit():
+            try:
+                fallo.reset_seconds = max(0, int(reset) - int(time.time()))
+            except (ValueError, OverflowError):
+                pass
+    return fallo
 
 
 def _dump(value):
@@ -310,7 +320,7 @@ def _request(method, url, api_key=None, payload=None, transport=None, max_bytes=
         # A custom transport must never leak credentials in error text.
         raise ProviderError("El transporte falló; no se reintentó ni se mostró información sensible.") from None
     if type(status) is not int or not 200 <= status < 300:
-        raise _http_failure(status if type(status) is int else 0, data)
+        raise _http_failure(status if type(status) is int else 0, data, headers)
     if not isinstance(data, bytes):
         raise ProviderError("Respuesta HTTP inválida.")
     if len(data) > max_bytes:

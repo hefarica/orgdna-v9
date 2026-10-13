@@ -17,6 +17,7 @@ else:
 import copy
 import hashlib
 import json
+import os
 import re
 import secrets
 import threading
@@ -452,8 +453,12 @@ class GenerationPipeline:
                         from web_sources import analyze_website
                     inventory = analyze_website(ctx['config']['repo_url'])
                 else:
+                    # La cuota anonima de GitHub (60/h) se agota rapido. El token del
+                    # operador (GITHUB_TOKEN en el entorno) la sube a 5 000/h: es la
+                    # via legitima, nunca la evasion del limite.
+                    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
                     inventory = module.analyze_repository(ctx['config']['repo_url'],
-                        ref=ctx['config'].get('repo_ref') or None, **options)
+                        ref=ctx['config'].get('repo_ref') or None, github_token=token or None, **options)
             with state.lock:
                 self._check_current(ctx)
                 inventory = state.redact(copy.deepcopy(inventory))
@@ -756,6 +761,16 @@ class GenerationPipeline:
                 code = 'repository_http_error' if failed_stage == 'inventory' else 'provider_http_error'
                 source = 'GitHub' if failed_stage == 'inventory' else 'El proveedor'
                 message = f'{source} devolvió HTTP {http_status}. Comprueba acceso y disponibilidad; no se reintentó automáticamente.'
+                if http_status == 403 and failed_stage == 'inventory':
+                    reset_min = None
+                    if isinstance(exc, HTTPFailure) and getattr(exc, "reset_seconds", None):
+                        reset_min = max(1, int(exc.reset_seconds) // 60)
+                    consejo = ('La cuota anónima de GitHub está agotada (60/hora por IP). '
+                               'Crea un token gratuito en github.com/settings/tokens, define la variable '
+                               'GITHUB_TOKEN con él y reinicia la aplicación: la cuota sube a 5.000/hora.')
+                    if reset_min:
+                        consejo += f' La cuota se restablece en ~{reset_min} min.'
+                    message = 'GitHub devolvió HTTP 403 (cuota anónima agotada). ' + consejo
             elif type(exc).__name__ == 'ImprovementError' and str(exc) in SAFE_FAILURE_MESSAGES:
                 code = 'improvement_evidence_invalid'
                 message = str(exc)

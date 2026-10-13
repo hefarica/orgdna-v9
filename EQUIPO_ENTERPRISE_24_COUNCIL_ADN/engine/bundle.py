@@ -119,7 +119,7 @@ RUNTIME_ALLOWLIST = (
     'tests_improvement.py', 'tests_improvement_loop.py', 'tests_context_compiler.py',
     'tests_agent_layer_contracts.py', 'tests_instruction_and_wiring.py',
     'tests_model_resolver.py', 'tests_scheduler.py', 'tests_orchestrator.py', 'tests_gang_assembly.py',
-    'tests_gang_fitness.py', 'tests_gang_services.py',     'tests_gang_supervisor.py', 'tests_gang_fanout.py', 'tests_gang_mount.py',
+    'tests_gang_fitness.py', 'tests_gang_services.py',     'tests_gang_supervisor.py', 'tests_gang_fanout.py', 'tests_gang_mount.py', 'tests_github_rescate.py',
     'engine/organization_design.py',
     'tests/test_organization_design.py',
     'docs/changelog_generacion_v5.md',
