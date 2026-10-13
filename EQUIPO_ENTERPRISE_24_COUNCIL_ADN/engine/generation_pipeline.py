@@ -8,8 +8,10 @@ from __future__ import annotations
 
 if __package__:
     from .limits import MAX_AGENTS
+    from .org_design import MAX_REQUESTS
 else:
     from limits import MAX_AGENTS
+    from org_design import MAX_REQUESTS
 
 
 import copy
@@ -170,7 +172,7 @@ class GenerationPipeline:
             value = source.get(key)
             if isinstance(value, str) and re.fullmatch(r'[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z', value):
                 job[key] = value
-        limits = {'agent_count': MAX_AGENTS, 'progress': 100, 'max_requests': 16, 'sent_requests': 16,
+        limits = {'agent_count': MAX_AGENTS, 'progress': 100, 'max_requests': MAX_REQUESTS, 'sent_requests': MAX_REQUESTS,
             'completed_requests': 16, 'completed_profiles': MAX_AGENTS, 'max_output_tokens': 131072,
             'total_max_output_tokens': 16 * 131072, 'max_total_output_tokens': 16 * 131072,
             'profiles_per_request': MAX_AGENTS, 'read_files': 10000000, 'known_safe_files': 10000000}
@@ -466,7 +468,7 @@ class GenerationPipeline:
             revision_options = {'revision_context': ctx['revision_context']} if ctx.get('revision_context') else {}
             consent = self._api().prepare_design_consent(inventory, ctx['provider_route'],
                 ctx['config']['model'], ctx['generation_config'], max_output_tokens=ctx['max_output_tokens'],
-                model_metadata=ctx['model_metadata'], max_requests=16,
+                model_metadata=ctx['model_metadata'], max_requests=MAX_REQUESTS,
                 profiles_per_request=ctx['profiles_per_request'], response_mode=ctx['response_mode'], **revision_options)
             # Names or a tree alone cannot support repository-specialized profiles.
             readable = [item for item in consent.get('preview', {}).get('files', [])
@@ -600,7 +602,7 @@ class GenerationPipeline:
             result = self._api().design_with_llm(ctx['inventory'], ctx['provider_route'],
                 ctx['config']['model'], ctx['generation_config'], api_key, ctx['consent'],
                 max_output_tokens=ctx['max_output_tokens'], model_metadata=ctx['model_metadata'],
-                max_requests=16, cancel_event=ctx['cancel'],
+                max_requests=MAX_REQUESTS, cancel_event=ctx['cancel'],
                 profiles_per_request=ctx['profiles_per_request'], response_mode=ctx['response_mode'],
                 progress_callback=lambda update: self._progress(job_id, update), **revision_options)
             api_key = None
@@ -608,7 +610,7 @@ class GenerationPipeline:
                 audit = result.get('audit') if isinstance(result, dict) and isinstance(result.get('audit'), dict) else {}
                 for field, source in (('sent_requests', 'requests'), ('completed_requests', 'completed_requests')):
                     value = audit.get(source)
-                    if type(value) is int and 0 <= value <= 16:
+                    if type(value) is int and 0 <= value <= MAX_REQUESTS:
                         job[field] = value
                 self._capture_receipts(job, audit.get('receipts'))
                 self._check_current(ctx)
@@ -731,7 +733,7 @@ class GenerationPipeline:
                 # A cancelled in-flight request may return usage later. Retain
                 # its safe receipt without reviving the job or applying DNA.
                 sent = audit.get('requests')
-                if type(sent) is int and 0 <= sent <= 16:
+                if type(sent) is int and 0 <= sent <= MAX_REQUESTS:
                     job['sent_requests'] = sent
                 self._capture_receipts(job, audit.get('receipts'), safe_design_failure(exc) if audit else None)
                 job['updated_at'] = timestamp()
@@ -790,7 +792,7 @@ class GenerationPipeline:
             # endpoint, headers or arbitrary exception attributes are retained.
             audit = exc.audit if isinstance(exc, DesignError) and isinstance(exc.audit, dict) else {}
             maximum = job.get('max_requests')
-            maximum = maximum if type(maximum) is int and 1 <= maximum <= 16 else 16
+            maximum = maximum if type(maximum) is int and 1 <= maximum <= MAX_REQUESTS else MAX_REQUESTS
             def count(key, cap, fallback=None):
                 value = audit.get(key)
                 if type(value) is int and 0 <= value <= cap:

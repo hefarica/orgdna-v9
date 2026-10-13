@@ -307,7 +307,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 65676,
-      "sha256": "a13a1f286c0dfe39e9c5fbe8ba1c827dd542f33ca022389667f24dc5ef4a2516"
+      "sha256": "4881f6d899e0e16148ecf93f8fb4782ebbfec3205d53f3ffb7fbd44ee54e9a2b"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -681,8 +681,8 @@
     },
     {
       "path": "engine/generation_pipeline.py",
-      "bytes": 54495,
-      "sha256": "61ef016c0eb99c3f4e4d870584da9adfa4cf9c0ea8f9857bc06560f8f3b7865e"
+      "bytes": 54656,
+      "sha256": "94be65ae3c8f7aef798a8653d2643ad8a7a4a46f0ea59aa2efd12fce4e23c344"
     },
     {
       "path": "engine/governance.py",
