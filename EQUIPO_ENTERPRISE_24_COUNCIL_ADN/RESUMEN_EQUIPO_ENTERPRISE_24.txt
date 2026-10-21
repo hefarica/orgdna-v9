@@ -6,7 +6,7 @@ Plantilla offline; este equipo no se presenta como un diseño generado por IA.
 Council: 24 participantes, sólo lectura; consolidación individual posterior.
 Implementación: adaptive, máximo 3.
 
-Los principales son agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json y agent-team-backup-2026-10-07.json. Este último contiene dos squads y una lista compartida de agentes.
+Los principales son agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json y agent-team-backup-2026-10-21.json. Este último contiene dos squads y una lista compartida de agentes.
 
 01. Planner | bb4f7927-7d2f-4ff7-a467-dc999ac59c2a | CEO · Dirección de entrega | supervisor: Owner externo | 3 reportes directos
 02. Architect | 2e4033f6-9f72-5c6b-9180-6e9aa1efcf9f | CTO · Dirección de ingeniería y arquitectura | supervisor: Planner | 3 reportes directos

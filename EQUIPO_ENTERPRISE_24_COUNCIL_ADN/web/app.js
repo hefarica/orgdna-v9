@@ -49,6 +49,8 @@ function setBusy(value) {
     $('#acquire-lease').disabled=noDesign||!state.coordination;
     $('#save-skill-feedback').disabled=noDesign||!(state.skill_registry||[]).length;
     $('#refresh-coordination').disabled=false;
+    ['#channel-publish-form','#channel-assign-form','#channel-evidence-form','#channel-task-form','#memory-append-form'].forEach(id=>{const button=$(id)?.querySelector('button[type="submit"]');if(button)button.disabled=noDesign;});
+    $('#channel-inbox-drain').disabled=noDesign;
     $('#save-tool-policy').disabled=noDesign||!selectedAgent||Boolean(toolPolicyIssue());
     $('#apply-tool-recommendation').disabled=noDesign||!currentToolPreset();
     $$('.governance-submit').forEach(el=>el.disabled=noDesign);
@@ -112,7 +114,7 @@ function render() {
   const project=state.project||{};$('#project-status').textContent=project.name?(project.name+(project.dirty?' · sin guardar':' · guardado')):'Sin proyecto guardado';
   $('#project-dirty').textContent=project.dirty?'Cambios sin guardar':project.id?'Versión guardada':'Sin guardar';
   if(document.activeElement!==$('#project-name'))$('#project-name').value=project.name||c.repo_name||'';
-  renderGraph();renderProfiles();renderCouncil();renderSkills();renderModels();renderAnalysis();renderReceipts();renderSubteams();renderGovernance();renderCoordination();renderGeneration();renderDesignRecovery();renderGenerationIntegrity();renderOrchestrationChoice();renderAutonomy();renderCordis();renderPluginShop();renderDshConnection();renderDshLauncher();renderEvaluations();renderSkillHub();renderCapabilityRecommendations();renderCapabilityDeployment();renderHarness();renderResourceWorkflows();setBusy(busy);
+  renderGraph();renderProfiles();renderCouncil();renderSkills();renderModels();renderAnalysis();renderReceipts();renderSubteams();renderGovernance();renderCoordination();renderTeamChannel();renderTeamMemory();renderGeneration();renderDesignRecovery();renderGenerationIntegrity();renderOrchestrationChoice();renderAutonomy();renderCordis();renderPluginShop();renderDshConnection();renderDshLauncher();renderEvaluations();renderSkillHub();renderCapabilityRecommendations();renderCapabilityDeployment();renderHarness();renderResourceWorkflows();setBusy(busy);
 }
 function matches(agent,query) {return !query||[agent.display_name,agent.title,agent.role,agent.department,agent.mission,...(agent.skills||[]).map(s=>s.name)].join(' ').toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es'));}
 function directCount(id) {return agents().filter(a=>a.reports_to===id).length;}
@@ -360,6 +362,52 @@ function coordinationFailure(){const box=$('#coordination-error');box.textConten
 async function changeLease(name,lease){const data={lease_id:lease.lease_id||lease.id,owner_agent_id:lease.owner_agent_id,task_id:lease.task_id,expected_version:state.coordination.version};if(name==='lease-renew')data.ttl_seconds=Number($('#lease-ttl').value)||900;const ok=await action(name,data,name==='lease-renew'?'Reserva local renovada.':'Reserva local liberada.');if(ok)$('#coordination-error').hidden=true;else coordinationFailure();}
 $('#lease-form').onsubmit=async e=>{e.preventDefault();if(!state.coordination)return;const data=Object.fromEntries(new FormData(e.target));data.paths=lines(data.paths);data.ttl_seconds=Number(data.ttl_seconds);data.expected_version=state.coordination.version;const ok=await action('lease-acquire',data,'Rutas reservadas en el coordinador local. No se ha bloqueado el sistema de archivos.');if(ok)$('#coordination-error').hidden=true;else coordinationFailure();};
 $('#refresh-coordination').onclick=()=>run('Actualizando coordinación local…',async()=>{const response=await fetch('/api/state',{credentials:'same-origin'}),payload=await response.json();if(!response.ok)throw new Error(payload.error||'No se pudo actualizar el estado.');state=payload;},'Coordinación local actualizada.');
+const CHANNEL_TASK_STATUS={open:'abierta',claimed:'en curso (chasing)',submitted:'entregada (reported)',accepted:'aceptada',rejected:'rechazada',blocked:'aparada'};
+function channelMembers(){return state.team_channel?.members||[];}
+function channelLabel(id){if(id==='all')return 'todos';const member=channelMembers().find(m=>m.member_id===id);return member?member.name:(agents().find(a=>a.id===id)?.display_name||id);}
+function renderTeamChannel(){
+  const data=state.team_channel,list=$('#channel-message-list'),tasks=$('#channel-task-list');if(!$('#team-channel-panel'))return;
+  list.replaceChildren();tasks.replaceChildren();
+  if(!data?.available){$('#channel-count').textContent='Sin diseño';$('#channel-panel-status').textContent=data?.reason||'Genera un diseño para abrir el canal.';return;}
+  $('#channel-count').textContent=(data.messages||[]).length+' mensajes · '+(data.tasks||[]).length+' tareas';
+  $('#channel-panel-status').textContent='Canal en memoria de la sesión del motor: se reinicia con cada rediseño.';
+  (data.messages||[]).slice().reverse().forEach(row=>{const article=node('article',undefined,'receipt');
+    article.append(node('time',localDate(row.created_at)),node('span',channelLabel(row.actor)+' → '+channelLabel(row.to),'status'));
+    const body=node('p');const mention=/^(@\S+)([\s\S]*)$/.exec(String(row.text||'').trim());
+    if(mention){body.append(node('span',mention[1],'mention'),node('span',mention[2]));}else{body.textContent=row.text;}
+    article.append(body);if(row.topic&&row.topic!=='coordination')article.append(node('span','tema: '+row.topic,'helper'));
+    list.append(article);});
+  if(!(data.messages||[]).length)list.append(node('p','El canal todavía no tiene mensajes en esta sesión.','empty'));
+  (data.tasks||[]).slice().reverse().forEach(row=>{const article=node('article',undefined,'receipt');
+    article.append(node('time',localDate(row.created_at)),node('span',row.id+' · '+(CHANNEL_TASK_STATUS[row.status]||row.status),'status'),node('span',channelLabel(row.owner_member_id)+': '+row.title,'message'));
+    if(row.prompt)article.append(node('p',row.prompt,'helper'));
+    tasks.append(article);});
+  if(!(data.tasks||[]).length)tasks.append(node('p','Sin tareas dirigidas todavía: una @mención o una asignación directa las crea.','empty'));
+  populateChannelSelects();
+}
+function populateChannelSelects(){
+  const members=channelMembers(),fill=(selector,withAll)=>{const select=$(selector);if(!select)return;const previous=select.value;select.replaceChildren();if(withAll)select.append(option('all','Todos (all)'));members.forEach(m=>select.append(option(m.member_id,m.name+(m.role?' · '+m.role:''))));if(members.some(m=>m.member_id===previous))select.value=previous;};
+  fill('#channel-sender');fill('#channel-to',true);fill('#channel-assign-sender');fill('#channel-assign-member');fill('#channel-evidence-sender');fill('#channel-task-actor');fill('#channel-inbox-member');fill('#memory-author');
+  const ids=$('#channel-task-ids');if(ids){ids.replaceChildren();(state.team_channel?.tasks||[]).forEach(task=>{const entry=node('option');entry.value=task.id;ids.append(entry);});}
+}
+function renderTeamMemory(){
+  const data=state.team_memory;if(!$('#team-memory-panel'))return;
+  const fragments=$('#memory-fragment-list');fragments.replaceChildren();
+  if(!data?.available){$('#memory-count').textContent='Sin diseño';$('#memory-index-text').textContent=data?.reason||'Genera un diseño para abrir la memoria.';return;}
+  $('#memory-count').textContent=(data.fragments||[]).length+' fragmentos';
+  $('#memory-index-text').textContent=data.index?.text||'';
+  (data.fragments||[]).slice().reverse().forEach(row=>{const article=node('article',undefined,'receipt');
+    article.append(node('span','['+row.plane+'] '+row.file,'status'),node('time',row.recorded_at),node('span',row.description||'','message'));fragments.append(article);});
+  if(!(data.fragments||[]).length)fragments.append(node('p','MEMORY.md está vacío: guarda el primer fragmento del equipo.','empty'));
+}
+const channelVersion=()=>state.organization?.state_version||1;
+$('#channel-publish-form').onsubmit=e=>{e.preventDefault();return action('channel-publish',{expected_state_version:channelVersion(),sender:$('#channel-sender').value,to:$('#channel-to').value,text:$('#channel-text').value,topic:$('#channel-topic').value||undefined,task_title:$('#channel-task-title').value||undefined},'Mensaje publicado en el canal. Una @mención válida crea la tarea dirigida.');};
+$('#channel-assign-form').onsubmit=e=>{e.preventDefault();return action('channel-assign',{expected_state_version:channelVersion(),sender:$('#channel-assign-sender').value,member:$('#channel-assign-member').value,task:$('#channel-assign-task').value,title:undefined},'Asignación directa registrada (estado open).');};
+$('#channel-evidence-form').onsubmit=e=>{e.preventDefault();const sha=$('#channel-evidence-sha').value.trim().toLowerCase();if(!/^[a-f0-9]{64}$/.test(sha)){message('El SHA-256 declarado debe ser 64 caracteres hexadecimales.','error');return false;}return action('channel-evidence',{expected_state_version:channelVersion(),sender:$('#channel-evidence-sender').value,locator:$('#channel-evidence-locator').value,sha256:sha,summary:$('#channel-evidence-summary').value},'Evidencia registrada con SHA declarado; no acredita lectura del artefacto.');};
+const CHANNEL_TRANSITIONS={claim:'channel-claim',submit:'channel-submit',accept:'channel-accept',reject:'channel-reject'};
+$('#channel-task-form').onsubmit=e=>{e.preventDefault();const actionName=$('#channel-task-action').value,data={expected_state_version:channelVersion(),actor:$('#channel-task-actor').value,action:actionName,task_id:$('#channel-task-id').value.trim(),note:$('#channel-task-note').value||undefined};const evidence=lines($('#channel-task-evidence').value);if(evidence.length)data.evidence_ids=evidence;if((actionName==='submit'||actionName==='accept')&&!evidence.length){message('submit y accept exigen al menos un ID de evidencia existente (regístrala antes).','error');return false;}return action(CHANNEL_TRANSITIONS[actionName],data,'Transición aplicada en el canal.');};
+$('#channel-inbox-drain').onclick=()=>action('channel-inbox',{expected_state_version:channelVersion(),member:$('#channel-inbox-member').value,max_count:100},'Inbox drenado: lectura destructiva FIFO del miembro.');
+$('#memory-append-form').onsubmit=e=>{e.preventDefault();const plane=$('#memory-plane').value,data={expected_state_version:channelVersion(),author:$('#memory-author').value,memory_id:$('#memory-id').value.trim(),plane,content:$('#memory-content').value,description:$('#memory-description').value||undefined};if(plane==='execution')data.task_id=$('#memory-task-id').value.trim();return action('memory-append',data,'Fragmento guardado en la memoria de equipo y MEMORY.md regenerado.');};
 const governanceFormIds=['#performance-form','#performance-review-form','#promotion-form','#promotion-review-form'];
 function selectRows(select,rows,placeholder,label){const previous=select.value;select.replaceChildren(option('',placeholder));rows.forEach(row=>select.append(option(row.id,label(row))));if(rows.some(row=>row.id===previous))select.value=previous;}
 function formVersion(form){return Number(form.dataset.baseVersion)||state.organization.state_version||1;}

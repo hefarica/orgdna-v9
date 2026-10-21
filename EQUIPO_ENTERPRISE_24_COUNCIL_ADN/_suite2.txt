@@ -1,0 +1,131 @@
+.................................................E...........E..........................................................s...........................s........................E...................................................................................................FE............................................................................................usage: python.exe -m unittest [-h] [--port PORT] [--strict-port]
+                              [--workbook WORKBOOK] [--no-browser]
+python.exe -m unittest: error: --port debe estar entre 0 y 65535.
+...............................................................................................................F....................................s.....................................................................F.............................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................E
+======================================================================
+ERROR: test_workbook_stale_blocks_export (tests_bridge.BridgeStateTests.test_workbook_stale_blocks_export)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_bridge.py", line 166, in test_workbook_stale_blocks_export
+    self.assertTrue(self.state.download('organization.json'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 1874, in download
+    snapshot = excel_call('Read', self.workbook) if os.name == 'nt' else read_xlsx_snapshot(self.workbook)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 460, in excel_call
+    raise BridgeError('Excel no pudo completar la acci�n. Cierra los di�logos abiertos y comprueba que Excel permite ejecutar el script PowerShell firmado o de confianza. No se cambi� la pol�tica de ejecuci�n. Detalle: ' + result.stderr[-1000:])
+engine.bridge.BridgeError: Excel no pudo completar la acci�n. Cierra los di�logos abiertos y comprueba que Excel permite ejecutar el script PowerShell firmado o de confianza. No se cambi� la pol�tica de ejecuci�n. Detalle: C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\excel_bridge.ps1 
+: Open the designated workbook in the active Excel instance before live synchronization. Saved-file reading is a 
+separate panel action.
+En C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN 
+(7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\excel_bridge.ps1: 225 Car�cter: 10
++   else { Write-Error $_ }
++          ~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException
+    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,excel_bridge.ps1
+ 
+
+
+======================================================================
+ERROR: test_namespace_traversal_symlink (tests_capability_deployment.DeploymentTests.test_namespace_traversal_symlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_capability_deployment.py", line 39, in test_namespace_traversal_symlink
+    link=self.root/'link';link.symlink_to(self.root,target_is_directory=True)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1386, in symlink_to
+    os.symlink(target, self, target_is_directory)
+OSError: [WinError 1314] El cliente no dispone de un privilegio requerido: 'C:\\Users\\HFRC\\AppData\\Local\\Temp\\tmppb9etcra' -> 'C:\\Users\\HFRC\\AppData\\Local\\Temp\\tmppb9etcra\\link'
+
+======================================================================
+ERROR: setUpClass (tests_frontend_contract.FrontendContracts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_frontend_contract.py", line 24, in setUpClass
+    cls.html=(ROOT/'web/index.html').read_text();cls.js=(ROOT/'web/app.js').read_text();cls.css=(ROOT/'web/style.css').read_text();cls.markup=Markup();cls.markup.feed(cls.html)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1028, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 1963: character maps to <undefined>
+
+======================================================================
+ERROR: test_save_reload_does_not_restore_consent_or_start_jobs (tests_generation_pipeline.GenerationPipelineTests.test_save_reload_does_not_restore_consent_or_start_jobs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 313, in test_save_reload_does_not_restore_consent_or_start_jobs
+    self.assertNotIn(self.secret, path.read_text())
+                                  ^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1028, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8d in position 14464: character maps to <undefined>
+
+======================================================================
+ERROR: setUpClass (tests_v8_ui_contract.V8UIContracts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_v8_ui_contract.py", line 19, in setUpClass
+    cls.js = (ROOT / 'web/app.js').read_text()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1028, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 162266: character maps to <undefined>
+
+======================================================================
+FAIL: test_revision_preserves_ids_new_project_changes_them (tests_generation_pipeline.GenerationPipelineTests.test_revision_preserves_ids_new_project_changes_them)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 289, in test_revision_preserves_ids_new_project_changes_them
+    self.complete(new_project=False)
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 115, in complete
+    return self.wait_for('completed')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': 'b2c5e6d1-5fd1-415b-a78b-d12f70a0feb2', 'idempotency_key': 'f1bc1a52-85bc-457f-be6d-f7dedc007a25', 'request_sha256': '7b16089275aeb978cea2003e8bdc9b6a0b68688ba551f4de792def6f87154b65', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T19:18:15Z', 'updated_at': '2026-10-21T19:18:15Z', 'config_version': 2, 'organization_id': '3b4f9ab2-84ca-49b9-89d1-f58749b21348', 'new_project': False, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'inference_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': '249808472f06dc78680e4d2c74e0b092b0c49ca5a86c628c20c00f4c088935ad', 'request_hashes': ['472ef6029d79856d579f075822b58b977e024be3861f551a34d66eef64b3bc3b', 'b2af1decb03a66c277291231e841e41fbc7f4e0cf3f6f56c223c76065c083dc9', 'a1b325070e28d02065a5dc444c342a97cd723ff793f5442dbf019dfe4969c3e8', '886d7158508793a0a03cf511e18be31a746e69a98f47767c3dfefb604023989c'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 3, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_falsifier_14_manifest_remains_intact (tests_platform_approval_receipt.FalsifierTests.test_falsifier_14_manifest_remains_intact)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_platform_approval_receipt.py", line 335, in test_falsifier_14_manifest_remains_intact
+    self.assertEqual(mismatched, [])
+AssertionError: Lists differ: ['engine/bridge.py'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'engine/bridge.py'
+
+- ['engine/bridge.py']
++ []
+
+======================================================================
+FAIL: test_every_manifest_entry_matches_the_file_bytes (tests_platform_integration.ManifestTests.test_every_manifest_entry_matches_the_file_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_platform_integration.py", line 387, in test_every_manifest_entry_matches_the_file_bytes
+    self.assertEqual(mismatched, [])
+AssertionError: Lists differ: ['engine/bridge.py'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'engine/bridge.py'
+
+- ['engine/bridge.py']
++ []
+
+----------------------------------------------------------------------
+Ran 1110 tests in 282.085s
+
+FAILED (failures=3, errors=5, skipped=3)

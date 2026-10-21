@@ -7,7 +7,23 @@ import { loadSkillHub, readSkillHub, reloadSkillHub } from './skillhub.mjs'
 export const PROTOCOL = 'orgdna-cordis/1'
 export const SUPPORTED_TOOLS_VERSION = '0.2.1-alpha.1'
 export const SUPPORTED_TOOLS_VERSIONS = [SUPPORTED_TOOLS_VERSION, '0.2.0-rc.2', '0.0.1-rc.1']
-export const OPERATIONS = ['state', 'message', 'task', 'evidence', 'memory', 'learning']
+export const OPERATIONS = ['state', 'message', 'task', 'evidence', 'memory', 'learning', 'channel', 'team_memory']
+// GenTeam P2/P4: semantica portada de engine/team_channel.py y engine/team_memory.py
+// (port REA de agentscope-ai/agentscope@26ec620, Apache-2.0). Mismos invariantes:
+// mencion validada contra el roster (fail-closed), inbox por miembro con drain FIFO
+// destructivo y ttl, fragmentos .md inmutables con registro embebido e indice
+// MEMORY.md regenerado tras cada alta con recorte proporcional + backtrack de 10.
+const MENTION_RE = /^@(\S+)(?:[ \t]+(.*))?$/
+const MEMORY_PLANES = ['execution', 'project', 'organizational', 'personal']
+const MEMORY_ID_RE = /^[a-z0-9][a-z0-9._-]{1,63}$/
+const MEMORY_INDEX_BUDGET_BYTES = 6000
+const MEMORY_EMPTY_INDEX = 'Your MEMORY.md is currently empty. When you save new memories, they will appear here.'
+const MEMORY_TRUNCATED_MARK = '<<<TRUNCATED>>>'
+const CHANNEL_DEFAULT_DRAIN = 100
+const CHANNEL_MAX_TEXT = 6000
+const CHANNEL_MAX_TOPIC = 160
+const CHANNEL_MAX_TITLE = 300
+const CHANNEL_MAX_DEPENDENCIES = 32
 const MAX_BYTES = 8 * 1024 * 1024
 const MAX_EVENTS = 10000
 const copy = value => JSON.parse(JSON.stringify(value))
@@ -69,6 +85,7 @@ export class SharedLedger {
         protocol: PROTOCOL, organization_id: this.config.organization_id,
         member_ids: [...this.members.keys()], version: 0,
         messages: [], tasks: [], evidence: [], memory: [], learning: [], audit: [], receipts: {},
+        inboxes: {},
       }
       if (!fs.existsSync(this.file)) this.persist(this.state)
     } catch (error) { this.close(); throw error }
@@ -80,7 +97,9 @@ export class SharedLedger {
         JSON.stringify(state.member_ids) !== JSON.stringify([...this.members.keys()]) ||
         !Number.isSafeInteger(state.version) || state.version < 0 ||
         ['messages', 'tasks', 'evidence', 'memory', 'learning', 'audit'].some(k => !Array.isArray(state[k])) ||
+        (state.inboxes !== undefined && (typeof state.inboxes !== 'object' || Array.isArray(state.inboxes) || Object.keys(state.inboxes).some(k => !this.members.has(k)))) ||
         !state.receipts || typeof state.receipts !== 'object') fail('Ledger identity/schema mismatch; no migration or overwrite performed')
+    if (state.inboxes === undefined) state.inboxes = {}
     return state
   }
   persist(value) {
@@ -137,9 +156,23 @@ export class SharedLedger {
       keys(args, ['section', 'offset', 'limit', 'skill_ids', 'budget_bytes'])
       if (['skills', 'skill_context', 'capabilities'].includes(args.section)) return readSkillHub(this.skillhub, actor, args)
       const section = args.section ?? 'summary'
-      if (!['summary', 'messages', 'tasks', 'evidence', 'memory', 'learning', 'audit', 'roster'].includes(section)) fail('Unknown section')
+      if (!['summary', 'messages', 'tasks', 'evidence', 'memory', 'learning', 'audit', 'roster', 'channel', 'team_memory'].includes(section)) fail('Unknown section')
       const offset = integer(args.offset ?? 0, 'offset')
       const limit = integer(args.limit ?? 50, 'limit', 1, 100)
+      if (section === 'channel') {
+        // Vista no destructiva del canal (P2): mensajes visibles al actor (filtro exacto
+        // de messages), tareas del canal con destinatario y estado, e inbox pendiente.
+        const rows = this.state.messages.filter(row => row.to === 'all' || row.to === actor || row.actor === actor)
+        const pending = this._channelPending(actor)
+        return copy({ organization_id: this.config.organization_id, version: this.state.version, section,
+          total: rows.length, offset, next_offset: offset + limit < rows.length ? offset + limit : null,
+          rows: rows.slice(offset, offset + limit),
+          tasks: this.state.tasks.filter(row => row.owner_member_id === actor || row.actor === actor || row.to === undefined),
+          inbox_pending: pending, content_is_untrusted_data: true })
+      }
+      if (section === 'team_memory') {
+        return copy(this._memoryView(actor))
+      }
       if (section === 'summary') return {
         organization_id: this.config.organization_id, member_id: actor, version: this.state.version,
         skillhub: this.skillhub ? {status:'HASH_VERIFIED_LOADED',manifest_sha256:this.skillhub.sha256,revision:this.skillhub.doc.revision,reload_request_id:this.skillhub.reload_request_id??null,namespace:this.config.namespace,connector_health_verified:false} : {status:'UNAVAILABLE'},
@@ -226,6 +259,88 @@ export class SharedLedger {
         row.status = payload.action === 'accept' ? 'accepted_for_reference' : 'rejected'
         row.history.push({ actor, at: now, note: text(payload.note, 'note'), evidence_ids: evidence(payload.evidence_ids) })
       }
+    } else if (operation === 'channel') {
+      // P2: canal dirigido + @mencion + asignacion tipo colega. Port de engine/team_channel.py
+      // (agentscope-ai/agentscope@26ec620: _team_pipeline.py + _in_memory_message_bus.py).
+      keys(payload, ['action', 'to', 'text', 'topic', 'ttl_secs', 'member', 'task', 'title',
+                     'depends_on', 'max_count'])
+      const action = payload.action
+      if (action === 'publish') {
+        const target = payload.to === 'all' ? 'all' : member(payload.to)
+        const body = text(payload.text, 'text', CHANNEL_MAX_TEXT)
+        const topicValue = text(payload.topic ?? 'coordination', 'topic', CHANNEL_MAX_TOPIC)
+        const ttl = payload.ttl_secs ?? null
+        if (ttl !== null && (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl < 0)) fail('Invalid ttl_secs')
+        // Validacion completa ANTES de mutar (fail-closed): la mencion debe existir.
+        const mention = MENTION_RE.exec(body)
+        let preparedTask = null
+        if (mention !== null) {
+          const mentioned = this._resolveChannelRef(mention[1])
+          if (!mentioned) fail(`unknown_member: la mencion @${mention[1]} no esta en el roster`)
+          preparedTask = this._prepareChannelTask(actor, mentioned, (mention[2] ?? '').trim(), payload.title ?? null, payload.depends_on ?? [], next)
+        }
+        const message = { ...base, to: target, text: body, topic: topicValue }
+        next.messages.push(message)
+        let task = null
+        if (preparedTask !== null) {
+          task = { ...preparedTask, id: randomUUID(), actor, created_at: now,
+                   provenance: 'bound_dsh_session', content_verified: false, status: 'open',
+                   evidence_ids: [], history: [] }
+          next.tasks.push(task)
+        }
+        next.inboxes ??= {}
+        const recipients = target === 'all' ? [...this.members.keys()] : [target]
+        const expireAt = ttl === null ? null : Date.now() / 1000 + ttl
+        for (const recipient of recipients) {
+          next.inboxes[recipient] ??= []
+          // Purga de expirados ANTES del append (bus Mode A) y fan-out de 'all' por destinatario.
+          next.inboxes[recipient] = next.inboxes[recipient].filter(entry => entry.expire_at === null || entry.expire_at > Date.now() / 1000)
+          next.inboxes[recipient].push({ message_id: message.id, expire_at: expireAt })
+        }
+        row = { id: randomUUID(), message, task, inbox_pending: this._channelPendingEntries(next, actor).length }
+      } else if (action === 'inbox') {
+        // Drain destructivo FIFO del inbox del actor; el resto persiste (Mode A).
+        const maxCount = integer(payload.max_count ?? CHANNEL_DEFAULT_DRAIN, 'max_count', 1, 1000)
+        next.inboxes ??= {}
+        const alive = (next.inboxes[actor] ?? []).filter(entry => entry.expire_at === null || entry.expire_at > Date.now() / 1000)
+        const deliver = alive.slice(0, maxCount)
+        next.inboxes[actor] = alive.slice(maxCount)
+        const byId = new Map(next.messages.map(entry => [entry.id, entry]))
+        row = { id: randomUUID(), drained: deliver.map(entry => byId.get(entry.message_id)).filter(Boolean),
+                remaining: next.inboxes[actor].length }
+      } else if (action === 'inbox_clear') {
+        next.inboxes ??= {}
+        const cleared = (next.inboxes[actor] ?? []).length
+        delete next.inboxes[actor]
+        row = { id: randomUUID(), cleared }
+      } else if (action === 'assign') {
+        const owner = this._resolveChannelRef(payload.member)
+        if (!owner) fail('unknown_member: el destinatario no esta en el roster')
+        const taskText = text(payload.task, 'task', CHANNEL_MAX_TEXT)
+        row = { ...this._prepareChannelTask(actor, owner, taskText, payload.title ?? null, payload.depends_on ?? [], next),
+                id: randomUUID(), actor, created_at: now, provenance: 'bound_dsh_session',
+                content_verified: false, status: 'open', evidence_ids: [], history: [] }
+        next.tasks.push(row)
+      } else fail('Invalid channel action')
+    } else if (operation === 'team_memory') {
+      // P4: memoria Markdown de equipo. Port de engine/team_memory.py (agentscope-ai/
+      // agentscope@26ec620: _middleware.py filesystem memory). Fragmentos inmutables con
+      // registro embebido + indice MEMORY.md regenerado tras cada alta; la gobernanza
+      // completa de planos/permisos vive en el engine Python, aqui el ledger es la
+      // autoridad local del addon.
+      keys(payload, ['action', 'memory_id', 'plane', 'content', 'description', 'ttl_seconds'])
+      if (payload.action !== 'append') fail('Invalid team_memory action')
+      const memoryId = payload.memory_id
+      if (typeof memoryId !== 'string' || !MEMORY_ID_RE.test(memoryId)) fail('Invalid memory_id')
+      if (!MEMORY_PLANES.includes(payload.plane)) fail('Invalid plane')
+      const content = text(payload.content, 'content', CHANNEL_MAX_TEXT)
+      const description = payload.description === undefined ? content.slice(0, 120) : text(payload.description, 'description', 160)
+      const ttl = payload.ttl_seconds ?? null
+      if (ttl !== null && (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl < 0)) fail('Invalid ttl_seconds')
+      const fragment = this._appendTeamMemory(actor, payload.plane, memoryId, content, description, ttl, now)
+      const view = this._memoryView(actor)
+      row = { id: randomUUID(), memory_id: memoryId, plane: payload.plane, member: actor, fragment,
+              index_path: view.index_path, fragments: view.fragments.length, recorded_at: now }
     }
     next.version += 1
     const result = { organization_id: next.organization_id, version: next.version, record: copy(row), executed_external_action: false }
@@ -236,6 +351,118 @@ export class SharedLedger {
     this.persist(next)
     this.state = next
     return copy(result)
+  }
+  _resolveChannelRef(ref) {
+    // member_id exacto primero, luego name exacto (resolve() de engine/team_channel.py).
+    if (typeof ref !== 'string') return null
+    if (this.members.has(ref)) return ref
+    for (const member of this.members.values()) if (member.name === ref) return member.member_id
+    return null
+  }
+  _prepareChannelTask(actor, owner, prompt, title, dependsOn, next) {
+    // Validacion sin mutar (fail-closed): prompt requerido, title derivado, deps existentes.
+    const promptValue = text(prompt, 'task', CHANNEL_MAX_TEXT)
+    const titleValue = title === null || title === undefined || title === ''
+      ? promptValue.slice(0, CHANNEL_MAX_TITLE) : text(title, 'title', CHANNEL_MAX_TITLE)
+    const dependencies = dependsOn ?? []
+    if (!Array.isArray(dependencies) || dependencies.length > CHANNEL_MAX_DEPENDENCIES ||
+        new Set(dependencies).size !== dependencies.length ||
+        dependencies.some(id => !next.tasks.some(task => task.id === id))) fail('Dependencies must be existing unique tasks')
+    return { actor, owner_member_id: owner, title: titleValue, prompt: promptValue, depends_on: dependencies }
+  }
+  _channelPendingEntries(state, actor) {
+    state.inboxes ??= {}
+    return (state.inboxes[actor] ?? []).filter(entry => entry.expire_at === null || entry.expire_at > Date.now() / 1000)
+  }
+  _channelPending(actor) { return this._channelPendingEntries(this.state, actor).length }
+  _memoryDir(member) { return path.join(this.directory, 'team-memory', member) }
+  _memoryRecord(member, plane, memoryId, content, description, ttl, actor, now) {
+    return { memory_id: memoryId, plane, tenant: this.config.organization_id, member,
+             actor, recorded_at: now, description, content, ttl_seconds: ttl }
+  }
+  _liveFragments(member) {
+    const dir = this._memoryDir(member)
+    const rows = []
+    for (const plane of MEMORY_PLANES) {
+      const planeDir = path.join(dir, plane)
+      if (!fs.existsSync(planeDir)) continue
+      for (const name of fs.readdirSync(planeDir)) {
+        if (!name.endsWith('.md')) continue
+        const raw = fs.readFileSync(path.join(planeDir, name), 'utf8')
+        const match = /<!-- team_memory:record (.*) -->/.exec(raw)
+        if (match === null) continue
+        try { rows.push(JSON.parse(match[1])) } catch { /* archivo sin registro valido: se ignora */ }
+      }
+    }
+    const nowSeconds = Date.now() / 1000
+    return rows
+      .filter(record => typeof record.recorded_at_epoch !== 'number' || record.ttl_seconds === null ||
+                        record.recorded_at_epoch + record.ttl_seconds > nowSeconds)
+      .sort((left, right) => String(right.recorded_at).localeCompare(String(left.recorded_at)) || String(right.memory_id).localeCompare(String(left.memory_id)))
+  }
+  _appendTeamMemory(actor, plane, memoryId, content, description, ttl, now) {
+    const record = this._memoryRecord(actor, plane, memoryId, content, description, ttl, actor, now)
+    record.recorded_at_epoch = Date.now() / 1000
+    const fragmentDir = path.join(this._memoryDir(actor), plane)
+    noSymlink(fragmentDir, true)
+    fs.mkdirSync(fragmentDir, { recursive: true, mode: 0o700 })
+    const fragmentPath = path.join(fragmentDir, `${memoryId}.md`)
+    const canonical = JSON.stringify(record)
+    const body = content.replace(/\n+$/, '')
+    const markdown = `---\nname: ${memoryId}.md\ndescription: ${description}\ntype: ${plane}\ntenant: ${this.config.organization_id}\nmember: ${actor}\nrecorded_at: ${now}\n---\n${body}\n\n<!-- team_memory:record ${canonical} -->\n`
+    if (fs.existsSync(fragmentPath)) {
+      const existing = fs.readFileSync(fragmentPath, 'utf8')
+      const match = /<!-- team_memory:record (.*) -->/.exec(existing)
+      if (match === null || match[1] !== canonical) fail('record_exists: el fragmento ya esta materializado con otro contenido; el store es append-only')
+      return path.relative(this._memoryDir(actor), fragmentPath)
+    }
+    fs.writeFileSync(fragmentPath, markdown, { mode: 0o600 })
+    this._writeMemoryIndex(actor)
+    return path.relative(this._memoryDir(actor), fragmentPath)
+  }
+  _memoryIndexLines(member) {
+    return this._liveFragments(member).map(record => {
+      const date = String(record.recorded_at ?? '').slice(0, 10) || 'unknown'
+      const line = `- [${record.plane}] ${record.memory_id}.md (${date})`
+      return record.description ? `${line}: ${record.description}` : line
+    })
+  }
+  _writeMemoryIndex(member) {
+    const dir = this._memoryDir(member)
+    noSymlink(dir, true)
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 })
+    const lines = this._memoryIndexLines(member)
+    fs.writeFileSync(path.join(dir, 'MEMORY.md'), lines.length ? lines.join('\n') + '\n' : '', { mode: 0o600 })
+  }
+  _truncateBytes(value, budgetBytes) {
+    // Recorte proporcional con backtrack de a 10 caracteres (formula del fuente, bytes UTF-8).
+    if (budgetBytes <= 0) return ''
+    const total = Buffer.byteLength(value, 'utf8')
+    if (total <= budgetBytes) return value
+    let index = Math.trunc((budgetBytes / total) * value.length)
+    while (index > 0 && Buffer.byteLength(value.slice(0, index), 'utf8') > budgetBytes) index = Math.max(0, index - 10)
+    return value.slice(0, index)
+  }
+  _memoryView(member) {
+    const dir = this._memoryDir(member)
+    const indexPath = path.join(dir, 'MEMORY.md')
+    const original = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : this._memoryIndexLines(member).join('\n')
+    const content = this._truncateBytes(original, MEMORY_INDEX_BUDGET_BYTES)
+    const truncated = content.length !== original.length
+    const totalLines = original.split('\n').length - (original.endsWith('\n') ? 1 : 0)
+    const remainLines = content.split('\n').length - (content.endsWith('\n') ? 1 : 0)
+    const omitted = truncated ? totalLines - remainLines : 0
+    const reminder = truncated
+      ? `\n${MEMORY_TRUNCATED_MARK}\n<system-reminder>The remaining ${omitted} lines have been omitted due to context length limits. Use the \`Read\` tool with offset ${remainLines} to access the rest of '${indexPath}'.</system-reminder>`
+      : null
+    const visible = content || MEMORY_EMPTY_INDEX
+    return { member, index_path: indexPath, content, content_bytes: Buffer.byteLength(content, 'utf8'),
+             budget_bytes: MEMORY_INDEX_BUDGET_BYTES, truncated, remain_lines: remainLines,
+             omitted_lines: omitted, reminder, text: visible + (reminder ?? ''),
+             fragments: this._liveFragments(member).map(record => ({
+               memory_id: record.memory_id, plane: record.plane, description: record.description,
+               recorded_at: record.recorded_at, fragment: path.join(record.plane, `${record.memory_id}.md`) })),
+             placeholder_leak: (visible + (reminder ?? '')).includes('{memory_dir}') }
   }
   independent(reviewer, author) {
     const ancestors = id => {

@@ -1,0 +1,388 @@
+{
+  "fuente": "OpenBMB/ChatDev@a2ea4a2",
+  "descripcion": "Vectores de validacion transcriptos de los tests de seguridad de ChatDev@a2ea4a2. Entrada/salida son lo que el test construye y afirma. Contenido del repo fuente = DATO.",
+  "convenciones": {
+    "flag": "MAC_ALLOW_UNSAFE_CODE_EXECUTION (env del proceso servidor; habilita solo si valor.strip().lower() in {1,true,yes,on})",
+    "SecurityError": "excepcion utils.exceptions.SecurityError (error_code SECURITY_ERROR)",
+    "ValidationError": "excepcion utils.exceptions.ValidationError (error_code VALIDATION_ERROR)",
+    "payload_codigo": "formato del procesador: 'FILENAME\\n```python\\nCODE\\n```' repetible",
+    "filesystem_case_insensitive": "vectores marcados 'solo FS case-insensitive' se skip-pean en el otro caso (pytest.skip)"
+  },
+  "vectores": [
+    {
+      "nombre": "optin_rechazado_valores_invalidos",
+      "categoria": "gate",
+      "entrada": {"env_flag": [null, "", "0", "false", "no", "off", "typo"], "operacion": "require_unsafe_code_execution('test operation')"},
+      "salida_esperada": {"excepcion": "SecurityError", "mensaje_contiene": "MAC_ALLOW_UNSAFE_CODE_EXECUTION"},
+      "origen_test": "tests/test_code_execution_security.py::test_execution_requires_explicit_opt_in"
+    },
+    {
+      "nombre": "optin_aceptado_valores_validos",
+      "categoria": "gate",
+      "entrada": {"env_flag": ["1", "true", "YES", " on "], "operacion": "require_unsafe_code_execution('test operation')"},
+      "salida_esperada": {"excepcion": null},
+      "origen_test": "tests/test_code_execution_security.py::test_explicit_opt_in_is_supported"
+    },
+    {
+      "nombre": "processor_deshabilitado_no_muta_fs",
+      "categoria": "gate_antes_de_fs",
+      "entrada": {"env_flag": null, "payload": "main.py\n```python\nprint('ok')\n```", "precondicion": "workspace con keep.txt='original'"},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "keep_txt": "original", "main_py_existe": false, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_disabled_processor_does_not_clear_or_write_files"
+    },
+    {
+      "nombre": "processor_rechaza_filenames_antes_de_limpiar",
+      "categoria": "confinamiento",
+      "entrada": {"env_flag": "1", "filename_invalido": ["../../escaped.py", "src/../../escaped.py", "src/../main.py", "..\\..\\escaped.py", "C:\\escaped.py", "C:escaped.py", "\\\\server\\share\\escaped.py", "attachments/changed.py", "attachments\\changed.py", "attachments", ".", "..", " ", "bad\u0000name.py"], "payload_extra": "main.py valido precedido por el invalido"},
+      "salida_esperada": {"excepcion": "SecurityError", "keep_txt": "original", "attachments_input_txt": "attachment", "main_py_existe": false, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_validates_all_files_before_clearing"
+    },
+    {
+      "nombre": "processor_rechaza_ruta_absoluta",
+      "categoria": "confinamiento",
+      "entrada": {"env_flag": "1", "filename": "<tmp_path>/outside.py"},
+      "salida_esperada": {"excepcion": "SecurityError", "outside_py_existe": false, "keep_txt_existe": true, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_rejects_absolute_path"
+    },
+    {
+      "nombre": "processor_rechaza_symlink_target",
+      "categoria": "symlink",
+      "entrada": {"env_flag": "1", "alias": "alias/changed.py", "alias_apunta_a": ["directorio fuera del workspace", "workspace/attachments"]},
+      "salida_esperada": {"excepcion": "SecurityError", "changed_py_existe_en_target": false, "keep_txt_existe": true, "alias_sigue_symlink": true, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_rejects_symlink_targets"
+    },
+    {
+      "nombre": "processor_rechaza_alias_caso_attachments",
+      "categoria": "isla_attachments",
+      "entrada": {"env_flag": "1", "solo_fs": "case-insensitive", "filename": ["Attachments/input.txt", "ATTACHMENTS/nested/new.py", "aTtAcHmEnTs"], "codigo": "REVIEW_MARKER"},
+      "salida_esperada": {"excepcion": "SecurityError con 'attachments' en mensaje", "attachments_input_txt": "attachment", "nested_existe": false, "keep_txt": "original", "main_py_existe": false, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_rejects_attachment_case_aliases"
+    },
+    {
+      "nombre": "processor_cleanup_preserva_attachments_renombrado",
+      "categoria": "isla_attachments",
+      "entrada": {"env_flag": "1", "solo_fs": "case-insensitive", "precondicion": "attachments renombrado fisicamente a 'Attachments'", "payload": "main.py\n```python\nprint('ok')\n```"},
+      "salida_esperada": {"attachments_input_txt": "attachment", "main_py_existe": true, "keep_txt_existe": false, "popen_llamado": true, "popen_veces": 1},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_cleanup_preserves_attachment_directory_with_different_case"
+    },
+    {
+      "nombre": "processor_permite_directorio_caso_distinto",
+      "categoria": "isla_attachments",
+      "entrada": {"env_flag": "1", "solo_fs": "case-sensitive", "filename": "Attachments/new.py", "codigo": "VALUE = 1"},
+      "salida_esperada": {"attachments_nuevo_py_contiene": "VALUE = 1", "attachments_orig_input_txt": "attachment", "popen_llamado": true},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_allows_distinct_case_sensitive_directory"
+    },
+    {
+      "nombre": "processor_happy_path_con_servidor_habilitado",
+      "categoria": "happy_path",
+      "entrada": {"env_flag": "1", "payload": "main.py\n```python\nprint('ok')\n```\nsrc/helpers.py\n```python\nVALUE = 1\n```", "precondicion": "old_link es symlink a directorio externo con keep.txt='external'"},
+      "salida_esperada": {"main_py_contiene": "print('ok')", "src_helpers_py_contiene": "VALUE = 1", "keep_txt_existe": false, "old_link_sigue_symlink": false, "externo_keep_txt": "external", "attachments_input_txt": "attachment", "resultado_contiene": "executed", "popen_args": ["uv", "run", "main.py"], "popen_cwd": "workspace", "popen_shell": false},
+      "origen_test": "tests/test_code_execution_security.py::test_enabled_processor_preserves_nested_files_and_attachments"
+    },
+    {
+      "nombre": "processor_rechaza_attachments_symlink_antes_de_cleanup",
+      "categoria": "symlink",
+      "entrada": {"env_flag": "1", "precondicion": "attachments movido y reemplazado por symlink (target dentro o fuera del workspace)", "payload": "main.py valido"},
+      "salida_esperada": {"excepcion": "SecurityError con 'symbolic link' en mensaje", "target_input_txt": "attachment", "keep_txt": "original", "main_py_existe": false, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_processor_rejects_linked_attachments_before_cleanup"
+    },
+    {
+      "nombre": "python_node_env_no_puede_habilitar",
+      "categoria": "gate_antes_de_fs",
+      "entrada": {"env_flag_servidor": null, "node_config_env": {"MAC_ALLOW_UNSAFE_CODE_EXECUTION": "1"}, "global_state_vars": {"MAC_ALLOW_UNSAFE_CODE_EXECUTION": "1"}, "mensaje": "print('ok')"},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "workspace_existe": false, "subprocess_run_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_python_node_env_cannot_enable_execution"
+    },
+    {
+      "nombre": "python_node_ejecuta_codigo_inofensivo",
+      "categoria": "happy_path",
+      "entrada": {"env_flag_servidor": "1", "mensaje": "print(6 * 7)"},
+      "salida_esperada": {"primer_mensaje_texto_strip": "42"},
+      "origen_test": "tests/test_code_execution_security.py::test_enabled_python_node_executes_harmless_code"
+    },
+    {
+      "nombre": "execute_code_bloqueado_antes_de_escribir_script",
+      "categoria": "gate_antes_de_fs",
+      "entrada": {"env_flag": null, "temp_code_dir": "<tmp>/scripts", "codigo": "print('ok')"},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "temp_code_dir_existe": false},
+      "origen_test": "tests/test_code_execution_security.py::test_execute_code_is_blocked_before_saving_script"
+    },
+    {
+      "nombre": "execute_code_habilitado_sin_residuos",
+      "categoria": "happy_path",
+      "entrada": {"env_flag": "1", "temp_code_dir": "<tmp>", "codigo": "print(6 * 7)"},
+      "salida_esperada": {"retorno_strip": "42", "directorio_queda_vacio": true},
+      "origen_test": "tests/test_code_execution_security.py::test_execute_code_works_when_enabled"
+    },
+    {
+      "nombre": "uv_entrypoints_no_sobreescriben_politica",
+      "categoria": "gate",
+      "entrada": {"operaciones": ["uv_run con env={flag:'1'} en argumentos", "install_python_packages", "init_python_env"], "env_flag_servidor": null},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "subprocess_run_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_uv_entry_points_cannot_override_server_policy"
+    },
+    {
+      "nombre": "uv_run_disponible_con_optin",
+      "categoria": "happy_path",
+      "entrada": {"env_flag": "1", "operacion": "uv_run(module='example')"},
+      "salida_esperada": {"returncode": 0, "cmd": ["uv", "run", "python", "-m", "example"]},
+      "origen_test": "tests/test_code_execution_security.py::test_uv_run_is_available_when_enabled"
+    },
+    {
+      "nombre": "manim_bloqueado_antes_de_borrar_media",
+      "categoria": "gate_antes_de_fs",
+      "entrada": {"env_flag": null, "media_preexistente": "media/keep.txt='original'", "operacion": "render_manim('unused.py')"},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "media_keep_txt": "original"},
+      "origen_test": "tests/test_code_execution_security.py::test_manim_is_blocked_before_clearing_media"
+    },
+    {
+      "nombre": "mcp_local_env_no_habilita",
+      "categoria": "gate",
+      "entrada": {"env_flag_servidor": null, "mcp_config": {"command": "<sys.executable>", "env": {"MAC_ALLOW_UNSAFE_CODE_EXECUTION": "1"}}},
+      "salida_esperada": {"excepcion": "SecurityError con flag en mensaje", "stdio_client_wrapper_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_local_mcp_env_cannot_enable_execution"
+    },
+    {
+      "nombre": "mcp_optin_y_cache_por_cliente",
+      "categoria": "happy_path",
+      "entrada": {"secuencia": "opt-in activo → _get_stdio_client(config, cache_key); opt-in desactivado → segunda llamada"},
+      "salida_esperada": {"primera": "crea wrapper 1 vez con (config)", "segunda": "SecurityError", "wrapper_llamado_veces": 1},
+      "origen_test": "tests/test_code_execution_security.py::test_local_mcp_opt_in_and_cached_client_policy"
+    },
+    {
+      "nombre": "workflow_subido_no_puede_habilitar_ejecucion",
+      "categoria": "gate",
+      "entrada": {"env_flag_servidor": null, "yaml": "vars={flag:'1'} + (nodo python con env flag | edge processor code_save_and_run)", "canal": ["application/json", "text/event-stream"]},
+      "salida_esperada": {"json": "HTTP 403", "sse": "HTTP 200 con 'event: error' y sin 'event: completed'", "ambos": "flag visible en respuesta; cero *.py creado en WareHouse"},
+      "origen_test": "tests/test_code_execution_security.py::test_uploaded_workflow_cannot_enable_execution"
+    },
+    {
+      "nombre": "processor_no_plantea_modulos_por_traversal",
+      "categoria": "confinamiento",
+      "entrada": {"env_flag_servidor": "1", "filename": "../../../functions/function_calling/planted.py", "codigo": "VALUE = 1"},
+      "salida_esperada": {"json": "HTTP 403", "sse": "'event: error' sin 'completed'", "mensaje_contiene": "Invalid code filename", "functions_dir_existe": false, "popen_llamado": false},
+      "origen_test": "tests/test_code_execution_security.py::test_uploaded_processor_cannot_plant_module_even_when_enabled"
+    },
+    {
+      "nombre": "workflow_corre_tras_optin_del_servidor",
+      "categoria": "happy_path",
+      "entrada": {"env_flag_servidor": "1", "kind": ["python", "processor"]},
+      "salida_esperada": {"status_http": 200, "status_json": "completed", "final_message_contiene": ["ok", "executed"]},
+      "origen_test": "tests/test_code_execution_security.py::test_uploaded_workflow_runs_after_server_opt_in"
+    },
+    {
+      "nombre": "graph_rechaza_nombres_de_sesion_invalidos",
+      "categoria": "sesion",
+      "entrada": {"nombres": ["session_../../../functions/function_calling/pocplant", "../outside", "session_a/../../outside", "/tmp/session_absolute", "session_..\\..\\outside", "C:\\outside", "C:outside", "\\\\server\\share", ".", "..", "session_\u0000invalid", "session_\ninvalid"]},
+      "salida_esperada": {"excepcion": "ValidationError", "output_root_existe": false},
+      "origen_test": "tests/test_session_workspace_security.py::test_graph_rejects_invalid_names_before_creating_directories"
+    },
+    {
+      "nombre": "graph_preserva_nombres_validos",
+      "categoria": "sesion",
+      "entrada": {"nombres": ["session_ok-123", "demo.v1", "My project", "\u6d4b\u8bd5"]},
+      "salida_esperada": {"directorio": "bajo output_root resuelto", "con_prefijo_session_": "nombre exacto", "sin_prefijo": "nombre + '_' + sufijo numerico"},
+      "origen_test": "tests/test_session_workspace_security.py::test_graph_preserves_valid_names_and_timestamp_behavior"
+    },
+    {
+      "nombre": "fixed_output_dir_sigue_confino",
+      "categoria": "sesion",
+      "entrada": {"metadata": {"fixed_output_dir": true}, "nombres": ["task_001", "../outside"]},
+      "salida_esperada": {"task_001": "directorio exacto output_root/task_001", "dotdot": "ValidationError"},
+      "origen_test": "tests/test_session_workspace_security.py::test_fixed_output_directory_is_still_confined"
+    },
+    {
+      "nombre": "graph_rechaza_sesion_ya_symlinkeada",
+      "categoria": "symlink",
+      "entrada": {"precondicion": "directorio de sesion existente como symlink a directorio externo"},
+      "salida_esperada": {"excepcion": "ValidationError con 'escapes' en mensaje", "contenido_externo": "vacio (intacto)"},
+      "origen_test": "tests/test_session_workspace_security.py::test_graph_rejects_existing_session_symlink"
+    },
+    {
+      "nombre": "attachment_copy_rechaza_symlinks_que_escapan",
+      "categoria": "symlink",
+      "entrada": {"linked_part": ["code_workspace", "code_workspace/attachments"], "builders": ["sdk._build_task_input", "execute_sync._build_task_input"], "precondicion": "parte enlazada a directorio externo"},
+      "salida_esperada": {"excepcion": "ValidationError con 'escapes' en mensaje", "contenido_externo": "vacio (intacto)"},
+      "origen_test": "tests/test_session_workspace_security.py::test_attachment_copy_rejects_escaping_symlinks"
+    },
+    {
+      "nombre": "runtime_rechaza_workspace_symlink",
+      "categoria": "symlink",
+      "entrada": {"precondicion": "code_workspace de la sesion es symlink a directorio externo"},
+      "salida_esperada": {"excepcion": "ValidationError con 'escapes' en mensaje", "contenido_externo": "vacio (intacto)"},
+      "origen_test": "tests/test_session_workspace_security.py::test_runtime_rejects_workspace_symlink_without_attachments"
+    },
+    {
+      "nombre": "http_rechaza_sesion_mala_antes_de_arrancar_worker",
+      "categoria": "sesion",
+      "entrada": {"session_name": "los 12 INVALID_NAMES", "canal": ["json", "sse"]},
+      "salida_esperada": {"status_http": 400, "detail_contiene": "session_name", "worker_hilo_llamado": false},
+      "origen_test": "tests/test_session_workspace_security.py::test_http_rejects_bad_session_before_starting_worker"
+    },
+    {
+      "nombre": "runner_rechaza_traversal_antes_de_cargar_config",
+      "categoria": "sesion",
+      "entrada": {"session_name": "session_../../../functions/function_calling/pocplant", "modo": ["sdk (bloqueante)", "streaming"]},
+      "salida_esperada": {"excepcion": "ValidationError", "load_config_llamado": false, "warehouse_existe": false},
+      "origen_test": "tests/test_session_workspace_security.py::test_direct_runner_rejects_traversal_before_loading_config"
+    },
+    {
+      "nombre": "websocket_rechaza_sesion_mala",
+      "categoria": "sesion",
+      "entrada": {"session_id": "los 12 INVALID_NAMES", "endpoint": "/ws?session_id=..."},
+      "salida_esperada": {"websocket_close_code": 1008, "conexiones_activas_registradas": 0},
+      "origen_test": "tests/test_session_workspace_security.py::test_websocket_rejects_bad_session_without_registering_connection"
+    },
+    {
+      "nombre": "upload_rechaza_sesion_antes_de_leer_archivo",
+      "categoria": "sesion",
+      "entrada": {"session_name": ["session_../../../functions/function_calling/pocplant", "session_..\\..\\outside", ".."], "archivo": "sample.py con VALUE = 1"},
+      "salida_esperada": {"excepcion": "ValidationError", "archivo_consumido": false, "attachments_root_vacio": true},
+      "origen_test": "tests/test_session_workspace_security.py::test_upload_service_rejects_bad_session_before_reading_file"
+    },
+    {
+      "nombre": "nombre_de_sesion_por_defecto",
+      "categoria": "sesion",
+      "entrada": {"session_name": [null, "   "]},
+      "salida_esperada": {"status_http": 200, "output_dir_padre": "tmp/WareHouse", "output_dir_prefijo": "sdk_demo_loop_counter_"},
+      "origen_test": "tests/test_session_workspace_security.py::test_workflow_still_generates_default_session_name"
+    },
+    {
+      "nombre": "websocket_sesion_generada_reconecta_y_replaya",
+      "categoria": "sesion",
+      "entrada": {"flujo": "conectar /ws sin id → recibir session_id → persistir mensaje → reconectar con ese id"},
+      "salida_esperada": {"reconectado": "mismo session_id", "replay": "mensaje persistido reenviado", "evento": "session_resumed"},
+      "origen_test": "tests/test_session_workspace_security.py::test_generated_websocket_session_can_reconnect"
+    },
+    {
+      "nombre": "upload_roundtrip_y_bloqueo_traversal",
+      "categoria": "sesion",
+      "entrada": {"paso1": "subir sample.py via /api/uploads/upload_test", "paso2": "correr workflow con session_name transversal", "paso3": "correr con session_name valido"},
+      "salida_esperada": {"paso2": "HTTP 400 y functions/ no existe", "paso3": "completed (json) o event:completed sin error (sse)", "conservacion": "sample.py replicado byte a byte en la sesion destino"},
+      "origen_test": "tests/test_session_workspace_security.py::test_upload_then_workflow_round_trip_and_traversal_block"
+    },
+    {
+      "nombre": "uploads_rechaza_symlinks_que_escapan",
+      "categoria": "symlink",
+      "entrada": {"linked_part": ["", "code_workspace", "code_workspace/attachments"], "precondicion": "WareHouse/session_upload_test/<parte> es symlink a directorio externo"},
+      "salida_esperada": {"get_uploads": 400, "post_upload": 400, "contenido_externo": "vacio (intacto)"},
+      "origen_test": "tests/test_session_workspace_security.py::test_upload_endpoints_reject_escaping_symlinks"
+    },
+    {
+      "nombre": "http_rechaza_fuentes_no_confiables",
+      "categoria": "attachments_http",
+      "entrada": {"source_kind": ["absolute", "relative", "symlink", "unregistered", "other_session", "other_id"], "attachment_session_id": "owner", "attachments": ["<id propio valido>", "<fuente sospechosa>"]},
+      "salida_esperada": {"status_http": 403, "sesion_resultado_creada": false, "download_result": 404, "secreto_externo": "intacto"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_http_rejects_untrusted_sources_before_copying"
+    },
+    {
+      "nombre": "http_paths_sin_sesion_de_upload_rechazados",
+      "categoria": "attachments_http",
+      "entrada": {"attachments": ["<path absoluto a archivo fuera>"], "attachment_session_id": null},
+      "salida_esperada": {"status_http": 403, "mensaje_contiene": "attachment_session_id", "sesion_resultado_creada": false},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_http_paths_without_upload_session_are_rejected"
+    },
+    {
+      "nombre": "attachment_subido_corre_y_descarga",
+      "categoria": "happy_path",
+      "entrada": {"referencia": ["attachment_id", "path del store"], "attachment_session_id": "owner", "archivo": "input.txt con b'uploaded input'"},
+      "salida_esperada": {"status_http": 200, "texto_contiene": "Final summary released", "sin_event_error": true, "zip_descarga_contiene": "uploaded input"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_uploaded_attachment_runs_and_downloads"
+    },
+    {
+      "nombre": "sdk_local_acepta_paths_explicitos",
+      "categoria": "happy_path",
+      "entrada": {"modo": "SDK local (CLI)", "attachments": ["<tmp>/local.txt"], "contenido": "local CLI input"},
+      "salida_esperada": {"final_message": "Final summary released", "output_contiene_archivo": "local.txt con bytes exactos"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_local_sdk_still_accepts_explicit_file_paths"
+    },
+    {
+      "nombre": "download_preserva_directorios_vacios",
+      "categoria": "descarga",
+      "entrada": {"precondicion": "sesion con directorio anidado vacio session_empty/nested/"},
+      "salida_esperada": {"zip_namelist_contiene": ["session_empty/", "session_empty/nested/"]},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_download_preserves_empty_directories"
+    },
+    {
+      "nombre": "sesiones_prefijadas_aisladas",
+      "categoria": "sesion",
+      "entrada": {"sesiones": ["foo", "session_foo"], "archivos": "first y second respectivamente"},
+      "salida_esperada": {"directorios": ["WareHouse/session_foo", "WareHouse/session_session_foo"], "manifests_por_sesion": "solo sus propios ids", "build_blocks_cruzado": false, "zips": "cada sesion solo su archivo"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_prefixed_sessions_have_separate_uploads_execution_and_downloads"
+    },
+    {
+      "nombre": "download_omite_links_preserva_regulares",
+      "categoria": "descarga",
+      "entrada": {"link_kind": ["file → secreto externo", "directory → dir externo", "dangling", "loop"], "archivo_valido": "run.log"},
+      "salida_esperada": {"zip_contiene": "session_download/run.log == b'workflow log'", "zip_sin": "cualquier entrada bajo 'link'", "secreto_en_zip": false},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_download_skips_links_and_preserves_regular_files"
+    },
+    {
+      "nombre": "download_rechaza_raiz_de_sesion_enlazada",
+      "categoria": "descarga",
+      "entrada": {"precondicion": "WareHouse/session_download es symlink a directorio externo con secreto"},
+      "salida_esperada": {"status_http": [400, 403], "content_type_zip": false},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_download_still_rejects_linked_session_root"
+    },
+    {
+      "nombre": "download_con_links_de_venv",
+      "categoria": "descarga",
+      "entrada": {"precondicion": ".venv/bin/python y bin/python3 son symlinks; pyvenv.cfg regular; run.log regular"},
+      "salida_esperada": {"zip_contiene": ["run.log", ".venv/pyvenv.cfg con bytes exactos"], "zip_sin": ["bin/python", "bin/python3"]},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_download_with_venv_interpreter_links"
+    },
+    {
+      "nombre": "paths_generados_rechazan_componentes",
+      "categoria": "attachments_generados",
+      "entrada": {"campo": ["node_id", "name", "attachment_id"], "valores": ["../outside", "/absolute", "..\\outside", "C:outside", ".", "..", "bad\u0000name"], "operacion": "_persist_message_attachments"},
+      "salida_esperada": {"excepcion": "SecurityError", "workspace_generated_existe": false, "manifest_exportado": false},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_generated_paths_reject_untrusted_components"
+    },
+    {
+      "nombre": "paths_generados_rechazan_symlinks",
+      "categoria": "attachments_generados",
+      "entrada": {"parte_enlazada": ["generated", "generated/Generator", "generated/Generator/result.txt"], "target": "sentinelo externo 'original'"},
+      "salida_esperada": {"excepcion": "SecurityError", "sentinelo": "original (intacto)"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_generated_paths_reject_symlinks"
+    },
+    {
+      "nombre": "fuente_local_generada_no_sale_del_workspace",
+      "categoria": "attachments_generados",
+      "entrada": {"local_path": ["archivo externo directo", "symlink interno → archivo externo"]},
+      "salida_esperada": {"excepcion": "SecurityError", "workspace_generated_existe": false},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_generated_local_source_cannot_read_outside"
+    },
+    {
+      "nombre": "attachment_generado_roundtrip_normal",
+      "categoria": "happy_path",
+      "entrada": {"modo": ["data_uri embebido", "archivo local dentro del workspace"], "node_id": "Image Generator", "nombre": "result.txt"},
+      "salida_esperada": {"archivo": "workspace/generated/Image Generator/result.txt con bytes exactos", "ref_actualizada": "local_path del mensaje apunta al destino", "store": "get('generated').ref.local_path == destino"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_generated_attachment_normal_round_trip"
+    },
+    {
+      "nombre": "attachment_generado_infiere_extension",
+      "categoria": "happy_path",
+      "entrada": {"data_uri": "data:image/png;base64,<contenido>", "name": null, "mime_type": null},
+      "salida_esperada": {"archivo": "workspace/generated/Generator/generated.png con bytes exactos", "mime_actualizado": "image/png"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_generated_image_infers_extension_from_data_uri"
+    },
+    {
+      "nombre": "seguridad_de_agente_alcanza_la_api_http",
+      "categoria": "attachments_generados",
+      "entrada": {"malicious": ["node_id = path externo", "name = '../../../../escaped.txt'", "attachment_id = '../../escape'", "none (control)"], "via": "workflow YAML subido + provider mockeado que devuelve el attachment"},
+      "salida_esperada": {"control": "HTTP 200, sin event:error, contenido en zip de resultado", "maliciosos": "JSON → 403 | SSE → event:error sin completed", "todos": "nada creado fuera del workspace"},
+      "origen_test": "tests/test_attachment_boundary_security.py::test_agent_attachment_security_reaches_http_api"
+    }
+  ],
+  "no_leido_fail_honest": [
+    "entity/configs/__init__.py (Node.as_config): comportamiento inferido solo del uso en python_executor.py",
+    "functions/function_calling/code_executor.py (execute_code): solo el comportamiento observable de sus 2 tests",
+    "functions/function_calling/uv_related.py (uv_run): solo comportamiento observable",
+    "functions/function_calling/video.py (render_manim): solo comportamiento observable",
+    "runtime/node/agent/tool.py (ToolManager/MCP gate): solo comportamiento observable",
+    "utils/attachments.py (AttachmentStore): no abierto",
+    "workflow/graph_context.py (GraphContext): no abierto",
+    "server/services/attachment_service.py: no abierto",
+    "runtime/node/executor/agent_executor.py (_persist_message_attachments): no abierto"
+  ]
+}

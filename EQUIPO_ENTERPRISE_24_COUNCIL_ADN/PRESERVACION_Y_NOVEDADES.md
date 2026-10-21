@@ -24,7 +24,7 @@ Se conserva la función documental de los 42 miembros del ZIP anterior y se rege
 - 05_ROLES_Y_MISIONES.md → 05_ROLES_Y_MISIONES.md (regenerated_for_current_organization)
 - 06_VERIFICACION_DEL_PAQUETE.txt → 06_VERIFICACION_DEL_PAQUETE.txt (regenerated_for_current_organization)
 - 07_APRENDIZAJE_Y_HABILIDADES.txt → 07_APRENDIZAJE_Y_HABILIDADES.txt (regenerated_for_current_organization)
-- AGENT_TEAM_DEFINITIONS_21.json → agent-team-backup-2026-10-07.json (native_filename_definitions_v2_regenerated_current_organization)
+- AGENT_TEAM_DEFINITIONS_21.json → agent-team-backup-2026-10-21.json (native_filename_definitions_v2_regenerated_current_organization)
 - AGENT_TEAM_RECIPE_21.json → agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json (native_filename_recipe_v1_regenerated_current_organization)
 - COLLAB_NOTE_EQUIPO_21.txt → COLLAB_NOTE_EQUIPO_24.txt (regenerated_for_current_organization)
 - DIRECTRIZ_COLABORACION_21.txt → DIRECTRIZ_COLABORACION_24.txt (regenerated_for_current_organization)

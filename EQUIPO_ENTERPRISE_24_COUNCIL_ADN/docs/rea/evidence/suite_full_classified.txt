@@ -1,0 +1,10 @@
+ERROR: test_workbook_stale_blocks_export (tests_bridge.BridgeStateTests.test_workbook_stale_blocks_export)
+ERROR: test_namespace_traversal_symlink (tests_capability_deployment.DeploymentTests.test_namespace_traversal_symlink)
+ERROR: setUpClass (tests_frontend_contract.FrontendContracts)
+ERROR: test_save_reload_does_not_restore_consent_or_start_jobs (tests_generation_pipeline.GenerationPipelineTests.test_save_reload_does_not_restore_consent_or_start_jobs)
+ERROR: setUpClass (tests_v8_ui_contract.V8UIContracts)
+FAIL: test_falsifier_14_manifest_remains_intact (tests_platform_approval_receipt.FalsifierTests.test_falsifier_14_manifest_remains_intact)
+FAIL: test_every_manifest_entry_matches_the_file_bytes (tests_platform_integration.ManifestTests.test_every_manifest_entry_matches_the_file_bytes)
+Ran 1110 tests in 195.494s
+FAILED (failures=2, errors=5, skipped=3)
+# comando: python -m unittest discover -s . -p 'tests_*.py' (2026-10-21, pre-fix-final; clasificacion HEAD en wt-head)

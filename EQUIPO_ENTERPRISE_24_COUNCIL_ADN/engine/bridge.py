@@ -28,6 +28,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import subprocess
 import sys
@@ -56,6 +57,10 @@ try:
     from .integration_tools import IntegrationTools, ACTIONS as INTEGRATION_ACTIONS
     from .local_records import ACTIONS as RECORD_ACTIONS, apply_record_action
     from .coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
+    from .team_channel import TeamChannel, ChannelError
+    from .team_memory import TeamMemoryStore
+    from .memory_governance import MemoryGovernanceError
+    from .tenants import TenantBoundary, TenantRegistry
     from .governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 except ImportError:
     from launcher import instance_identity
@@ -71,12 +76,28 @@ except ImportError:
     from integration_tools import IntegrationTools, ACTIONS as INTEGRATION_ACTIONS
     from local_records import ACTIONS as RECORD_ACTIONS, apply_record_action
     from coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
+    from team_channel import TeamChannel, ChannelError
+    from team_memory import TeamMemoryStore
+    from memory_governance import MemoryGovernanceError
+    from tenants import TenantBoundary, TenantRegistry
     from governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / 'web'
 MAX_BODY = 128 * 1024
 MAX_XLSX = 30 * 1024 * 1024
+#: GenTeam P2/P4 (canal dirigido + memoria de equipo). Los módulos portados son
+#: engine/team_channel.py y engine/team_memory.py (port REA de
+#: agentscope-ai/agentscope@26ec620). El canal es un registro EN MEMORIA de la sesión
+#: del motor (por diseño del port: no persiste); la memoria de equipo persiste en
+#: data/projects/_team_memory/<tenant>/equipo/ con fragmentos .md + índice MEMORY.md.
+#: Ninguna acción ejecuta agentes ni llama proveedores; son registros locales.
+TEAM_CHANNEL_ACTIONS = frozenset({
+    'channel-publish', 'channel-assign', 'channel-evidence', 'channel-claim',
+    'channel-submit', 'channel-accept', 'channel-reject', 'channel-inbox',
+})
+TEAM_MEMORY_ACTIONS = frozenset({'memory-append'})
+TEAM_ACTIONS = TEAM_CHANNEL_ACTIONS | TEAM_MEMORY_ACTIONS
 PROVIDER_ROUTES = {'openai': 'openai', 'deepseek': 'deepseek', 'deepseek-official': 'deepseek', 'zai': 'zai', 'zai-official': 'zai'}
 ALLOWED_PROVIDERS = set(PROVIDER_ROUTES)
 DEFAULT_CONFIG = {
@@ -513,6 +534,13 @@ class BridgeState:
         self._last_design_restore = None
         self.project_store = project_store or ProjectStore(ROOT / 'data' / 'projects')
         self.coordination_store = coordination_store or CoordinationStore(self.project_store.root / '_coordination')
+        # GenTeam P2/P4: canal dirigido (en memoria, por diseño del port) y memoria de
+        # equipo persistente. Se montan lazy sobre la organización vigente.
+        self.team_channel = None
+        self._team_channel_signature = None
+        self._team_memory_registry = None
+        self._team_memory_store = None
+        self._team_memory_signature = None
         self.records_version = 1
         self.project = {'id': None, 'name': '', 'version_id': None, 'dirty': False}
         self.records = {'council_sessions': [], 'skill_registry': [], 'remediation_records': [], 'subteams': [], 'performance_records': [], 'promotion_records': [], 'governance_events': []}
@@ -858,6 +886,7 @@ class BridgeState:
                 'credentials_configured': sorted(self.credentials), 'credentials_persisted': self.persisted,
                 'project': self.project, 'records_version': self.records_version,
                 'coordination': self.coordination_store.public(), 'tool_catalog': self.tool_catalog(),
+                'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
 'gang': self._gang_public(),
                 'scoreboard': build_scoreboard(self.organization, self.records) if self.organization else {'rows': [], 'evidence_status': 'manual_records_not_runtime_verified'},
                 'generation_stale': self.generation_stale, 'has_manual_edits': self.has_manual_edits, **self.records,
@@ -867,6 +896,180 @@ class BridgeState:
     def autonomy_preview(self):
         return build_autonomy(self.config, analysis=self.analysis or self.repo_inventory,
                               agents=(self.organization or {}).get('agents'))
+
+    # ------------------------------------------------------------- GenTeam P2/P4
+
+    @staticmethod
+    def _team_token_name(raw, slot, used):
+        """Token de @mención: el name del perfil sanitizado (sin espacios ni '@'), único.
+        El port exige tokens; los display_name con espacios no sirven de clave."""
+        token = re.sub(r'[^A-Za-z0-9_.-]', '', str(raw or ''))[:60]
+        if not token:
+            token = 'member'
+        candidate, suffix = token, 2
+        while candidate in used or candidate == 'all':
+            candidate = f'{token}{suffix}'
+            suffix += 1
+        used.add(candidate)
+        return candidate
+
+    def _team_roster(self):
+        members, used = [], set()
+        for agent in (self.organization or {}).get('agents', []):
+            reports_to = agent.get('reports_to')
+            if reports_to == 'OWNER_EXTERNAL':
+                reports_to = None  # el canal exige jefes dentro del roster; el owner es externo
+            members.append({'member_id': agent['id'],
+                            'name': self._team_token_name(agent.get('name'), agent.get('slot'), used),
+                            'role': str(agent.get('title') or agent.get('role') or '')[:200],
+                            'reports_to': reports_to})
+        return members
+
+    def _ensure_team_channel(self):
+        """Canal dirigido en memoria sobre el roster vigente; se reinicia con cada
+        rediseño (el port team_channel.py no persiste, por diseño)."""
+        if self.organization is None:
+            return None
+        signature = (self.organization.get('organization_id'),
+                     tuple(agent['id'] for agent in self.organization.get('agents', [])))
+        if self.team_channel is None or self._team_channel_signature != signature:
+            self.team_channel = TeamChannel(self._team_roster())
+            self._team_channel_signature = signature
+        return self.team_channel
+
+    def _ensure_team_memory(self):
+        """Memoria de equipo persistente (P4) por organización: fragmentos .md gobernados
+        más índice MEMORY.md, member 'equipo' compartido por el roster.
+
+        Solo organiza bajo el contrato v1 de tenants (organization_id UUID en
+        minúsculas); una plantilla sin UUID no registra boundary y la vista lo
+        declara no disponible en vez de inventar una identidad."""
+        if self.organization is None:
+            return None
+        organization_id = self.organization.get('organization_id')
+        if not re.fullmatch(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+                            str(organization_id or '')):
+            return None
+        signature = (organization_id,)
+        if self._team_memory_store is None or self._team_memory_signature != signature:
+            tenant_id = 'orgdna-' + organization_id.replace('-', '')
+            registry = TenantRegistry()
+            registry.register(TenantBoundary.default(tenant_id, organization_id))
+            self._team_memory_registry = registry
+            self._team_memory_store = TeamMemoryStore(
+                self.project_store.root / '_team_memory', registry, tenant_id, 'equipo')
+            self._team_memory_signature = signature
+        return self._team_memory_store
+
+    def team_channel_public(self):
+        """Vista del canal para el panel: ledger completo (copias) + roster resuelto.
+
+        Un roster inválido (IDs repetidos) degrada a no disponible con el motivo;
+        nunca revienta public() del bridge."""
+        if self.organization is None:
+            return {'available': False, 'reason': 'Genera un diseño para abrir el canal del equipo.'}
+        try:
+            channel = self._ensure_team_channel()
+        except ChannelError as exc:
+            return {'available': False, 'reason': 'Roster inválido para el canal: %s' % exc}
+        if channel is None:
+            return {'available': False, 'reason': 'Genera un diseño para abrir el canal del equipo.'}
+        view = channel.ledger_view()
+        view['available'] = True
+        view['in_memory_session_only'] = True
+        return view
+
+    def team_memory_public(self):
+        """Índice MEMORY.md del equipo + fragmentos vivos para el panel.
+
+        Sin organization_id UUID (plantilla sin identidad persistente) la vista
+        lo declara: la memoria vive solo para organizaciones con contrato v1."""
+        store = self._ensure_team_memory()
+        if store is None:
+            return {'available': False,
+                    'reason': 'La memoria de equipo requiere un diseño con organization_id (contrato v1); '
+                              'una plantilla sin identidad persistente no registra memoria.'}
+        snapshot = store.index_snapshot()
+        rows = []
+        for line in snapshot['content'].splitlines():
+            match = re.match(r'- \[(\w+)\] (\S+) \(([^)]*)\)(?:: (.*))?', line)
+            if match:
+                rows.append({'plane': match.group(1), 'file': match.group(2),
+                             'recorded_at': match.group(3), 'description': match.group(4) or ''})
+        return {'available': True, 'index': snapshot, 'fragments': rows,
+                'index_path': str(store.index_path), 'tenant_member': 'equipo',
+                'append_only': True}
+
+    def _team_apply(self, action, body):
+        """Despacha las acciones GenTeam sobre los módulos portados. Todo es registro
+        local: nada ejecuta agentes, llama proveedores ni modifica el diseño."""
+        if action in TEAM_MEMORY_ACTIONS:
+            store = self._ensure_team_memory()
+            if store is None:
+                raise BridgeError('Genera un diseño actualizado antes de escribir en la memoria de equipo.')
+            memory_id = body.get('memory_id')
+            if not isinstance(memory_id, str) or not re.fullmatch(r'[a-z0-9][a-z0-9._-]{1,63}', memory_id):
+                raise BridgeError('memory_id debe tener de 2 a 64 caracteres de [a-z0-9._-].')
+            author = body.get('author')
+            if not isinstance(author, str) or not any(m['member_id'] == author for m in self._team_roster()):
+                raise BridgeError('author debe ser un miembro del roster vigente.')
+            try:
+                # El governor exige scope: plane 'project' requiere project_id y
+                # 'execution' requiere task_id; el resto queda en scope_kind por plano.
+                store.append(memory_id, body.get('plane'), body.get('content'),
+                             role_ref=author, description=body.get('description'),
+                             ttl_seconds=body.get('ttl_seconds'), author=author,
+                             task_id=body.get('task_id'),
+                             project_id=body.get('project_id') or self.project.get('id')
+                             or self.organization.get('organization_id'),
+                             origin_ref='team-memory://panel')
+            except MemoryGovernanceError as error:
+                raise BridgeError('La memoria de equipo rechazó el alta: %s' % error) from None
+            self.receipt(action, 'success',
+                         'Memoria de equipo registrada en el índice MEMORY.md. Registro con evidencia; no entrena modelos.')
+            return
+        channel = self._ensure_team_channel()
+        if channel is None:
+            raise BridgeError('Genera un diseño actualizado antes de usar el canal del equipo.')
+        sender = body.get('sender') or body.get('actor') or body.get('reviewer')
+        try:
+            if action == 'channel-publish':
+                result = channel.publish(sender, to=body.get('to', 'all'), text=body.get('text', ''),
+                                         topic=body.get('topic') or 'coordination',
+                                         ttl_secs=body.get('ttl_secs'), task_title=body.get('task_title'))
+                note = 'Mensaje publicado en el canal dirigido.'
+                if result['task'] is not None:
+                    note += ' La @mención creó una tarea dirigida (estado open).'
+                self.receipt(action, 'success', note)
+            elif action == 'channel-assign':
+                channel.assign(sender, body.get('member'), body.get('task', ''), title=body.get('title'))
+                self.receipt(action, 'success', 'Asignación directa registrada en el canal (estado open).')
+            elif action == 'channel-evidence':
+                channel.record_evidence(sender, body.get('locator'), body.get('sha256'), body.get('summary'))
+                self.receipt(action, 'success', 'Evidencia registrada con SHA declarado; no acredita lectura del artefacto.')
+            elif action == 'channel-claim':
+                channel.claim(sender, body.get('task_id'), note=body.get('note'))
+                self.receipt(action, 'success', 'Tarea reclamada por su dueño en el canal.')
+            elif action == 'channel-submit':
+                channel.submit(sender, body.get('task_id'), body.get('evidence_ids') or [],
+                               output=body.get('output', ''), note=body.get('note'))
+                self.receipt(action, 'success', 'Tarea entregada con evidencia; queda pendiente de revisión independiente.')
+            elif action == 'channel-accept':
+                channel.accept(sender, body.get('task_id'), note=body.get('note'),
+                               evidence_ids=body.get('evidence_ids') or [])
+                self.receipt(action, 'success', 'Revisión independiente aceptada en el canal.')
+            elif action == 'channel-reject':
+                channel.reject(sender, body.get('task_id'), note=body.get('note'),
+                               evidence_ids=body.get('evidence_ids') or [])
+                self.receipt(action, 'success', 'Revisión independiente rechazada en el canal.')
+            elif action == 'channel-inbox':
+                drained = channel.inbox(body.get('member'), max_count=int(body.get('max_count') or 100))
+                self.receipt(action, 'success', 'Inbox drenado: %d mensaje(s) entregados (lectura destructiva).' % len(drained))
+            else:
+                raise BridgeError('Acción GenTeam desconocida.')
+        except ChannelError as error:
+            raise BridgeError('El canal rechazó la acción: %s' % error) from None
+
 
     def merge_preferences(self, preferences):
         by_key = {(m.get('provider'), m.get('model', m.get('id'))): m for m in self.models}
@@ -1150,6 +1353,14 @@ class BridgeState:
                 return result
             if self.generation._active() and action in ('analyze-repository', 'prepare-analysis', 'prepare-verification', 'confirm-analysis', 'discover-models'):
                 raise BridgeError('Hay una generación automática pendiente. Termínala o cancélala antes de iniciar otra operación del proveedor.')
+            if action in TEAM_ACTIONS:
+                # GenTeam P2/P4: canal dirigido y memoria de equipo sobre los módulos
+                # portados. Versionado como el resto de mutaciones; sin efectos externos.
+                self.require_version(body)
+                if self.redact(body) != body:
+                    raise BridgeError('Una clave de sesión aparece en los datos del canal; no se puede guardar.')
+                self._team_apply(action, body)
+                return self.public()
             if action in COORDINATION_ACTIONS:
                 if action == 'lease-acquire' and (self.organization is None or self.generation_stale):
                     raise BridgeError('Genera un diseño actualizado antes de adquirir tickets.')

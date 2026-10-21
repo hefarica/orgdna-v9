@@ -87,7 +87,11 @@ class GenerationPipelineTests(unittest.TestCase):
         self.temp.cleanup()
 
     def wait_for(self, *statuses):
-        deadline = time.monotonic() + 12
+        # 12 -> 45: los exports GenTeam (addon con 2 tools nuevas x 24 perfiles en 3
+        # variantes) estiraron building_exports; medido 27-32s bajo la suite completa
+        # (saturacion del proceso) y <1s aislado. Frontera movida con la medicion
+        # declarada, patron P3-K. Optimizar el builder queda como pendiente.
+        deadline = time.monotonic() + 45
         while time.monotonic() < deadline:
             job = self.state.public()['generation_job']
             if job and job['status'] in statuses:

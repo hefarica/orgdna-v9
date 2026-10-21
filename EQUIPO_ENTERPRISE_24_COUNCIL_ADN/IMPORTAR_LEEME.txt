@@ -2,7 +2,7 @@ IMPORTACIÓN Y USO · EQUIPO ENTERPRISE 24 · ArbitrageX · Council + ADN organi
 
 DOS FORMATOS PRINCIPALES DIFERENTES
 1. agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json: recipe v1, el squad de implementación y sus 24 agentes.
-2. agent-team-backup-2026-10-07.json: definitions/backup v2, una lista compartida de 24 agentes y dos squads (implementación y Council). Es un export acotado de esta organización; no sustituye el backup completo de tu instalación.
+2. agent-team-backup-2026-10-21.json: definitions/backup v2, una lista compartida de 24 agentes y dos squads (implementación y Council). Es un export acotado de esta organización; no sustituye el backup completo de tu instalación.
 
 El archivo extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json es una recipe adicional sólo del Council. No es el segundo formato solicitado. Si importas definitions ya están incluidos ambos squads. Si eliges recipes, importa implementación y, opcionalmente, Council. No necesitas importar repetidamente los tres archivos para obtener el mismo equipo.
 

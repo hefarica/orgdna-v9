@@ -28,6 +28,20 @@ SOURCE_COMMIT = '5badb15009ae1756c3afe0ae0cef1faafc290ccc'
 TOOLS_VERSION = '0.2.1-alpha.1'
 AGENTTEAMS_COMMIT = '98aac03f46fc0aa19522c6f23a2b5bd08f9b1abd'
 OPERATIONS = ('state', 'message', 'task', 'evidence', 'memory', 'learning')
+# Capacidades GenTeam (P2 canal dirigido + P4 memoria de equipo). Port REA de
+# agentscope-ai/agentscope@26ec620 (Apache-2.0, Tier 2) en engine/team_channel.py y
+# engine/team_memory.py; el runtime del addon (cordis_extension/runtime.mjs) expone la
+# misma semantica como operaciones 'channel' y 'team_memory'. No es un segundo
+# mecanismo: son entradas nuevas del MISMO cartucho y la MISMA generacion de variantes
+# extended-native (mismo prefijo orgdna_<uuid>_, mismo camino allow/deny/256).
+GENTEAM_OPERATIONS = ('channel', 'team_memory')
+GENTEAM_SOURCE = 'agentscope-ai/agentscope@26ec620'
+GENTEAM_PORTS = {
+    'channel': {'capability': 'P2 canal dirigido + @mencion + asignacion tipo colega',
+                'engine_module': 'engine/team_channel.py', 'runtime_operation': 'channel'},
+    'team_memory': {'capability': 'P4 memoria de equipo con indice MEMORY.md',
+                    'engine_module': 'engine/team_memory.py', 'runtime_operation': 'team_memory'},
+}
 ROOT = Path(__file__).resolve().parent.parent / 'cordis_extension'
 SOURCE_FILES = ('package.json', 'entry.mjs', 'plugin.mjs', 'runtime.mjs', 'skillhub.mjs', 'skillhub-preflight.mjs', 'skillhub-preflight.cmd', 'skillhub-preflight.sh', 'skillhub-package.mjs',
                 'agentteams-adapter.mjs', 'live_bridge.mjs', 'native_orchestration.mjs', 'native_stage_ui.mjs', 'preflight.mjs', 'prepare-overlay.mjs',
@@ -49,6 +63,12 @@ def tool_names(organization_id):
     return ['orgdna_' + identifier.replace('-', '') + '_' + operation for operation in OPERATIONS]
 
 
+def genteam_tool_names(organization_id):
+    """Nombres de las herramientas GenTeam (P2/P4) con el mismo esquema del cartucho."""
+    identifier = str(uuid.UUID(organization_id))
+    return ['orgdna_' + identifier.replace('-', '') + '_' + operation for operation in GENTEAM_OPERATIONS]
+
+
 def extend_native_document(document, organization_id, member_ids):
     """Copy and extend existing exact-name allowlists; preserve every deny.
 
@@ -62,7 +82,7 @@ def extend_native_document(document, organization_id, member_ids):
         raise ValueError('Documento Teams inválido: ' + '; '.join(report['errors']))
     if [a['id'] for a in result['agents']] != list(member_ids):
         raise ValueError('El cartucho debe extender exactamente los miembros existentes y su orden.')
-    additions = tool_names(organization_id)
+    additions = tool_names(organization_id) + genteam_tool_names(organization_id)
     marker = 'ORGDNA_CORDIS_SHARED_PROTOCOL=' + organization_id
     protocol = ('\n\n' + marker + '\n'
         'Este es el mismo equipo y los mismos UUID. Cordis aporta capacidades compartidas; no crea otro motor ni otros agentes. '
@@ -75,10 +95,25 @@ def extend_native_document(document, organization_id, member_ids):
         'Registrar hechos con evidencia y SHA; revisión independiente antes de aceptar propuestas. '
         'Memoria y aprendizaje no son consciencia, entrenamiento, skills instalados ni garantía de éxito. '
         'No incluir secretos; no modificar ajustes o archivos de plugins. No ejecutar acciones externas fuera de autorización.\n')
+    # Bloque GenTeam (P2 canal + P4 memoria de equipo): segundo marcador idempotente para
+    # que una variante ya extendida por una version anterior solo reciba el bloque nuevo.
+    genteam_marker = 'ORGDNA_GENTEAM_PROTOCOL=' + organization_id
+    genteam_protocol = ('\n' + genteam_marker + '\n'
+        'Capacidades GenTeam del mismo cartucho (port REA de ' + GENTEAM_SOURCE + '): '
+        'orgdna_<uuid>_channel: publicación dirigida (to=member_id|"all"), @mención inicial "@Nombre prompt" que crea una tarea '
+        'dirigida al miembro nombrado (rechazada si el nombre no está en el roster), asignación directa, inbox por miembro con '
+        'drain FIFO destructivo; las transiciones de tareas usan la herramienta task existente (claim/block/submit/accept/reject). '
+        'orgdna_<uuid>_team_memory: memoria Markdown por organización y miembro con fragmentos inmutables y índice MEMORY.md acotado '
+        '(append/read/search; el índice se regenera tras cada alta). '
+        'Mismas puertas que el resto del cartucho: sólo tras preflight, activación aditiva aprobada y sesión vinculada a un miembro '
+        'existente; si falta cualquier herramienta declarada, declarar BLOCKED y no improvisar sustitutos. '
+        'El canal registra coordinación: no ejecuta agentes ni delega. La memoria de equipo es registro con evidencia, no entrenamiento.\n')
     deltas = []
     for agent in result['agents']:
         if marker not in agent['systemPrompt']:
             agent['systemPrompt'] += protocol
+        if genteam_marker not in agent['systemPrompt']:
+            agent['systemPrompt'] += genteam_protocol
         scope = agent.get('toolScope')
         allowed = scope.get('allow') if scope else None
         denied = scope.get('deny', []) if scope else []
@@ -168,7 +203,16 @@ def build_cordis_addon(organization, teams_config=None, capabilities=None, skill
         'organization_id': identifier, 'namespace': namespace, 'member_count': len(ids),
         'members': members, 'member_ids': ids, 'same_roster': True,
         'squad_ids': [implementation['squad']['id'], council['squad']['id']],
-        'tool_names': tool_names(identifier), 'native_entry': 'entry.mjs',
+        'tool_names': tool_names(identifier), 'genteam_tool_names': genteam_tool_names(identifier),
+        'genteam': {'source': GENTEAM_SOURCE, 'operations': list(GENTEAM_OPERATIONS),
+                    'capabilities': {name: row['capability'] for name, row in GENTEAM_PORTS.items()},
+                    'engine_modules': {name: row['engine_module'] for name, row in GENTEAM_PORTS.items()},
+                    'engine_module_sha256': {row['engine_module']:
+                        _sha((ROOT.parent / row['engine_module']).read_bytes()) if (ROOT.parent / row['engine_module']).is_file() else None
+                        for row in GENTEAM_PORTS.values()},
+                    'available_to_all_members': True, 'same_roster': True,
+                    'enabled': False, 'requires_addon_activation': True, 'runtime_verified': False},
+        'native_entry': 'entry.mjs',
         'registration_scope': 'host_once', 'new_host_services': [], 'new_agent_count': 0,
         'scheduler': 'existing_dsh_only', 'shared_tasks_are_records_not_scheduler': True,
         'message_delivery': {'mode': 'polling_only', 'native_wake_available': False, 'all_members_connected': False},
@@ -217,6 +261,7 @@ def build_cordis_addon(organization, teams_config=None, capabilities=None, skill
                             'AgentTeams 0.1.22 declara host 0.2.0-rc.2; revisar versión host y SDK por separado. 0.2.1-alpha.1 no aparece en esa matriz.',
                             'El bus se consulta mediante state; no despierta miembros ni inyecta mensajes en otras sesiones.',
                             'Memoria y aprendizaje son registros con evidencia; no consciencia, entrenamiento del modelo ni garantía sin fallos.',
+                             'Herramientas GenTeam (channel/team_memory, port REA de ' + GENTEAM_SOURCE + '): mismas puertas; sin preflight y sesion vinculada, BLOCKED.',
                             'Los JSON extendidos sólo se importan tras verificar herramientas activas, mediante actualización por los mismos UUID.']}
     if capabilities is not None:
         if not isinstance(capabilities, dict): raise ValueError('capabilities debe ser objeto diagnóstico.')

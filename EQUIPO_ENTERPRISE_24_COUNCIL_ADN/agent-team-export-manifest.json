@@ -1,7 +1,7 @@
 {
   "format": "orgdna/export-manifest",
   "version": 1,
-  "exportedAt": 1791352055012,
+  "exportedAt": 1792598079379,
   "organization_sha256": "e0a4e4807f288a89b0474c58077f8dd7d28569f8832625b44ad3b0ee770ef5cf",
   "state_version": 2,
   "hash_algorithm": "SHA-256",
@@ -9,12 +9,12 @@
   "artifacts": [
     {
       "role": "definitions",
-      "filename": "agent-team-backup-2026-10-07.json",
-      "package_path": "agent-team-backup-2026-10-07.json",
+      "filename": "agent-team-backup-2026-10-21.json",
+      "package_path": "agent-team-backup-2026-10-21.json",
       "format": "agent-team-gui/definitions",
       "version": 2,
       "bytes": 703183,
-      "sha256": "d674911a70df3c272edc2993248d3adce38b61ca5a3661e03f3c297656b2de82",
+      "sha256": "5f2fd4eaa5eea77445ce5017e7bbda450400c3c5eefadd32f6ac7e2ef5675107",
       "squad_ids": [
         "6cfad98c-7b40-43b8-92d7-faf33fb4a3fd",
         "6c1d8f62-2671-5131-ae8e-a97e996c4c26"
@@ -27,7 +27,7 @@
       "format": "agent-team-gui/recipe",
       "version": 1,
       "bytes": 695777,
-      "sha256": "dad87a1950cdab92f4ca8f8054a31cddc83ba33207e65a98709683e94ad33c12",
+      "sha256": "1e527fa4d371af032864f2aac6b577ea7a9063d7e26ba8794d498f866284a986",
       "squad_ids": [
         "6cfad98c-7b40-43b8-92d7-faf33fb4a3fd"
       ]
@@ -39,7 +39,7 @@
       "format": "agent-team-gui/recipe",
       "version": 1,
       "bytes": 695814,
-      "sha256": "a0545efe451544184dcc04313e5fec16275ad8e68aa38eb9a3c15b1bcb38a76b",
+      "sha256": "4c4c547e61b5af0416e930faa74af7f53e5c4174328508ed34301c22b9c48074",
       "squad_ids": [
         "6c1d8f62-2671-5131-ae8e-a97e996c4c26"
       ]

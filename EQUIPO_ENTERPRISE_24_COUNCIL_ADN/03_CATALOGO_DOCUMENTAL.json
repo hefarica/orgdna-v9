@@ -77,7 +77,7 @@
     {
       "path": "IMPORTAR_LEEME.txt",
       "bytes": 6765,
-      "sha256": "8486497362ce57f49a5dda24ce12c43822468aa0662385772fe63e92ab4793a0"
+      "sha256": "65599c80744e273b3f5482ee07760c1498643d6a96509a794b2413edb07239c0"
     },
     {
       "path": "LEEME_V7_CANDIDATA.txt",
@@ -97,7 +97,7 @@
     {
       "path": "PRESERVACION_Y_NOVEDADES.md",
       "bytes": 5783,
-      "sha256": "52badc5a5c6e8dbd0e4865f31c79cb4ce60d2d188b331fe42c2f9a3ab1d8801b"
+      "sha256": "8c8296653e5f33b77d786edcc511c0da4352bc7c8c0c1a704d1f48003a4381d4"
     },
     {
       "path": "PROMPT_MAESTRO_24.txt",
@@ -107,7 +107,7 @@
     {
       "path": "RESUMEN_EQUIPO_ENTERPRISE_24.txt",
       "bytes": 5114,
-      "sha256": "91ce7f6e680bdb2e9bdb36e31cab7adcc73a8d260f09c3bac45c0842f3c71f1d"
+      "sha256": "9b7c223a69e6a8cac10d3fb16db170fbb5668bd5e0109fc23b4d2c642fc9df18"
     },
     {
       "path": "VISOR_DE_PERFILES.html",
@@ -115,19 +115,19 @@
       "sha256": "84f22f261bf02c19dc42eb860cdc662c5a93f5fdb5403658d8541765270e8b97"
     },
     {
-      "path": "agent-team-backup-2026-10-07.json",
+      "path": "agent-team-backup-2026-10-21.json",
       "bytes": 703183,
-      "sha256": "d674911a70df3c272edc2993248d3adce38b61ca5a3661e03f3c297656b2de82"
+      "sha256": "5f2fd4eaa5eea77445ce5017e7bbda450400c3c5eefadd32f6ac7e2ef5675107"
     },
     {
       "path": "agent-team-export-manifest.json",
       "bytes": 1887,
-      "sha256": "a490c56501773acd88f8a413206f22bed283e9cd538d989551c02b23edee65bf"
+      "sha256": "c17004b5713dad33a094e991a6d0f30633ff0689a36978101d67f2a4c599bd05"
     },
     {
       "path": "agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json",
       "bytes": 695777,
-      "sha256": "dad87a1950cdab92f4ca8f8054a31cddc83ba33207e65a98709683e94ad33c12"
+      "sha256": "1e527fa4d371af032864f2aac6b577ea7a9063d7e26ba8794d498f866284a986"
     },
     {
       "path": "cordis_extension/README_ES.md",
@@ -176,8 +176,8 @@
     },
     {
       "path": "cordis_extension/plugin.mjs",
-      "bytes": 5410,
-      "sha256": "bff8954d49a366cfbab042ab33a91d17fa319be48c0d76714cafdeaa0d2bfdb2"
+      "bytes": 6446,
+      "sha256": "93e8b66c902f5872ee387b9fdca41b172d852663517b4a5a4824ec73a3c0d0e3"
     },
     {
       "path": "cordis_extension/preflight.mjs",
@@ -191,8 +191,8 @@
     },
     {
       "path": "cordis_extension/runtime.mjs",
-      "bytes": 16073,
-      "sha256": "bb7ffad7a3a70b46f3f6e38df103e183b0433f93680b488d008b9c446606c213"
+      "bytes": 30700,
+      "sha256": "70ffc6c3d2325b7e6a6adf26822781e1eb635c05f7ac4d6d9b1fd0b8f0de082b"
     },
     {
       "path": "cordis_extension/skillhub-package.mjs",
@@ -256,8 +256,8 @@
     },
     {
       "path": "cordis_extension/tests/runtime.test.mjs",
-      "bytes": 9168,
-      "sha256": "e5f4548edaf8aa58a9bd927c2724495351e6260b87ad68b1673854ad653bb5af"
+      "bytes": 13598,
+      "sha256": "c57fd2c722bffedb057223582da0602c42ab831354a27c11616576677f4e9e98"
     },
     {
       "path": "cordis_extension/tests/skillhub.test.mjs",
@@ -290,6 +290,11 @@
       "sha256": "69cac1910bff5c85f50f41b4fbedc67e2d7381e32222e970a5ca12cc0237ebad"
     },
     {
+      "path": "docs/GENTEAM_CAPACIDADES.md",
+      "bytes": 8655,
+      "sha256": "bf75f5839b5444b473b6fd2d2aac15366b56641889755edc9ea6e85226413cca"
+    },
+    {
       "path": "docs/PLATAFORMA_APROBACION_V1.md",
       "bytes": 18086,
       "sha256": "4773dd89f182a614d61890d232daad6efa500cb2352eaaef8b4536787fc61ec9"
@@ -306,8 +311,8 @@
     },
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
-      "bytes": 66549,
-      "sha256": "85f30ad0024fc8a33205b8a5fb03a6e5700fb48a5f49d4afe4184575339f32c7"
+      "bytes": 66605,
+      "sha256": "d230d0b1ec52a64454a7b9a933b4c089d499c3a49253226c46f59f5fc894001c"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -546,13 +551,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 122512,
-      "sha256": "337484827d21e94a0d8ffe871738e60c9a45524ee42a88ae890921965cbd1d8b"
+      "bytes": 135021,
+      "sha256": "b589e71532ca163889ec0f604d42f0fef4932250d33e02fea335134ca4897699"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 84004,
-      "sha256": "8502883e3f7577e68f863445d44ee08447e9d10bb47b314dc080d8f9752c08b6"
+      "bytes": 84500,
+      "sha256": "80a4f4211290cc48662c6f363aa4e808c89c84a98472ba064d03d142a32e3192"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -596,8 +601,8 @@
     },
     {
       "path": "engine/cordis_extension.py",
-      "bytes": 21676,
-      "sha256": "b8087cd449c7ed62294c0ba35b3a6e2d53d4c3aaa40b2d400ab48fb3f256a2a4"
+      "bytes": 25766,
+      "sha256": "c808daf6516d864adf4ccda859c3202207218a6bcef118f0292f6b959d30d0ad"
     },
     {
       "path": "engine/core.py",
@@ -648,6 +653,11 @@
       "path": "engine/export_artifacts.py",
       "bytes": 18270,
       "sha256": "cd67dbb2650844cd484d7908d80f160372a9834e2a1b6e33ce1301461fc000a0"
+    },
+    {
+      "path": "engine/followups.py",
+      "bytes": 18741,
+      "sha256": "c519b1b4f9c1a048eb654b3eaf606e0aff8d9ff4aec18c359b540967118e92d1"
     },
     {
       "path": "engine/gang_assembly.py",
@@ -815,6 +825,11 @@
       "sha256": "35a8673ea879d8ab6476bd183e6752ea9edc5c7da154cce48ece1549428c3000"
     },
     {
+      "path": "engine/sandbox_executor.py",
+      "bytes": 30653,
+      "sha256": "e75d96d401866d57eccfa1dc71a711905d39c4506c4f8680a30fced80bbc45a7"
+    },
+    {
       "path": "engine/scheduler.py",
       "bytes": 20804,
       "sha256": "6b43463b079836ae6619fa7fb2cc4f7e4961d3fc16c28771093f993b7678239f"
@@ -823,6 +838,16 @@
       "path": "engine/task_graph.py",
       "bytes": 42597,
       "sha256": "369a734f3b10e449e76d4e4ca78d2784a04b6ab73b5dfb43512bdbf4a9ff8424"
+    },
+    {
+      "path": "engine/team_channel.py",
+      "bytes": 30386,
+      "sha256": "714fe19b65ab95f6b99388598c821589f93d9d7913a9bb9be23eb222b7d956f3"
+    },
+    {
+      "path": "engine/team_memory.py",
+      "bytes": 25841,
+      "sha256": "fdd698d825327d7709d4b507b7248fddfa69ed26150dd010d8be97ec006d91b9"
     },
     {
       "path": "engine/templates_bundle/legacy_inventory.json",
@@ -867,7 +892,7 @@
     {
       "path": "extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json",
       "bytes": 695814,
-      "sha256": "a0545efe451544184dcc04313e5fec16275ad8e68aa38eb9a3c15b1bcb38a76b"
+      "sha256": "4c4c547e61b5af0416e930faa74af7f53e5c4174328508ed34301c22b9c48074"
     },
     {
       "path": "final_schema_validation_public.json",
@@ -1466,8 +1491,8 @@
     },
     {
       "path": "tests_generation_pipeline.py",
-      "bytes": 21601,
-      "sha256": "fb29bccaac2c729d6297539d65807599a129f771eecd6ba2ab3e0e8c62220582"
+      "bytes": 21931,
+      "sha256": "c0bed1760b0e5134b67d1e5ff3f7bfba68720305fcb6093bf8215bf3340f2a57"
     },
     {
       "path": "tests_generation_robustness_v7.py",
@@ -1551,8 +1576,8 @@
     },
     {
       "path": "tests_platform_integration.py",
-      "bytes": 42357,
-      "sha256": "0ed74d148457c97b3d592a0efbca537fb96b8c37756cc1c403db30dae6ebfa41"
+      "bytes": 42518,
+      "sha256": "ff061712d351e169d696ab68393f7580b9741fe0a3c21777cc2c89e20ae6f833"
     },
     {
       "path": "tests_platform_launcher_zip_names.py",
@@ -1615,6 +1640,16 @@
       "sha256": "443b9f39c5c6ca85f3eaac5154aefb4ad7b2afd0d10ba22b95fb7780506e3e3f"
     },
     {
+      "path": "tests_team_channel.py",
+      "bytes": 24258,
+      "sha256": "bcecd8408f7ede26d845b47a09723b2dcd534401769471feeb5aa3677bc10bb2"
+    },
+    {
+      "path": "tests_team_memory.py",
+      "bytes": 14520,
+      "sha256": "681dad2cb66742987c8d484c1eb7d98ec5652126d1622e4daae7465b032eafa6"
+    },
+    {
       "path": "tests_v8_evidence.py",
       "bytes": 16916,
       "sha256": "f1e91881fbd841131965762d15c9b2d54da820768e885bc2fab4c4d019bc1a08"
@@ -1647,7 +1682,7 @@
     {
       "path": "validaciones/mapa_42_archivos.json",
       "bytes": 12428,
-      "sha256": "d027652f0490f6919ea753951740023fce7cd4c48a195ed81cf4192f6afb2e89"
+      "sha256": "5e50f830eb62c622b3dc3e7c7a955bd72972731568a87f61844b27a28b0571eb"
     },
     {
       "path": "validate_imports_portable.py",
@@ -1656,18 +1691,18 @@
     },
     {
       "path": "web/app.js",
-      "bytes": 226164,
-      "sha256": "4e88cf9a8dc3c00e604cda9198e2fbcd06c29af9562fb7b27c096349a82b9838"
+      "bytes": 233362,
+      "sha256": "7634cd926b1049a027977f9b0eca0b101b327689e3f5a8e5699b0276dd37355a"
     },
     {
       "path": "web/index.html",
-      "bytes": 95906,
-      "sha256": "37d7869ae3c8e4ed2d5774f553f7b5a43aa934d214cc76a2e98a370e53825785"
+      "bytes": 101894,
+      "sha256": "bc23a0a9786c2abb3932453b7014334851a8b501192c139f6186082acf0ccebc"
     },
     {
       "path": "web/style.css",
-      "bytes": 42505,
-      "sha256": "4cad03412d9cd3be2f51955297106a351aa687996314773030c4048223374dd9"
+      "bytes": 42708,
+      "sha256": "604c21279a4f99b2f23d05dde533ae090a0a0c0033337d88390882e22314bcbe"
     },
     {
       "path": "workbook/sheet_ranges.json",

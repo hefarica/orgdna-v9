@@ -1,0 +1,21 @@
+{
+  "valid": true,
+  "errors": [],
+  "checks": 2024,
+  "file_count": 343,
+  "agent_count": 24,
+  "legacy_entries_mapped": 42,
+  "tool_catalog_count": 271,
+  "shared_tool_scopes": true,
+  "private_runtime_history_included": false,
+  "runtime_verified": false,
+  "excel_sync_verified": false,
+  "native_export_filenames": {
+    "implementation.json": "agent-team-recipe-6cfad98c-7b40-43b8-92d7-faf33fb4a3fd.json",
+    "definitions.json": "agent-team-backup-2026-10-21.json",
+    "council.json": "agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json",
+    "export-manifest.json": "agent-team-export-manifest.json"
+  },
+  "exported_at": 1792598079379,
+  "export_hashes_valid": true
+}

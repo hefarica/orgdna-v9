@@ -1,0 +1,293 @@
+.................................................E...........E..........................................................s...........................s........................E.E.E.E......................................EE.........................................F....F.F...FFF............................................................................................usage: python.exe -m unittest [-h] [--port PORT] [--strict-port]
+                              [--workbook WORKBOOK] [--no-browser]
+python.exe -m unittest: error: --port debe estar entre 0 y 65535.
+....................................................................................................................................................s................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................F..E
+======================================================================
+ERROR: test_workbook_stale_blocks_export (tests_bridge.BridgeStateTests.test_workbook_stale_blocks_export)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_bridge.py", line 166, in test_workbook_stale_blocks_export
+    self.assertTrue(self.state.download('organization.json'))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 1854, in download
+    snapshot = excel_call('Read', self.workbook) if os.name == 'nt' else read_xlsx_snapshot(self.workbook)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 460, in excel_call
+    raise BridgeError('Excel no pudo completar la acci�n. Cierra los di�logos abiertos y comprueba que Excel permite ejecutar el script PowerShell firmado o de confianza. No se cambi� la pol�tica de ejecuci�n. Detalle: ' + result.stderr[-1000:])
+engine.bridge.BridgeError: Excel no pudo completar la acci�n. Cierra los di�logos abiertos y comprueba que Excel permite ejecutar el script PowerShell firmado o de confianza. No se cambi� la pol�tica de ejecuci�n. Detalle: C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\excel_bridge.ps1 
+: Open the designated workbook in the active Excel instance before live synchronization. Saved-file reading is a 
+separate panel action.
+En C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN 
+(7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\excel_bridge.ps1: 225 Car�cter: 10
++   else { Write-Error $_ }
++          ~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Write-Error], WriteErrorException
+    + FullyQualifiedErrorId : Microsoft.PowerShell.Commands.WriteErrorException,excel_bridge.ps1
+ 
+
+
+======================================================================
+ERROR: test_namespace_traversal_symlink (tests_capability_deployment.DeploymentTests.test_namespace_traversal_symlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_capability_deployment.py", line 39, in test_namespace_traversal_symlink
+    link=self.root/'link';link.symlink_to(self.root,target_is_directory=True)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1386, in symlink_to
+    os.symlink(target, self, target_is_directory)
+OSError: [WinError 1314] El cliente no dispone de un privilegio requerido: 'C:\\Users\\HFRC\\AppData\\Local\\Temp\\tmpor3tgpvw' -> 'C:\\Users\\HFRC\\AppData\\Local\\Temp\\tmpor3tgpvw\\link'
+
+======================================================================
+ERROR: setUpClass (tests_frontend_contract.FrontendContracts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_frontend_contract.py", line 24, in setUpClass
+    cls.html=(ROOT/'web/index.html').read_text();cls.js=(ROOT/'web/app.js').read_text();cls.css=(ROOT/'web/style.css').read_text();cls.markup=Markup();cls.markup.feed(cls.html)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1028, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 1963: character maps to <undefined>
+
+======================================================================
+ERROR: test_con_organizacion_el_ensamblado_aparece_sellado (tests_gang_assembly.BridgeIntegrationTests.test_con_organizacion_el_ensamblado_aparece_sellado)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_gang_assembly.py", line 313, in test_con_organizacion_el_ensamblado_aparece_sellado
+    gang = self.state.public()['gang']
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 889, in public
+    'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 969, in team_memory_public
+    store = self._ensure_team_memory()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 950, in _ensure_team_memory
+    registry.register(TenantBoundary.default(tenant_id, organization_id))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 344, in default
+    return cls(data)
+           ^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 257, in __init__
+    self._tenant_id = validate_tenant_id(data['tenant_id'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 125, in validate_tenant_id
+    raise TenantError('invalid_entry', (
+engine.tenants.TenantError: invalid_entry: tenant_id debe cumplir el patron del contrato v1 (2..64 de [a-z0-9._-], primer caracter alfanumerico).
+
+======================================================================
+ERROR: test_publicar_registra_los_tres_y_queda_synced (tests_gang_assembly.BridgeIntegrationTests.test_publicar_registra_los_tres_y_queda_synced)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_gang_assembly.py", line 320, in test_publicar_registra_los_tres_y_queda_synced
+    self.state.execute('gang-publish', {})
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 1775, in execute
+    return self.public()
+           ^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 889, in public
+    'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 969, in team_memory_public
+    store = self._ensure_team_memory()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 950, in _ensure_team_memory
+    registry.register(TenantBoundary.default(tenant_id, organization_id))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 344, in default
+    return cls(data)
+           ^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 257, in __init__
+    self._tenant_id = validate_tenant_id(data['tenant_id'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 125, in validate_tenant_id
+    raise TenantError('invalid_entry', (
+engine.tenants.TenantError: invalid_entry: tenant_id debe cumplir el patron del contrato v1 (2..64 de [a-z0-9._-], primer caracter alfanumerico).
+
+======================================================================
+ERROR: test_una_organizacion_rota_se_declara_como_error (tests_gang_assembly.BridgeIntegrationTests.test_una_organizacion_rota_se_declara_como_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_gang_assembly.py", line 335, in test_una_organizacion_rota_se_declara_como_error
+    gang = self.state.public()['gang']
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 889, in public
+    'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 959, in team_channel_public
+    channel = self._ensure_team_channel()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 936, in _ensure_team_channel
+    self.team_channel = TeamChannel(self._team_roster())
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\team_channel.py", line 189, in __init__
+    self._members = self._build_roster(members)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\team_channel.py", line 222, in _build_roster
+    raise ChannelError(f'duplicate_member: member_id repetido en el roster: {member_id}.')
+engine.team_channel.ChannelError: duplicate_member: member_id repetido en el roster: 7e470c6f-f065-5723-ba20-80c25ea59cb8.
+
+======================================================================
+ERROR: test_M2_publicar_con_servicios_montados_es_2pc_real (tests_gang_mount.MontajeTests.test_M2_publicar_con_servicios_montados_es_2pc_real)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_gang_mount.py", line 49, in test_M2_publicar_con_servicios_montados_es_2pc_real
+    self.state.execute("gang-mount", {})
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 1775, in execute
+    return self.public()
+           ^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 889, in public
+    'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 969, in team_memory_public
+    store = self._ensure_team_memory()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 950, in _ensure_team_memory
+    registry.register(TenantBoundary.default(tenant_id, organization_id))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 344, in default
+    return cls(data)
+           ^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 257, in __init__
+    self._tenant_id = validate_tenant_id(data['tenant_id'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 125, in validate_tenant_id
+    raise TenantError('invalid_entry', (
+engine.tenants.TenantError: invalid_entry: tenant_id debe cumplir el patron del contrato v1 (2..64 de [a-z0-9._-], primer caracter alfanumerico).
+
+======================================================================
+ERROR: test_M3_desmontar_restaura_el_grabador_y_conserva_el_journal (tests_gang_mount.MontajeTests.test_M3_desmontar_restaura_el_grabador_y_conserva_el_journal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_gang_mount.py", line 62, in test_M3_desmontar_restaura_el_grabador_y_conserva_el_journal
+    self.state.execute("gang-mount", {})
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 1775, in execute
+    return self.public()
+           ^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 889, in public
+    'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                                                               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 969, in team_memory_public
+    store = self._ensure_team_memory()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\bridge.py", line 950, in _ensure_team_memory
+    registry.register(TenantBoundary.default(tenant_id, organization_id))
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 344, in default
+    return cls(data)
+           ^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 257, in __init__
+    self._tenant_id = validate_tenant_id(data['tenant_id'])
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\engine\tenants.py", line 125, in validate_tenant_id
+    raise TenantError('invalid_entry', (
+engine.tenants.TenantError: invalid_entry: tenant_id debe cumplir el patron del contrato v1 (2..64 de [a-z0-9._-], primer caracter alfanumerico).
+
+======================================================================
+ERROR: setUpClass (tests_v8_ui_contract.V8UIContracts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_v8_ui_contract.py", line 19, in setUpClass
+    cls.js = (ROOT / 'web/app.js').read_text()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\pathlib.py", line 1028, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "C:\Users\HFRC\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 162266: character maps to <undefined>
+
+======================================================================
+FAIL: test_concurrent_confirmation_and_replay_cannot_rebill (tests_generation_pipeline.GenerationPipelineTests.test_concurrent_confirmation_and_replay_cannot_rebill)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 235, in test_concurrent_confirmation_and_replay_cannot_rebill
+    self.wait_for('completed')
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': 'd4e8b5ea-07ba-4b64-8c0e-c1cb2ce02b1a', 'idempotency_key': '90d8982e-7e1c-4b13-b34d-abaa607564fb', 'request_sha256': 'dc2870b9c0abe25152ddc297cf5af67d883c6e2ffe8c8008f10df4e6354cfc5b', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:43:09Z', 'updated_at': '2026-10-21T18:43:09Z', 'config_version': 2, 'organization_id': 'b3afe414-495e-43ed-b8b2-e8dd7c68b59d', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': 'ba1a679f276552bc6519aeead45992427f58d6ed6687eb058607e78b32a081c6', 'request_hashes': ['472ef6029d79856d579f075822b58b977e024be3861f551a34d66eef64b3bc3b', 'b2af1decb03a66c277291231e841e41fbc7f4e0cf3f6f56c223c76065c083dc9', 'a1b325070e28d02065a5dc444c342a97cd723ff793f5442dbf019dfe4969c3e8', '886d7158508793a0a03cf511e18be31a746e69a98f47767c3dfefb604023989c'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 3, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_historical_completed_hashes_do_not_point_to_changed_design (tests_generation_pipeline.GenerationPipelineTests.test_historical_completed_hashes_do_not_point_to_changed_design)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 366, in test_historical_completed_hashes_do_not_point_to_changed_design
+    self.complete()
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 115, in complete
+    return self.wait_for('completed')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': '250795ad-68da-4917-b51a-e46359220090', 'idempotency_key': 'e4e43652-ca58-486b-9997-60c89dae6882', 'request_sha256': 'dc2870b9c0abe25152ddc297cf5af67d883c6e2ffe8c8008f10df4e6354cfc5b', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:44:36Z', 'updated_at': '2026-10-21T18:44:39Z', 'config_version': 2, 'organization_id': '01df1a5a-8df1-4abe-8e75-7933ca83aa37', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': '9ac8038c551c781b42f0026c6debd095afd08c16d66964b2d765aa2fda7670b7', 'request_hashes': ['472ef6029d79856d579f075822b58b977e024be3861f551a34d66eef64b3bc3b', 'b2af1decb03a66c277291231e841e41fbc7f4e0cf3f6f56c223c76065c083dc9', 'a1b325070e28d02065a5dc444c342a97cd723ff793f5442dbf019dfe4969c3e8', '886d7158508793a0a03cf511e18be31a746e69a98f47767c3dfefb604023989c'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 3, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_partial_inventory_requires_bound_explicit_acknowledgement (tests_generation_pipeline.GenerationPipelineTests.test_partial_inventory_requires_bound_explicit_acknowledgement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 157, in test_partial_inventory_requires_bound_explicit_acknowledgement
+    self.wait_for('completed')
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': '72f05687-a47c-4f63-8445-d54b8e9034af', 'idempotency_key': '879cb30c-95db-4e92-b52b-942af2dc4d2c', 'request_sha256': 'dc2870b9c0abe25152ddc297cf5af67d883c6e2ffe8c8008f10df4e6354cfc5b', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:45:02Z', 'updated_at': '2026-10-21T18:45:03Z', 'config_version': 2, 'organization_id': 'e0dcd210-ffa3-4444-a33a-55d3588f253e', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': 'e525e063a8cec90fba057892406e14680b63490b7671813b3aa2bd5c3ea533e8', 'request_hashes': ['47070b1bcf10d1767a5c1e2959ba6370c6a1079084c3cbcfc5bd255b043790b0', 'e9875f0aa47ac7f19dc3bc041f32248fbe2cde905cb56c07ad649f624b1e204c', '5ce4ec686b8bb3fac850c250ca0a9729f71dd417f180885338a067ed94dfa7a5', '895fb021c169c1fd8dd58ffc2773a9f3db3abf85686d892c6080d85938fbe46b'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 4100, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_revision_of_imported_roster_preserves_original_agents_and_squad (tests_generation_pipeline.GenerationPipelineTests.test_revision_of_imported_roster_preserves_original_agents_and_squad)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 324, in test_revision_of_imported_roster_preserves_original_agents_and_squad
+    self.complete(new_project=False)
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 113, in complete
+    self.plan(**options)
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 103, in plan
+    self.wait_for('awaiting_consent')
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': 'f9aecef9-0f10-4485-8403-4679bd14b16b', 'idempotency_key': '5b4d517e-484e-493f-8ab7-dbf1b224f2a6', 'request_sha256': '7b16089275aeb978cea2003e8bdc9b6a0b68688ba551f4de792def6f87154b65', 'status': 'planned', 'stage': 'preparing_consent', 'progress': 20, 'created_at': '2026-10-21T18:45:53Z', 'updated_at': '2026-10-21T18:45:54Z', 'config_version': 2, 'organization_id': 'bbda5d0f-0b94-48f6-ba0b-417128524ae2', 'new_project': False, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 0, 'sent_requests': 0, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': False, 'error': None, 'artifacts': None, 'receipts_pending': False, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 0}}
+
+======================================================================
+FAIL: test_revision_preserves_ids_new_project_changes_them (tests_generation_pipeline.GenerationPipelineTests.test_revision_preserves_ids_new_project_changes_them)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 287, in test_revision_preserves_ids_new_project_changes_them
+    self.complete()
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 115, in complete
+    return self.wait_for('completed')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': '3a0850b6-c036-4442-aa28-d29e4126e3b2', 'idempotency_key': 'eef1795b-79ab-460b-8835-66afc1459f52', 'request_sha256': 'dc2870b9c0abe25152ddc297cf5af67d883c6e2ffe8c8008f10df4e6354cfc5b', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:46:12Z', 'updated_at': '2026-10-21T18:46:13Z', 'config_version': 2, 'organization_id': 'd697f073-e586-4269-8128-5bbcabf443eb', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': '1ca63b1392fe7f917f10e7b7bddbdd3d305076e4801dc7ddde307a733cd8c640', 'request_hashes': ['472ef6029d79856d579f075822b58b977e024be3861f551a34d66eef64b3bc3b', 'b2af1decb03a66c277291231e841e41fbc7f4e0cf3f6f56c223c76065c083dc9', 'a1b325070e28d02065a5dc444c342a97cd723ff793f5442dbf019dfe4969c3e8', '886d7158508793a0a03cf511e18be31a746e69a98f47767c3dfefb604023989c'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 3, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_save_reload_does_not_restore_consent_or_start_jobs (tests_generation_pipeline.GenerationPipelineTests.test_save_reload_does_not_restore_consent_or_start_jobs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 299, in test_save_reload_does_not_restore_consent_or_start_jobs
+    self.complete()
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 115, in complete
+    return self.wait_for('completed')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': '0cf1b9d1-13ba-409c-bb36-3e8a33689c9f', 'idempotency_key': '58224ff0-4f02-4cc8-84e2-913760e6dfd2', 'request_sha256': 'dc2870b9c0abe25152ddc297cf5af67d883c6e2ffe8c8008f10df4e6354cfc5b', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:46:29Z', 'updated_at': '2026-10-21T18:46:47Z', 'config_version': 2, 'organization_id': 'ea1511ef-a347-4424-bc37-f8870dc16440', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 1, 'sent_requests': None, 'completed_profiles': 0, 'max_output_tokens': 16384, 'profiles_per_request': None, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [], 'usage_summary': {'prompt_tokens': None, 'completion_tokens': None, 'total_tokens': None, 'known_requests': 0, 'unknown_requests': 1}, 'payload_sha256': 'c2dbb2de6c20fc66df748cef3c19db5faa866c94cbf8c65a7a2e41114a4e27dd', 'request_hashes': ['472ef6029d79856d579f075822b58b977e024be3861f551a34d66eef64b3bc3b', 'b2af1decb03a66c277291231e841e41fbc7f4e0cf3f6f56c223c76065c083dc9', 'a1b325070e28d02065a5dc444c342a97cd723ff793f5442dbf019dfe4969c3e8', '886d7158508793a0a03cf511e18be31a746e69a98f47767c3dfefb604023989c'], 'max_requests': 4, 'read_files': 3, 'known_safe_files': 3, 'effective_profiles_per_request': 1, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 65536, 'max_total_output_tokens': 65536, 'confirmation_consumed': True, 'total_requests': 1}
+
+======================================================================
+FAIL: test_success_receipts_survive_save_load_and_diagnostic (tests_v8_models_receipts.ReceiptPipelineV8.test_success_receipts_survive_save_load_and_diagnostic)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_v8_models_receipts.py", line 188, in test_success_receipts_survive_save_load_and_diagnostic
+    job = self.execute_fixture(Fixture(), profiles_per_request=2)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_v8_models_receipts.py", line 166, in execute_fixture
+    job = self.wait_for('completed', 'failed')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HFRC\Downloads\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\tests_generation_pipeline.py", line 98, in wait_for
+    self.fail('Generation did not finish: ' + repr(self.state.generation.public()))
+AssertionError: Generation did not finish: {'job_id': 'd0464528-2ca2-4a6e-979f-994b58c85511', 'idempotency_key': 'dbe8f63c-48cd-4bab-b67b-0140ccedc388', 'request_sha256': 'ba76ed2b001046f5f670d211616baf440a488a2d5f2fcfa629a245a4122f7de8', 'status': 'validating', 'stage': 'building_exports', 'progress': 90, 'created_at': '2026-10-21T18:48:55Z', 'updated_at': '2026-10-21T18:48:56Z', 'config_version': 2, 'organization_id': '8f6a183a-1e1e-4631-ab95-61d638a36420', 'new_project': True, 'provider': 'deepseek-official', 'model': 'fixture-model', 'agent_count': 4, 'completed_requests': 2, 'sent_requests': 2, 'completed_profiles': 4, 'max_output_tokens': 16384, 'profiles_per_request': 2, 'response_mode': 'json_object', 'potentially_billed': True, 'error': None, 'artifacts': None, 'receipts_pending': True, 'model_verification': {'status': 'catalog_verified', 'provider': 'deepseek-official', 'model': 'fixture-model', 'account_verified': True, 'capabilities_verified': False}, 'request_receipts': [{'index': 1, 'provider': 'deepseek-official', 'model': 'fixture-model', 'payload_sha256': '1bbc970dd403ffc3671925e732b01a51f7af2b661459ced853b43f7d449ac37c', 'max_output_tokens': 16384, 'status': 'validated', 'usage': {'prompt_tokens': 500, 'completion_tokens': 1000, 'total_tokens': 1500}, 'latency_ms': 0, 'http_status': None, 'error_code': None, 'response_id_sha256': 'cb7f94563fb146e2072cb06d5499247e58fcc9708c1dea5f014ccbabcf0a6112'}, {'index': 2, 'provider': 'deepseek-official', 'model': 'fixture-model', 'payload_sha256': 'e05c37d45ef95f351e59762adeb25e46bd90fd45740031adab4eed710c6334fc', 'max_output_tokens': 16384, 'status': 'validated', 'usage': {'prompt_tokens': 500, 'completion_tokens': 1000, 'total_tokens': 1500}, 'latency_ms': 0, 'http_status': None, 'error_code': None, 'response_id_sha256': 'cefe40726f9a7c6da7458c01f227b0747fe176c76b0731aadcd6858797d101a9'}], 'usage_summary': {'prompt_tokens': 1000, 'completion_tokens': 2000, 'total_tokens': 3000, 'known_requests': 2, 'unknown_requests': 0}, 'payload_sha256': 'c1d256703ceeb8462fbf5d1de36fb693e5e3f687d86a436e50d109ab8033c765', 'request_hashes': ['1bbc970dd403ffc3671925e732b01a51f7af2b661459ced853b43f7d449ac37c', 'e05c37d45ef95f351e59762adeb25e46bd90fd45740031adab4eed710c6334fc'], 'max_requests': 2, 'read_files': 2, 'known_safe_files': 3, 'effective_profiles_per_request': 2, 'effective_max_output_tokens': 16384, 'total_max_output_tokens': 32768, 'max_total_output_tokens': 32768, 'confirmation_consumed': True, 'total_profiles': 4, 'batch_index': 2}
+
+----------------------------------------------------------------------
+Ran 1110 tests in 448.705s
+
+FAILED (failures=7, errors=9, skipped=3)

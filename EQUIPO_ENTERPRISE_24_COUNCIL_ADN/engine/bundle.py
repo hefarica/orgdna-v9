@@ -172,6 +172,7 @@ RUNTIME_ALLOWLIST = (
     'skills/remedial-learning.md', 'skills/skill-registry.json',
     'skills/systematic-debugging/SKILL.md', 'skills/webapp-testing/SKILL.md',
     'docs/tool_permission_guide.md', 'docs/tool_role_presets.md', 'docs/tool_catalog_validation.json',
+    'docs/GENTEAM_CAPACIDADES.md',
     'docs/export_artifacts.md', 'docs/automatic_generation.md', 'docs/plugin_shop.md', 'docs/integration_runtime.md', 'docs/dsh_connection.md', 'docs/dsh_loopback_benchmark.json', 'docs/dsh_native_connection_sdk_smoke.json', 'docs/native_agentteams_stage_smoke.json',
     'cordis_extension/package.json', 'cordis_extension/entry.mjs',
     'cordis_extension/plugin.mjs', 'cordis_extension/runtime.mjs',
@@ -202,6 +203,13 @@ RUNTIME_ALLOWLIST = (
     'engine/gang_services.py', 'engine/gang_supervisor.py',
     'engine/playbooks.py', 'engine/agent_dossier.py', 'engine/instruction_contract.py',
     'engine/remediation_wiring.py',
+    # GenTeam (P1-P4): módulos portados de agentscope-ai/agentscope@26ec620 y
+    # OpenBMB/ChatDev@a2ea4a2 con sus pruebas de falsificación; ver
+    # docs/GENTEAM_CAPACIDADES.md. P2 canal y P4 memoria se integran al roster y al
+    # panel vía engine/cordis_extension.py y engine/bridge.py.
+    'engine/team_channel.py', 'engine/team_memory.py',
+    'engine/sandbox_executor.py', 'engine/followups.py',
+    'tests_team_channel.py', 'tests_team_memory.py',
     'tests_platform_task_graph.py', 'tests_platform_registry_evidence.py',
     'tests_platform_policy.py', 'tests_platform_memory_tenants.py',
     'tests_platform_eval_artifacts.py', 'tests_platform_reliability_connectors.py',

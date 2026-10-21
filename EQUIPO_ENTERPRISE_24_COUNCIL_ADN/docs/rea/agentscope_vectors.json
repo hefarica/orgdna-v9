@@ -1,0 +1,422 @@
+[
+  {
+    "segmento": "team_pipeline",
+    "nombre": "delegation_round_trip_eventos_intercalados",
+    "entrada": "leader.model.set_responses([tool_call(id='call-1', input='{\"member\": \"researcher\", \"prompt\": \"Find A\"}'), text('A is 42.')]); researcher.model.set_responses([text('Found: A = 42')]); query=UserMsg(name='user', content='What is A?')",
+    "salida_esperada": ["REPLY_START:leader", "MODEL_CALL_START:leader", "TOOL_CALL_START:leader", "TOOL_CALL_DELTA:leader", "TOOL_CALL_END:leader", "MODEL_CALL_END:leader", "TOOL_RESULT_START:leader", "REPLY_START:researcher", "MODEL_CALL_START:researcher", "TEXT_BLOCK_START:researcher", "TEXT_BLOCK_DELTA:researcher", "TEXT_BLOCK_END:researcher", "MODEL_CALL_END:researcher", "REPLY_END:researcher", "TOOL_RESULT_TEXT_DELTA:leader", "TOOL_RESULT_END:leader", "MODEL_CALL_START:leader", "TEXT_BLOCK_START:leader", "TEXT_BLOCK_DELTA:leader", "TEXT_BLOCK_END:leader", "MODEL_CALL_END:leader", "REPLY_END:leader"],
+    "origen_test": "tests/pipeline_team_test.py:149 test_delegation_round_trip (formato tipo:owner)"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "delegation_round_trip_resultado_y_reset",
+    "entrada": "idem vector anterior; reset_members=True (default)",
+    "salida_esperada": "leader.state.context[-1].content = [tool_call{id:'call-1',name:'TeamAssign',input:'{\"member\": \"researcher\", \"prompt\": \"Find A\"}',state:'finished'}, tool_result{id:'call-1',name:'TeamAssign',output:[text:'Found: A = 42'],state:'success'}, text:'A is 42.']; researcher.state.context == [] (reset al terminar el reply del leader)",
+    "origen_test": "tests/pipeline_team_test.py:149 test_delegation_round_trip"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "member_hitl_park_y_enrutamiento_por_reply_id",
+    "entrada": "reset_members=False; leader: [tool_call('call-1', '{\"member\": \"researcher\", \"prompt\": \"Find A\"}'), text('A is 42.')]; researcher: [tool_call('call-r1', '{\"input\": \"A\"}', name='ask_tool'), text('Found: A = 42')]; primera corrida con UserMsg('What is A?')",
+    "salida_esperada": "stream termina en ('REQUIRE_USER_CONFIRM','researcher'); leader awaiting = [('TeamAssign','submitted')]; researcher awaiting = [('ask_tool','asking')]",
+    "origen_test": "tests/pipeline_team_test.py:271 test_member_hitl_round_trip (primera mitad)"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "member_hitl_confirmacion_continua_al_leader",
+    "entrada": "UserConfirmResultEvent(reply_id=researcher.state.reply_id, confirm_results=[ConfirmResult(confirmed=True)]) tras el park anterior",
+    "salida_esperada": "researcher.context[-1].content = [tool_call{id:'call-r1',name:'ask_tool',input:'{\"input\": \"A\"}',state:'finished'}, tool_result{id:'call-r1',name:'ask_tool',output:[text:'ask result: A'],state:'success'}, text:'Found: A = 42']; leader.context[-1].get_text_content() == 'A is 42.'",
+    "origen_test": "tests/pipeline_team_test.py:271 test_member_hitl_round_trip (segunda mitad)"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "delegaciones_concurrentes_resultados_en_orden_de_llamada",
+    "entrada": "miembros researcher+coder; leader round 1: [tool_call('call-1','{\"member\": \"researcher\", \"prompt\": \"Find A\"}'), tool_call('call-2','{\"member\": \"coder\", \"prompt\": \"Write A\"}')] en un solo ChatResponse is_last=True; researcher: text('Found: A = 42'); coder: text('Wrote a.py'); leader round 2: text('Both done.')",
+    "salida_esperada": "REPLY_START owners = {coder, leader, researcher} (corren juntos); leader.context[-1] tool_results en orden = [('call-1','TeamAssign','Found: A = 42','success'), ('call-2','TeamAssign','Wrote a.py','success')]; texto final 'Both done.'",
+    "origen_test": "tests/pipeline_team_test.py:445 test_concurrent_delegations"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "interrupt_cierra_miembro_parqueado_y_delegacion",
+    "entrada": "leader: [tool_call('call-1','{\"member\": \"researcher\", \"prompt\": \"Find A\"}')]; researcher: [tool_call('call-r1','{\"input\": \"A\"}',name='ask_tool')] (parquea); luego UserInterruptEvent(reply_id=researcher.state.reply_id)",
+    "salida_esperada": "leader.context[-1] tool_result = [('call-1','interrupted')]; researcher.state.context == []",
+    "origen_test": "tests/pipeline_team_test.py:507 test_interrupt_parked_member"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "input_reparable_sigue_enrutandose",
+    "entrada": "leader round 1: tool_call('call-1', \"{'member': 'researcher', 'prompt': 'Find A'}\") (JSON con comillas simples: SOLO parsea con repair); researcher: text('Found: A = 42'); leader round 2: text('A is 42.')",
+    "salida_esperada": "tool_call del leader CONSERVA el input crudo \"{'member': 'researcher', 'prompt': 'Find A'}\"; tool_result{id:'call-1',output:[text:'Found: A = 42'],state:'success'}; el leader no queda parqueado",
+    "origen_test": "tests/pipeline_team_test.py:550 test_repaired_assignment_input"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "un_miembro_parquea_el_otro_alimenta_y_luego_orden_de_llamada",
+    "entrada": "leader round 1: [tool_call('call-1'→researcher 'Find A'), tool_call('call-2'→coder 'Write A')]; researcher parquea en ask_tool; coder: text('Wrote a.py'); tras confirmar al researcher: researcher termina text('Found: A = 42'); leader round 2: text('Both done.')",
+    "salida_esperada": "al parquear: leader awaiting = [('call-1','submitted')] (coder ya alimentado); tras reanudar, leader.context[-1].content en orden = [tool_call call-1, tool_call call-2, tool_result call-2 'Wrote a.py' success, tool_result call-1 'Found: A = 42' success, text 'Both done.']",
+    "origen_test": "tests/pipeline_team_test.py:620 test_one_member_parks_in_a_round"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "mismo_miembro_encola_asignaciones_a_traves_de_hitl",
+    "entrada": "leader round 1: [tool_call('call-1'→researcher 'Find A'), tool_call('call-2'→researcher 'Find B')] mismo miembro; researcher: [tool_call('call-r1','{\"input\": \"A\"}',name='ask_tool') (parquea), text('Found A'), text('Found B')]; tras confirmar; leader round 2: text('Both found.')",
+    "salida_esperada": "primera corrida: REPLY_START count de researcher == 1 (la 2da NO arranca), leader awaiting = [('call-1','submitted'),('call-2','submitted')]; tras confirmar: tool_result call-1 'Found A' y tool_result call-2 'Found B' ambos success en orden de llamada, text 'Both found.'",
+    "origen_test": "tests/pipeline_team_test.py:768 test_same_member_assignments_queue"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "cancel_mientras_corre_miembro_leader_interrupted_y_siguiente_query",
+    "entrada": "researcher con SlowTool (corre para siempre); leader: [tool_call('call-1','{\"member\": \"researcher\", \"prompt\": \"Find A\"}'), text('Hi again.')]; researcher: [tool_call('call-r1','{}',name='slow_tool')]; se cancela la task del stream cuando slow_tool.started se setea; luego UserMsg('Hi')",
+    "salida_esperada": "eventos finales del cancel: [TOOL_RESULT_START, TOOL_RESULT_TEXT_DELTA, TOOL_RESULT_END, REPLY_END, TOOL_RESULT_TEXT_DELTA, TOOL_RESULT_END, REPLY_END]; tool_result call-1 output='<system-reminder>The tool call has been interrupted by the user.</system-reminder>' state='interrupted'; researcher.context == []; con UserMsg('Hi') el leader responde 'Hi again.' (equipo operativo)",
+    "origen_test": "tests/pipeline_team_test.py:932 test_cancel_running_member"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "cancel_de_miembro_reanudado_termina_leader_como_interrupted",
+    "entrada": "researcher con [AskTool(), SlowTool()]; researcher: [tool_call('call-r1','{\"input\": \"A\"}',name='ask_tool') (parquea), tool_call('call-r2','{}',name='slow_tool')]; leader: [tool_call('call-1'→researcher)]; tras confirmar (researcher reanuda y entra a slow_tool) se cancela el stream",
+    "salida_esperada": "leader.context[-1] = [tool_call call-1, tool_result{id:'call-1',output:'<system-reminder>The tool call has been interrupted by the user.</system-reminder>',state:'interrupted'}] — el leader NO razona con parciales; researcher.context == []",
+    "origen_test": "tests/pipeline_team_test.py:1018 test_cancel_resumed_member"
+  },
+  {
+    "segmento": "team_pipeline",
+    "nombre": "fallo_de_miembro_joinea_siblings_y_propaga_excepcion_original",
+    "entrada": "miembros [failing|workers...] con failing_first en {True, False}; cada worker: [tool_call('slow','{}','slow_tool'), text('done')]; CleanupTool bloquea hasta release y marca stopped en finally; FailingMemberModel espera a que TODOS los tools hayan started y lanza failure=RuntimeError('member model failed'); leader asigna a todos en una ronda; consume() drena el stream",
+    "salida_esperada": "asyncio.wait_for(consume, 5s) levanta RuntimeError y assertIs(caught.exception, failure) (la MISMA instancia, sin wrapper); all(tool.stopped.is_set() for tool in tools) — todos los siblings completaron cleanup antes de propagar",
+    "origen_test": "tests/pipeline_team_cleanup_test.py:51 test_model_failure_joins_all_siblings (issue #2972; subTest failing_first=True/False)"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "push_drain_fifo",
+    "entrada": "queue_push('k', {'i':1}); queue_push('k', {'i':2}); queue_drain('k', max_count=10)",
+    "salida_esperada": "[{'i':1}, {'i':2}] (payloads en orden de llegada)",
+    "origen_test": "tests/in_memory_message_bus_test.py:32 test_push_drain_returns_payloads_in_order"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "drain_destructivo",
+    "entrada": "queue_push('k', {'x':1}); queue_drain('k', max_count=10); queue_drain('k', max_count=10)",
+    "salida_esperada": "segundo drain == []",
+    "origen_test": "tests/in_memory_message_bus_test.py:39 test_drain_is_destructive"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "drain_respeta_max_count_y_el_resto_persiste",
+    "entrada": "push {'i':0..4} en 'k'; drain('k', max_count=3); drain('k', max_count=10)",
+    "salida_esperada": "primero = [0,1,2]; segundo = [3,4]",
+    "origen_test": "tests/in_memory_message_bus_test.py:45 test_drain_respects_max_count"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "drain_de_clave_inexistente",
+    "entrada": "queue_drain('nope')",
+    "salida_esperada": "[]",
+    "origen_test": "tests/in_memory_message_bus_test.py:54 test_drain_empty_queue_returns_empty"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "push_devuelve_ids_unicos",
+    "entrada": "id1=queue_push('k', {'a':1}); id2=queue_push('k', {'a':2})",
+    "salida_esperada": "id1 != id2",
+    "origen_test": "tests/in_memory_message_bus_test.py:58 test_push_returns_unique_ids"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "queue_delete_vacia_y_es_idempotente",
+    "entrada": "push x2 en 'k'; queue_delete('k'); drain; queue_delete('never-existed')",
+    "salida_esperada": "drain == []; delete de clave inexistente no lanza",
+    "origen_test": "tests/in_memory_message_bus_test.py:64,71 test_queue_delete_removes_all / test_queue_delete_missing_is_noop"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "aislamiento_entre_claves",
+    "entrada": "queue_push('a', {'x':1}); queue_push('b', {'x':2}); drain('a'); drain('b')",
+    "salida_esperada": "a=[{'x':1}], b=[{'x':2}]",
+    "origen_test": "tests/in_memory_message_bus_test.py:75 test_queue_isolation_between_keys"
+  },
+  {
+    "segmento": "bus_queue",
+    "nombre": "ttl_cero_expira_inmediatamente",
+    "entrada": "queue_push('k', {'x':1}, ttl_secs=0); queue_drain('k')",
+    "salida_esperada": "[] (ttl_secs=0 EXPIRA la entrada; no desactiva el expiry)",
+    "origen_test": "tests/in_memory_message_bus_test.py:84 test_zero_ttl_expires_immediately"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "read_sin_cursor_devuelve_todo",
+    "entrada": "log_append('k', {'i':1}); log_append('k', {'i':2}); log_read('k')",
+    "salida_esperada": "[1, 2]",
+    "origen_test": "tests/in_memory_message_bus_test.py:103 test_read_returns_everything_when_no_cursor"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "cursor_exclusivo",
+    "entrada": "append {'i':1},{'i':2},{'i':3}; cursor = id de la entrada 2; log_read('k', since=cursor)",
+    "salida_esperada": "[3] (solo estrictamente más nuevas que el cursor)",
+    "origen_test": "tests/in_memory_message_bus_test.py:110 test_read_with_cursor_is_exclusive"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "read_respeta_max_count",
+    "entrada": "append {'i':0..4}; log_read('k', max_count=3)",
+    "salida_esperada": "[0, 1, 2] (el resto persiste)",
+    "origen_test": "tests/in_memory_message_bus_test.py:120 test_read_respects_max_count"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "read_no_destructivo",
+    "entrada": "append {'i':1}; log_read('k'); log_read('k')",
+    "salida_esperada": "ambas lecturas devuelven lo mismo",
+    "origen_test": "tests/in_memory_message_bus_test.py:127 test_read_is_non_destructive"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "read_log_vacio",
+    "entrada": "log_read('nope')",
+    "salida_esperada": "[]",
+    "origen_test": "tests/in_memory_message_bus_test.py:137 test_read_empty_log"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "cursor_en_la_ultima_entrada",
+    "entrada": "id2=log_append('k', {'i':2}); log_read('k', since=id2)",
+    "salida_esperada": "[]",
+    "origen_test": "tests/in_memory_message_bus_test.py:141 test_read_all_before_cursor"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "trim_sin_before_vacia_el_log",
+    "entrada": "append x2; log_trim('k'); log_read('k')",
+    "salida_esperada": "[]",
+    "origen_test": "tests/in_memory_message_bus_test.py:146 test_trim_without_before_drops_entire_log"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "trim_con_before_id_conserva_la_propia_before",
+    "entrada": "append {'i':1}; id2=append {'i':2}; append {'i':3}; log_trim('k', before_id=id2); log_read('k')",
+    "salida_esperada": "[2, 3] (>= before_seq: la entrada before_id sobrevive; solo caen las ESTRICTAMENTE más viejas)",
+    "origen_test": "tests/in_memory_message_bus_test.py:153 test_trim_with_before_id_keeps_newer"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "trim_de_clave_inexistente_no_lanza",
+    "entrada": "log_trim('nope')",
+    "salida_esperada": "sin excepción",
+    "origen_test": "tests/in_memory_message_bus_test.py:162 test_trim_missing_key_is_noop"
+  },
+  {
+    "segmento": "bus_log",
+    "nombre": "max_len_deja_los_mas_nuevos",
+    "entrada": "for i in 0..9: log_append('k', {'i':i}, max_len=5); log_read('k', max_count=100)",
+    "salida_esperada": "len(entries) <= 5 y entries[-1][1]['i'] == 9",
+    "origen_test": "tests/in_memory_message_bus_test.py:166 test_max_len_caps_log_size"
+  },
+  {
+    "segmento": "bus_pubsub",
+    "nombre": "suscriptor_recibe_publicados_tras_ready",
+    "entrada": "consumidor subscribe('ch', on_ready=ready.set); se espera ready; publish('ch', {'i':1}); publish('ch', {'i':2})",
+    "salida_esperada": "received == [1, 2] (on_ready garantiza que nada publicado antes se pierde por carrera)",
+    "origen_test": "tests/in_memory_message_bus_test.py:189 test_subscribe_receives_messages_published_after_ready"
+  },
+  {
+    "segmento": "bus_pubsub",
+    "nombre": "publish_sin_suscriptores_es_noop",
+    "entrada": "publish('ch', {'i':1}) sin consumidores",
+    "salida_esperada": "sin excepción",
+    "origen_test": "tests/in_memory_message_bus_test.py:214 test_publish_without_subscribers_is_noop"
+  },
+  {
+    "segmento": "bus_pubsub",
+    "nombre": "varios_suscriptores_reciben_cada_uno",
+    "entrada": "dos suscriptores ready en 'ch'; publish('ch', {'x':42})",
+    "salida_esperada": "r1 == [{'x':42}] y r2 == [{'x':42}]",
+    "origen_test": "tests/in_memory_message_bus_test.py:218 test_multiple_subscribers_each_receive"
+  },
+  {
+    "segmento": "bus_lock",
+    "nombre": "is_locked_refleja_acquire_release",
+    "entrada": "is_locked('k'); async with acquire_lock('k', ttl_secs=10): is_locked('k'); is_locked('k') tras salir",
+    "salida_esperada": "[False, True, False]",
+    "origen_test": "tests/in_memory_message_bus_test.py:266 test_is_locked_reflects_acquire_release"
+  },
+  {
+    "segmento": "bus_lock",
+    "nombre": "segundo_adquirente_espera",
+    "entrada": "holder: acquire_lock('k') → 'first-in', sleep(0.05), 'first-out'; challenger: sleep(0.005), acquire_lock('k') → 'second-in'; gather ambos",
+    "salida_esperada": "order == ['first-in', 'first-out', 'second-in']",
+    "origen_test": "tests/in_memory_message_bus_test.py:274 test_second_acquirer_waits_until_release"
+  },
+  {
+    "segmento": "bus_lock",
+    "nombre": "try_lock_exclusivo_hasta_unlock",
+    "entrada": "try_lock('k', ttl_secs=10); try_lock('k', ttl_secs=10); is_locked('k'); unlock('k'); is_locked('k'); try_lock('k', ttl_secs=10)",
+    "salida_esperada": "[True, False, True, False, True]",
+    "origen_test": "tests/in_memory_message_bus_test.py:296 test_try_lock_is_exclusive_until_unlocked"
+  },
+  {
+    "segmento": "bus_lock",
+    "nombre": "lease_de_try_lock_expira_para_holder_crasheado",
+    "entrada": "monotonic=1000.0: try_lock('k', ttl_secs=600)→True; try_lock('k')→False; (holder crashea, nunca llama unlock); monotonic=1600.0: is_locked('k'); try_lock('k', ttl_secs=600)",
+    "salida_esperada": "is_locked == False y try_lock == True (la clave se recupera tras ttl_secs)",
+    "origen_test": "tests/in_memory_message_bus_test.py:307 test_try_lock_lease_expires_for_a_holder_that_crashed"
+  },
+  {
+    "segmento": "bus_lock",
+    "nombre": "acquire_lock_ignora_su_ttl",
+    "entrada": "monotonic=1000.0: async with acquire_lock('k', ttl_secs=1): monotonic=4600.0 → is_locked('k'), try_lock('k', ttl_secs=600); tras salir del contexto: is_locked('k')",
+    "salida_esperada": "dentro del cuerpo: locked=True y try_lock=False aunque el 'ttl' venció hace horas; tras salir: False (acquire_lock suelta solo con el contexto)",
+    "origen_test": "tests/in_memory_message_bus_test.py:322 test_acquire_lock_ignores_ttl_secs"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "set_exists_getall",
+    "entrada": "registry_set('ns','f1','v1'); registry_set('ns','f2','v2'); exists('ns','f1'), exists('ns','f2'), exists('ns','missing'), exists('other-ns','f1'); getall('ns')",
+    "salida_esperada": "[True, True, False, False]; {'f1':'v1','f2':'v2'}",
+    "origen_test": "tests/in_memory_message_bus_test.py:345 test_set_then_exists_and_getall"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "set_sobreescribe",
+    "entrada": "registry_set('ns','f','v1'); registry_set('ns','f','v2'); getall('ns')",
+    "salida_esperada": "{'f':'v2'}",
+    "origen_test": "tests/in_memory_message_bus_test.py:361 test_set_overwrites_existing_field"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "del_borra_solo_el_campo",
+    "entrada": "set('ns','keep','k'); set('ns','drop','d'); registry_del('ns','drop'); exists('ns','drop'), exists('ns','keep')",
+    "salida_esperada": "[False, True]",
+    "origen_test": "tests/in_memory_message_bus_test.py:370 test_del_removes_only_the_named_field"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "del_missing_y_getall_fantasma_y_drop_missing",
+    "entrada": "registry_del('ns','nope'); registry_getall('ghost'); registry_drop('never-existed')",
+    "salida_esperada": "sin excepción; getall('ghost') == {}",
+    "origen_test": "tests/in_memory_message_bus_test.py:378,382,393 test_del_missing_field_is_noop / test_getall_on_missing_namespace_returns_empty / test_drop_missing_namespace_is_noop"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "drop_vacia_el_namespace",
+    "entrada": "set('ns','f1','v1'); set('ns','f2','v2'); registry_drop('ns'); getall('ns')",
+    "salida_esperada": "{}",
+    "origen_test": "tests/in_memory_message_bus_test.py:386 test_drop_deletes_entire_namespace"
+  },
+  {
+    "segmento": "bus_registry",
+    "nombre": "getall_devuelve_copia",
+    "entrada": "set('ns','f','v'); out=getall('ns'); out['injected']='evil'; getall('ns')",
+    "salida_esperada": "{'f':'v'} (mutar la salida no toca el estado del bus)",
+    "origen_test": "tests/in_memory_message_bus_test.py:397 test_getall_returns_copy"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "session_run_recorta_el_log_al_salir",
+    "entrada": "sid='s-trim'; async with session_run(sid): session_publish_event(sid, {'i':1}); session_publish_event(sid, {'i':2}); session_read_events(sid) dentro y fuera del with",
+    "salida_esperada": "dentro: [1, 2]; fuera: [] (trim en el finally)",
+    "origen_test": "tests/in_memory_message_bus_test.py:421 test_session_run_trims_log_on_exit"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "session_is_running_refleja_el_lock",
+    "entrada": "sid='s-isrun'; is_running antes, dentro de session_run, y después",
+    "salida_esperada": "[False, True, False]",
+    "origen_test": "tests/in_memory_message_bus_test.py:431 test_session_is_running_reflects_lock"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "inbox_fifo_y_vacio_tras_drain",
+    "entrada": "sid='s-inbox'; inbox_push(sid, {'hint':'a'}); inbox_push(sid, {'hint':'b'}); inbox_drain(sid, max_count=10); inbox_drain(sid, max_count=10)",
+    "salida_esperada": "['a','b']; []",
+    "origen_test": "tests/in_memory_message_bus_test.py:439 test_inbox_round_trip"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "enqueue_wakeup_payload_exacto",
+    "entrada": "consumidor en subscribe_wakeup_signal(on_ready); enqueue_wakeup(user_id='u', session_id='s', agent_id='a'); luego dequeue_wakeups(max_count=10)",
+    "salida_esperada": "la señal recibe 1 payload; entries[0] == {'user_id':'u','session_id':'s','agent_id':'a','kind':'wake','input':None}",
+    "origen_test": "tests/in_memory_message_bus_test.py:454 test_enqueue_wakeup_round_trip"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "bg_task_registro_listado_borrado_purga",
+    "entrada": "sid='s-bg'; bg_task_exists(sid,'t1')→False; register(sid,'t1','{\"tool\":\"a\"}'); register(sid,'t2','{\"tool\":\"b\"}'); exists(sid,'t1'); list(sid); unregister(sid,'t1'); exists(sid,'t1'); purge(sid); list(sid)",
+    "salida_esperada": "False; True; {'t1':'{\"tool\":\"a\"}','t2':'{\"tool\":\"b\"}'}; False; {}",
+    "origen_test": "tests/in_memory_message_bus_test.py:490 test_bg_task_round_trip"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "session_purge_borra_eventos_inbox_y_bg",
+    "entrada": "sid='s-purge'; publish_event({'e':1}); inbox_push({'m':1}); bg_task_register(sid,'t1','{}'); session_purge(sid); read_events, inbox_drain, bg_task_list",
+    "salida_esperada": "[], [], {} (purga en cascada: log + queue + registry)",
+    "origen_test": "tests/in_memory_message_bus_test.py:511 test_session_purge_clears_all_bus_state"
+  },
+  {
+    "segmento": "bus_domain",
+    "nombre": "task_cancel_pub_sub",
+    "entrada": "consumidor en task_subscribe_cancel(on_ready); task_publish_cancel('task-X')",
+    "salida_esperada": "received == ['task-X']",
+    "origen_test": "tests/in_memory_message_bus_test.py:528 test_task_cancel_pub_sub"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "reply_crea_layout_e_inyecta_prompt_de_memoria",
+    "entrada": "workdir=temp vacío; middleware default; model responde text('done'); UserMsg('user','hello')",
+    "salida_esperada": "existe {workdir}/Memory/ y Memory/MEMORY.md; reply text 'done'; system prompt contiene la ruta real del memory dir, '## MEMORY.md', 'Your MEMORY.md is currently empty'; NO contiene el placeholder '{memory_dir}'",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:355 test_agent_reply_creates_layout_and_injects_memory_prompt"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "hint_con_contenido_y_path_elegidos",
+    "entrada": "user_profile.md con frontmatter {name, description:'User profile details', type:'user'} y body 'The user prefers concise Chinese answers.'; structured_response(['user_profile.md']); model: [tool_response(dummy), text('final answer')]",
+    "salida_esperada": "1 hint en contexto; contiene 'The user prefers concise Chinese answers.' y 'user_profile.md'; posición del hint: después del tool_result del dummy (contexto: [user msg, assistant[tool_call, tool_result, hint, text]]) ; structured_call_count == 1",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:409 test_agent_reasoning_injects_selected_memory_hint"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "filtra_nombres_alucinados",
+    "entrada": "solo user_profile.md existe (body 'Only this real memory should be injected.'); structured_response(['user_profile.md', 'missing.md'])",
+    "salida_esperada": "el hint contiene la memoria real y NO contiene 'missing.md'",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:529 test_agent_filters_hallucinated_memory_filenames"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "dedup_con_presupuesto_exacto",
+    "entrada": "a.md y b.md con frontmatter name/description/type=project y bodies 'Fact a.'/'Fact b.'; structured_response(['a.md']*5 + ['b.md'])",
+    "salida_esperada": "hint único == \"Memory (saved today): {a_path}:\\n\\n---\\nname: a.md\\ndescription: Memory a\\ntype: project\\n---\\n\\nFact a.\\n\\n\\n---\\n\\nMemory (saved today): {b_path}:\\n\\n---\\nname: b.md\\ndescription: Memory b\\ntype: project\\n---\\n\\nFact b.\\n\" (2 partes: los duplicados no consumen el presupuesto de 5; {a_path}/{b_path} = rutas absolutas de los archivos)",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:580 test_agent_deduplicates_selected_memory_filenames"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "seleccion_vacia_sin_hint",
+    "entrada": "user_profile.md existe pero structured_response([])",
+    "salida_esperada": "hints == []; structured_call_count == 1 (el selector SÍ se llamó)",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:621 test_agent_does_not_inject_hint_when_no_file_selected"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "solo_indice_sin_topic_files_no_llama_al_selector",
+    "entrada": "workdir con Memory/MEMORY.md creado por layout pero SIN archivos de tópicos; structured_response preparada (['missing.md'])",
+    "salida_esperada": "hints == []; structured_call_count == 0 (el selector no se invoca); MEMORY.md existe",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:678 test_agent_does_not_retrieve_when_only_memory_index_exists"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "recordatorio_de_truncamiento_con_offset",
+    "entrada": "MEMORY.md con contenido '0123456789'*80; Parameters(memory_max_tokens=10, retrieval_async=False); reply 'truncated'",
+    "salida_esperada": "system prompt contiene '<<<TRUNCATED>>>', 'Use the `Read` tool with offset', y la ruta de MEMORY.md",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:724 test_agent_system_prompt_contains_truncation_reminder"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "retrieval_async_false_no_recupera",
+    "entrada": "user_profile.md existe; Parameters(retrieval_async=False); structured_response preparada (['user_profile.md'])",
+    "salida_esperada": "hints == []; structured_call_count == 0",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:766 test_agent_skips_retrieval_when_async_retrieval_disabled"
+  },
+  {
+    "segmento": "memory",
+    "nombre": "frontmatter_con_cierre_al_final_del_texto",
+    "entrada": "_parse_frontmatter_fields('---\\nname: tea.md\\ndescription: User likes tea\\ntype: user\\n---') e ídem + '\\n\\nThey drink tea daily.\\n'",
+    "salida_esperada": "ambos == {'name':'tea.md','description':'User likes tea','type':'user'}",
+    "origen_test": "tests/middleware_filesystem_memory_test.py:834 FrontmatterParseTest::test_closing_fence_at_end_of_text_keeps_fields"
+  }
+]
