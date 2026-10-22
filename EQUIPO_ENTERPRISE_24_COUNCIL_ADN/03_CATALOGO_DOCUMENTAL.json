@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "fe22d4c05d08faef8649729c344fbd7ecf8acf5f3e4947fb4fd4f95f92143b9a"
+      "sha256": "b5d8b2356371e85a4e2a1f05ee790f28a53aecd32be6db896832c304c60e7d50"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -676,13 +676,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 172474,
-      "sha256": "706d6789d584892e47cde1251fb24dfad3d4b34aa3475149b82e29409164dff5"
+      "bytes": 174568,
+      "sha256": "e6d31d3ab57f53551ea023b597ccecf375038cebb8d5c4e9596956a769bbc08c"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 86769,
-      "sha256": "2104badd2ff119bbe28526d9f71b86bd8e07daa6d738cbd346d334db42e956a5"
+      "bytes": 86876,
+      "sha256": "d20cec78f3a9d9512092154d3c55ec96e1f325f652b7d34c673748c07743232a"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1863,6 +1863,11 @@
       "path": "tests_v8_ui_dom.js",
       "bytes": 13107,
       "sha256": "6d27c4fc47b2628ed98aa6c96ed8039d08404a9f37e40d613a25c25c43305b4f"
+    },
+    {
+      "path": "tests_verification_limits.py",
+      "bytes": 12053,
+      "sha256": "fccb4d9bcb8f8ec5479fcc428386a0195652900fad5c4b90251b004e4be16a5e"
     },
     {
       "path": "validaciones/ESTADO_DEL_LIBRO.json",

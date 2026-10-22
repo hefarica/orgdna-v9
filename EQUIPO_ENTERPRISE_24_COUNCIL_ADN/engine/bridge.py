@@ -404,6 +404,39 @@ def normalize_preferences(rows):
     return result
 
 
+#: Capacidades que declara el catálogo y que la sonda de verificación NO mide.
+MODEL_CAPACITY_FIELDS = ('max_output_tokens', 'context_window', 'input_modalities',
+                         'output_modalities', 'capabilities', 'user_rank')
+
+
+def merge_verified_model_row(previous, result, provider, model):
+    """Fusiona la sonda de verificación sin perder las capacidades del catálogo.
+
+    La sonda pide 32 tokens: su ``max_output_tokens`` es el tope de la PRUEBA, no
+    la capacidad del modelo. Copiar la fila entera del resultado dejaba el
+    catálogo en 32, ``_model_limits`` devolvía ``min(requested, 32)`` y ``_plan``
+    abortaba con ``output_budget_too_small``: el diseño no podía avanzar nunca
+    después de verificar un modelo.
+
+    Se actualiza sólo lo que la sonda mide y se preservan las capacidades
+    declaradas por la fila previa del mismo ``(provider, model)``. Si esa fila no
+    las declaraba, no se inventan: la fila queda como la midió la sonda y el
+    llamador lo registra en el recibo.
+
+    Devuelve ``(fila, preservadas)``; ``preservadas`` vacío significa que el
+    catálogo no tenía capacidades que conservar.
+    """
+    verified = result.get('availability_verified') is True
+    row = dict(result, provider=provider, model=model, id=model,
+               available=True if verified else None, checked_at=result.get('verified_at', ''))
+    preserved = {}
+    if isinstance(previous, dict):
+        preserved = {field: previous[field] for field in MODEL_CAPACITY_FIELDS
+                     if previous.get(field) not in (None, '', [], {})}
+    row.update(preserved)
+    return row, preserved
+
+
 def clean_snapshot(snapshot):
     return {'config': normalize_config(snapshot['config']), 'model_overrides': snapshot.get('model_overrides', {}),
             'model_preferences': normalize_preferences(snapshot.get('model_preferences', []))}
@@ -2362,14 +2395,20 @@ class BridgeState:
                 if consent.get('kind') == 'model_verification':
                     verified = result.get('availability_verified') is True
                     model = self.config['model']
-                    self.models = [m for m in self.models if (m.get('provider'), m.get('model', m.get('id'))) != (provider, model)]
-                    self.models.append(dict(result, provider=provider, model=model, id=model,
-                        available=True if verified else None, checked_at=result.get('verified_at', '')))
+                    key = (provider, model)
+                    previous = next((m for m in self.models
+                                     if (m.get('provider'), m.get('model', m.get('id'))) == key), None)
+                    self.models = [m for m in self.models
+                                   if (m.get('provider'), m.get('model', m.get('id'))) != key]
+                    row, capacity_preserved = merge_verified_model_row(previous, result, provider, model)
+                    self.models.append(row)
                     if verified:
                         self._record_model_account(self.config)
                     self.receipt('verify-model', 'success' if verified else 'warning',
                         'Inferencia mínima verificada para este modelo y cuenta.' if verified else 'No se verificó la inferencia. Un error de cuota no demuestra que el modelo sea inexistente.',
-                        source=provider, result=result)
+                        source=provider, result=result, capacity_preserved=sorted(capacity_preserved),
+                        capacity_note='' if capacity_preserved else
+                        'El catálogo no declaraba capacidades para este modelo: la fila queda con el tope de la sonda de 32 tokens; no se inventó ninguno.')
                 else:
                     self.analysis = dict(result, signals=self.repo_inventory.get('signals', []))
                     self.receipt(action, 'success', 'Análisis recibido y validado como propuestas. Genera la organización para incorporarlo.',

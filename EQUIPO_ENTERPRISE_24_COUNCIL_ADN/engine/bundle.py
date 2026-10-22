@@ -37,6 +37,8 @@ RUNTIME_ALLOWLIST = (
     # falla con "Runtime fuera de allowlist".
     'engine/amm_math.py',
     'tests_amm_math.py',
+    # 2026-10-22 · test de regresion del defecto max_output_tokens=32
+    'tests_verification_limits.py',
 
     'LEEME_V8.txt',
     'docs/ALCANCE_V8_Y_PROPUESTA_POSTERIOR.md',
