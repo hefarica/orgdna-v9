@@ -30,6 +30,14 @@ MAX_UNCOMPRESSED_BYTES = 128 * 1024 * 1024
 # Deliberately literal. Never add glob/rglob, credentials, local state, inputs,
 # repository source, logs, screenshots, authoring scripts or test scratch files.
 RUNTIME_ALLOWLIST = (
+    # 2026-10-22 · port amm_math: reimplementado desde la definición, 0 código
+    # copiado, vectores numéricos usados como hecho (FUSILE_SOURCE_POLICY regla 3).
+    # bundle.py:862 exige que el sello sea exactamente este conjunto y :874 que
+    # todo engine/… del sello esté aquí; sin estas dos entradas el re-sellado
+    # falla con "Runtime fuera de allowlist".
+    'engine/amm_math.py',
+    'tests_amm_math.py',
+
     'LEEME_V8.txt',
     'docs/ALCANCE_V8_Y_PROPUESTA_POSTERIOR.md',
     'tests_v8_evidence.py',

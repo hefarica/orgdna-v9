@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "a5e2ba07df58f7d9f9aba4db5b5c874d235df9c08c2ba27676ae3da229ae8294"
+      "sha256": "fe22d4c05d08faef8649729c344fbd7ecf8acf5f3e4947fb4fd4f95f92143b9a"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -581,8 +581,8 @@
     },
     {
       "path": "docs/security/FUSILE_SOURCE_POLICY.md",
-      "bytes": 5936,
-      "sha256": "cf335bd5ddc7a232fca08f83f219d6a28cf844453739e02fc58a422e743e4b58"
+      "bytes": 7003,
+      "sha256": "1268a43409cfa72183a45ac982f0769ec6c7316d1418f62eb21e72157ed638db"
     },
     {
       "path": "docs/tool_catalog_validation.json",
@@ -655,6 +655,11 @@
       "sha256": "5d8854f00f9e50baf4e5a17b412cb88de5377a31c104a4c42ce8d25b4d66bc18"
     },
     {
+      "path": "engine/amm_math.py",
+      "bytes": 6072,
+      "sha256": "9cad54d131c9fc80fe5e0e99b565405dd3f1058874089d32d7ac738c38de6a87"
+    },
+    {
       "path": "engine/approval_receipt.py",
       "bytes": 51027,
       "sha256": "05e26f52e4abca1271f5687184daf89874f24b8aaba580d12bd856bed0ded234"
@@ -676,8 +681,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 86342,
-      "sha256": "fab63cc6bfed3be0f0351d664a0390f82419d1ea30e64ef6fe7518de1a47aa9c"
+      "bytes": 86769,
+      "sha256": "2104badd2ff119bbe28526d9f71b86bd8e07daa6d738cbd346d334db42e956a5"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1548,6 +1553,11 @@
       "path": "tests_agent_layer_contracts.py",
       "bytes": 11918,
       "sha256": "cc61feb9a5f102ef5b0659b7e74f56364df47363de6110da8067d5bb813680ff"
+    },
+    {
+      "path": "tests_amm_math.py",
+      "bytes": 5415,
+      "sha256": "b354c11dc887892400bdcc72e2cda00fa686998be452636448fcfdf63ae3da3e"
     },
     {
       "path": "tests_bridge.py",

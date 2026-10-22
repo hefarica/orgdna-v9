@@ -38,6 +38,15 @@ la marca CONFIRMED vía diálogo del harness):
 |---|---|---|---|---|
 | `CONFIRMED: allowlist amendment agentscope-ai/agentscope` | `agentscope-ai/agentscope@26ec620` | Apache-2.0 | 2 | `TeamMember` + `_TeamAssign` (`src/agentscope/pipeline/_team_pipeline.py`), routing del bus (`src/agentscope/message_bus/_in_memory_message_bus.py`), middleware de memoria filesystem con índice `MEMORY.md` (`src/agentscope/middleware/_longterm_memory/_agentic_memory/_middleware.py`) |
 | `CONFIRMED: allowlist amendment OpenBMB/ChatDev` | `OpenBMB/ChatDev@a2ea4a2` | Apache-2.0 | 2 | `PythonNodeExecutor` (`runtime/node/executor/python_executor.py`): subprocess + timeout + workspace por agente, bajo las puertas de aprobación de `engine/policy_engine.py` |
+| `CONFIRMED: allowlist amendment aleexeyy/clmm-swap-math` | `aleexeyy/clmm-swap-math@8f1ae125d102f31b320ff3d2297f3a8d159029c7` | MIT | 1 | Matemática de rango concentrado: `tick_math`, `sqrt_price_math`, `swap_math::compute_swap_step` (redondeo dirigido), `liquidity_math`, `tick_bitmap`; 57 `#[test]` inline en 8 archivos. Firmada por el operador el 2026-10-22, a pedido del capitán (t7), para cubrir la semántica ejecutable del paso de swap que los valores numéricos solos no aportan. |
+
+> **Advertencia registrada (defecto de gate F3, 2026-10-22).** `rea_adopt`
+> clasifica `BUSL-1.1+MIT` como **permisiva** y admite verbatim, porque `"mit"`
+> casa como subcadena en `LIC_PERMISIVAS` (`index.js:553-569`). Consecuencia: las
+> fuentes cuyo campo de licencia **empieza por BUSL y contiene MIT** (`Uniswap/v3-core`,
+> `Uniswap/v4-core`) quedan FALSAMENTE autorizadas si alguien firma su enmienda.
+> **No firmar esas dos enmiendas** hasta que el gate exija igualdad de token, no
+> subcadena. La licencia se lee **entera**, nunca por prefijo ni por grep de `MIT`.
 
 Tier 2 exige: marca CONFIRMED del operador (arriba), port-with-validation con
 cita `repo@sha`, license-check resuelto antes de verbatim, y suite del destino
