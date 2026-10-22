@@ -814,7 +814,7 @@ function generationFailureAction(job){
 function generationDiagnostic(job){
   const report={schema:'orgdna-generation-diagnostic-ui-v2'},safeKeys=['job_id','status','stage','failed_stage','provider','model','agent_count','sent_requests','completed_requests','max_requests','completed_profiles','potentially_billed','created_at','started_at','finished_at','updated_at','response_mode','profiles_per_request','effective_profiles_per_request','max_output_tokens','effective_max_output_tokens','receipts_pending','interrupted_snapshot'];
   for(const key of safeKeys){const value=job?.[key];if(value===null||['string','number','boolean'].includes(typeof value))report[key]=typeof value==='string'?value.slice(0,300):value;}
-  const error={};for(const key of ['code','category','message','next_action','stage','source_stage','provider','model','field','profile_slot','batch_index','http_status','provider_error_code','provider_parameter','finish_reason','sent_requests','completed_requests','max_requests','completed_profiles','request_status','retry_requires_new_consent']){const value=job?.error?.[key];if(value===null||['string','number','boolean'].includes(typeof value))error[key]=typeof value==='string'?value.slice(0,600):value;}
+  const error={};for(const key of ['code','category','message','next_action','stage','source_stage','provider','model','field','profile_slot','duplicate_slots','duplicate_field','batch_index','http_status','provider_error_code','provider_parameter','finish_reason','sent_requests','completed_requests','max_requests','completed_profiles','request_status','retry_requires_new_consent']){const value=job?.error?.[key];if(value===null||['string','number','boolean'].includes(typeof value))error[key]=typeof value==='string'?value.slice(0,600):value;}
   report.error=error;report.request_receipts=generationSafeReceipts(job);report.usage_summary=generationSafeUsage(job?.usage_summary,true);return report;
 }
 function renderGenerationFailure(result,job){
@@ -822,7 +822,7 @@ function renderGenerationFailure(result,job){
   result.append(node('h3',job.status==='cancelled'?'Trabajo cancelado':'No se publicó un ADN nuevo'));
   const facts=node('dl',undefined,'generation-facts generation-failure-facts');
   appendFact(facts,'Etapa',job.error?.source_stage||job.error?.stage||job.failed_stage||job.stage||'Desconocida');
-  if(job.error?.category)appendFact(facts,'Diagnóstico',categories[job.error.category]||'Causa no identificada');
+  if(job.error?.category)appendFact(facts,'Diagnóstico',categories[job.error.category]||'Causa no identificada');if(Array.isArray(job.error?.duplicate_slots)&&job.error.duplicate_slots.length)appendFact(facts,'Perfiles en conflicto','slot(s) '+job.error.duplicate_slots.join(', ')+(job.error.duplicate_field?': '+job.error.duplicate_field:''));
   appendFact(facts,'Solicitudes iniciadas',generationRequestCount(job.sent_requests??job.error?.sent_requests));
   appendFact(facts,'Solicitudes completadas',generationRequestCount(job.completed_requests??job.error?.completed_requests)+' / '+generationRequestCount(job.max_requests??job.error?.max_requests));
   appendFact(facts,'Perfiles completados en este intento',generationRequestCount(job.completed_profiles??job.error?.completed_profiles));result.append(facts);

@@ -27,7 +27,7 @@ import uuid
 TERMINAL = frozenset({'completed', 'failed', 'cancelled'})
 ACTIONS = frozenset({'generation-plan', 'generation-confirm', 'generation-cancel'})
 USAGE_FIELDS = ('prompt_tokens', 'completion_tokens', 'total_tokens')
-RECEIPT_STATUSES = frozenset({'billing_outcome_unknown', 'response_received_not_yet_validated', 'validated'})
+RECEIPT_STATUSES = frozenset({'billing_outcome_unknown', 'response_received_not_yet_validated', 'validated', 'repaired_duplicate'})
 
 
 def safe_request_receipts(values, provider, model, request_hashes=None):
@@ -813,14 +813,18 @@ class GenerationPipeline:
                 if type(value) is int and 0 <= value <= cap:
                     return value
                 return fallback if type(fallback) is int and 0 <= fallback <= cap else None
-            sent = count('requests', maximum, job.get('sent_requests'))
+            # El techo consentido es MAX_REQUESTS (el pipeline lo pasa como max_requests a
+            # prepare_design_consent); una reparacion puede anadir solicitudes por debajo de
+            # ese techo. Acotar por el numero PLANIFICADO (`maximum`) ocultaba esa solicitud
+            # extra y escondia un cargo posible. Se acota por el techo real.
+            sent = count('requests', MAX_REQUESTS, job.get('sent_requests'))
             completed = count('completed_requests', sent if type(sent) is int else maximum, job.get('completed_requests', 0))
             profiles = count('completed_profiles', job['agent_count'], job.get('completed_profiles', 0))
             request_status = None
             receipts = audit.get('receipts')
             if isinstance(receipts, list) and receipts and isinstance(receipts[-1], dict):
                 value = receipts[-1].get('status')
-                if value in ('billing_outcome_unknown', 'response_received_not_yet_validated', 'validated'):
+                if value in ('billing_outcome_unknown', 'response_received_not_yet_validated', 'validated', 'repaired_duplicate'):
                     request_status = value
             if type(sent) is int and sent == 0:
                 job['potentially_billed'] = False

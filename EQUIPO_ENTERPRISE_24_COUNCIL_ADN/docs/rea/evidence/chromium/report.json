@@ -5,23 +5,65 @@
     "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
   },
   "browser_info": {
-    "launch_port": 54872,
+    "launch_port": 57890,
     "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
-    "pid": 56028,
-    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-1d2e5f34a119418cb5030d1c7d6d37d0",
+    "pid": 31196,
+    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-4d6f9abaf29b4c059822a6108645cc61",
     "protocol_version": "1.3",
     "version": "Chrome/155.0.8059.85"
   },
   "chromium_available": true,
   "chromium_unavailable": false,
   "cleanup": {
-    "exit_code": 0,
+    "exit_code": 1,
     "exited": true,
     "killed_tree": [
       {
-        "detail": "CORRECTO: el proceso con PID 38716 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 55412 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 48144 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 4636 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 23168 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 32436 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 52808 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 46260 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 32820 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 56028 (proceso secundario de PID 26648)\r\nha sido terminado.",
-        "ok": true,
-        "pid": 56028,
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 17064 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 40680 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 3904 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 31196,
+        "resolved": true,
+        "target": "launcher"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 51720 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 39632 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 43364 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 1884 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 17064 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 13384 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 40680 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 3904 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 828 (proceso secundario de PID 31196)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 828,
+        "resolved": true,
+        "target": "browser"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 51720 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 39632 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 43364 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 1884 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 17064 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 13384 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 40680 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 3904 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 828 (proceso secundario de PID 31196)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 31196 (proceso secundario de PID 36260)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 31196,
+        "resolved": true,
+        "target": "browser"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 51720 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 39632 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 43364 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 1884 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 17064 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 13384 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 40680 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 3904 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 828 (proceso secundario de PID 31196)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 828,
+        "resolved": true,
+        "target": "browser"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 51720 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 39632 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 43364 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 1884 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 17064 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 13384 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 40680 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 3904 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 828 (proceso secundario de PID 31196)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 31196 (proceso secundario de PID 36260)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 31196,
+        "resolved": true,
+        "target": "browser"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: el proceso con PID 51720 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 39632 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 1884 (proceso secundario de PID 828)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.\r\r\nERROR: el proceso con PID 828 (proceso secundario de PID 31196)\r\nno se pudo terminar.\r\nMotivo: No hay ninguna instancia activa de la tarea.",
+        "ok": false,
+        "pid": 828,
+        "resolved": true,
+        "target": "browser"
+      },
+      {
+        "detail": "taskkill rc=128: ERROR: no se encontr� el proceso \"31196\".",
+        "ok": false,
+        "pid": 31196,
         "resolved": true,
         "target": "browser"
       }
@@ -33,12 +75,12 @@
       "reason": "",
       "top_level_pids": []
     },
-    "pid": 56028,
-    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-1d2e5f34a119418cb5030d1c7d6d37d0",
+    "pid": 31196,
+    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-4d6f9abaf29b4c059822a6108645cc61",
     "profile_removed": true,
     "tree_cleared": true
   },
-  "duration_s": 9.299,
+  "duration_s": 77.885,
   "error": null,
   "evidence_dir": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium",
   "failed_steps": [],
@@ -59,8 +101,8 @@
   },
   "panel": {
     "mode": "in-process LocalServer",
-    "origin": "http://127.0.0.1:54852",
-    "port": 54852,
+    "origin": "http://127.0.0.1:57023",
+    "port": 57023,
     "session": {
       "cookie": true,
       "csrf": true
@@ -80,16 +122,16 @@
   ],
   "protocol": "CDP sobre WebSocket RFC 6455 (stdlib)",
   "references": {
-    "coordinator_member_id": "c9dc9c48-93cd-5c44-bc0b-43998402167c",
+    "coordinator_member_id": "46423d03-5c6a-5986-8a54-1445f5b1d780",
     "mention_token": "Architect",
-    "sender_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44"
+    "sender_member_id": "10bdbc44-76d7-5e83-be52-1404820dd858"
   },
   "screenshot_digests": {
-    "app_load": "26bef1b2f862f1ab608eada4b382de2ec12c0902e56c60423a4be89cb96cb52b",
-    "channel": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019",
+    "app_load": "2906f1cd1b71b4c0510f302bb1e68e01ff834d47ff3db158c100a1bd411204aa",
+    "channel": "126b90d406bbc693c75a2c606855ec17a9055d2ef400cf5bb7c288903c3242fa",
     "followups": "5d422f7d1f5fbdb2d67fa2fab659068dd7bbee6f39568685cc40d69360b5271a",
     "generate": "4e89e67175e092f2a269b32ed6c7f812d2d4d2e2c171a571b487b6dea61a3bb4",
-    "memory": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019",
+    "memory": "43dddf84848110f64db38aa62f91d4d8735d61368a096369fe11c6ba7aad35d1",
     "sandbox_block": "38fbc95f4181abb2653fb3e9c6b1552deaf37b4996d768d1164bedc1b0127ea6"
   },
   "steps": [
@@ -124,13 +166,13 @@
         "panel_version": null,
         "render_instrumented": true
       },
-      "duration_s": 0.233,
+      "duration_s": 4.094,
       "ok": true,
       "screenshot": {
-        "bytes": 91095,
+        "bytes": 91091,
         "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_00_app_load.png",
         "relative": "docs/rea/evidence/chromium/step_00_app_load.png",
-        "sha256": "26bef1b2f862f1ab608eada4b382de2ec12c0902e56c60423a4be89cb96cb52b"
+        "sha256": "2906f1cd1b71b4c0510f302bb1e68e01ff834d47ff3db158c100a1bd411204aa"
       },
       "step": "app_load",
       "uncaught_errors": []
@@ -184,7 +226,7 @@
         "cards": 24,
         "profile_count": "24 / 24 perfiles"
       },
-      "duration_s": 0.499,
+      "duration_s": 11.258,
       "ok": true,
       "screenshot": {
         "bytes": 91540,
@@ -243,25 +285,25 @@
         },
         {
           "assert": "tarea_dirigida_al_miembro",
-          "backend": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
-          "dom": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "backend": "10bdbc44-76d7-5e83-be52-1404820dd858",
+          "dom": "10bdbc44-76d7-5e83-be52-1404820dd858",
           "ok": true
         }
       ],
       "detail": {
         "channel_count": "1 mensajes · 1 tareas",
         "messages": 1,
-        "owner_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+        "owner_member_id": "10bdbc44-76d7-5e83-be52-1404820dd858",
         "task_id": "2-0",
         "task_title": "luego subo el informe del puerto"
       },
-      "duration_s": 0.422,
+      "duration_s": 1.918,
       "ok": true,
       "screenshot": {
-        "bytes": 94128,
+        "bytes": 84908,
         "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_02_channel.png",
         "relative": "docs/rea/evidence/chromium/step_02_channel.png",
-        "sha256": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019"
+        "sha256": "126b90d406bbc693c75a2c606855ec17a9055d2ef400cf5bb7c288903c3242fa"
       },
       "step": "channel",
       "uncaught_errors": []
@@ -316,13 +358,13 @@
         "index_excerpt": "- [project] decision-e2e-01.md (2026-10-22): Decisión registrada por el arnés E2E",
         "memory_id": "decision-e2e-01"
       },
-      "duration_s": 0.749,
+      "duration_s": 2.225,
       "ok": true,
       "screenshot": {
-        "bytes": 94128,
+        "bytes": 85041,
         "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_03_memory.png",
         "relative": "docs/rea/evidence/chromium/step_03_memory.png",
-        "sha256": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019"
+        "sha256": "43dddf84848110f64db38aa62f91d4d8735d61368a096369fe11c6ba7aad35d1"
       },
       "step": "memory",
       "uncaught_errors": []
@@ -370,10 +412,10 @@
             "active": 1,
             "events": [
               {
-                "at": "2026-10-22T12:43:34.321548Z",
+                "at": "2026-10-22T14:08:25.623605Z",
                 "event": "commitment",
                 "message_id": "1-0",
-                "owner_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+                "owner_member_id": "10bdbc44-76d7-5e83-be52-1404820dd858",
                 "snippet": "luego subo",
                 "task_id": "fu-1"
               }
@@ -384,8 +426,8 @@
         },
         {
           "assert": "compromiso_del_emisor",
-          "backend": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
-          "dom": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "backend": "10bdbc44-76d7-5e83-be52-1404820dd858",
+          "dom": "10bdbc44-76d7-5e83-be52-1404820dd858",
           "ok": true
         },
         {
@@ -401,7 +443,7 @@
         {
           "assert": "autoridad_declarada",
           "detail": {
-            "authority": "Los recordatorios y escalaciones los emite el motor engine.followups con la identidad de coordinacion \"Planner (c9dc9c48-93cd-5c44-bc0b-43998402167c)\" (miembro "
+            "authority": "Los recordatorios y escalaciones los emite el motor engine.followups con la identidad de coordinacion \"Planner (46423d03-5c6a-5986-8a54-1445f5b1d780)\" (miembro "
           },
           "ok": true
         },
@@ -424,7 +466,7 @@
         "status": "Tick ejecutado: 1 evento(s), 0 recordatorio(s), 0 escalacion(es).",
         "tasks": 1
       },
-      "duration_s": 0.72,
+      "duration_s": 2.395,
       "ok": true,
       "screenshot": {
         "bytes": 80375,
@@ -518,7 +560,7 @@
         {
           "assert": "panel_no_afirma_ejecucion",
           "detail": {
-            "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+            "verdict": "Solicitud 0f7be06f preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
           },
           "ok": true
         },
@@ -554,7 +596,7 @@
         {
           "assert": "veredicto_presente",
           "detail": {
-            "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+            "verdict": "Solicitud 0f7be06f preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
           },
           "ok": true
         }
@@ -565,9 +607,9 @@
         "policy": {
           "decision": "require_human_approval",
           "gate": "write",
-          "policy_id": "orgdna.platform.d9bf4896-ae85-408d-b30f-8246cb0ec4d5",
+          "policy_id": "orgdna.platform.9dde64ec-ea35-408b-80b8-396aa6d812f1",
           "policy_revision": 1,
-          "reason": "La accion 'write_file' sobre 'sandbox/f7efbcd44bfb40a392430266829b52a5/dcd52f00-439a-5f35-a99a-7676d84d9a44.py' levanta la puerta humana 'write' (write) y no hay aprobacion registrada para el alcance vigente 804b108b381979794cb8869ad876ff0b80e50a74b4389831f469c0f7ae340b08.",
+          "reason": "La accion 'write_file' sobre 'sandbox/0f7be06f9dfa447e95461b458f859491/10bdbc44-76d7-5e83-be52-1404820dd858.py' levanta la puerta humana 'write' (write) y no hay aprobacion registrada para el alcance vigente 7e5dfbda030e42161207290da21f5c94ab048879a4cc2226353aff6f20e01911.",
           "rules": [
             "gate.write",
             "approval.missing"
@@ -578,9 +620,9 @@
         "render_instrumented": true,
         "requests": 1,
         "ui_error": "",
-        "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+        "verdict": "Solicitud 0f7be06f preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
       },
-      "duration_s": 0.799,
+      "duration_s": 2.144,
       "ok": true,
       "screenshot": {
         "bytes": 80396,

@@ -139,6 +139,7 @@ RUNTIME_ALLOWLIST = (
     'tests_inventory_cache.py',
     'tests/test_web_sources.py',
     'tests_org_design.py',
+    'tests_org_design_repair.py',
     'tests_org_design_website.py',
     'tests_manual_website_analysis.py',
     'qa_v6/__init__.py',

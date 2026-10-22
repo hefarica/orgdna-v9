@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "bcb68b9760cceba3e62939f4d7e85167639bc84362728db9375fab7e97dff58b"
+      "sha256": "a5e2ba07df58f7d9f9aba4db5b5c874d235df9c08c2ba27676ae3da229ae8294"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -676,8 +676,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 86308,
-      "sha256": "5f8610327e54f80148602bc00e4c829e70fd8e4c5ed261daf67e81704fa00ce5"
+      "bytes": 86342,
+      "sha256": "fab63cc6bfed3be0f0351d664a0390f82419d1ea30e64ef6fe7518de1a47aa9c"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -811,8 +811,8 @@
     },
     {
       "path": "engine/generation_pipeline.py",
-      "bytes": 55816,
-      "sha256": "d16094d15ef6c1e4eabee50840cda88d8b0091fc8c6dfefedfa7455201b8235b"
+      "bytes": 56219,
+      "sha256": "e3d67ca27074744f5ed9a91b0ea3751c48e373067964f5ba11f8f0bb093e874e"
     },
     {
       "path": "engine/governance.py",
@@ -881,8 +881,8 @@
     },
     {
       "path": "engine/org_design.py",
-      "bytes": 80019,
-      "sha256": "e91fb1a95402b0bcad66e0058597421b7997bd7b1a129c0baa0b0418b499df8f"
+      "bytes": 86885,
+      "sha256": "6c4bb2b0a69a37c771e0cf454487316bd42ca4b33d5922587cff1e82a24d7649"
     },
     {
       "path": "engine/organization_design.py",
@@ -1286,8 +1286,8 @@
     },
     {
       "path": "qa_v7/chromium_cdp.py",
-      "bytes": 54625,
-      "sha256": "d4ea844be151ef21d7c3b1bc4407d9fd2e991b9a906dbd2f8020e5aa270dd7a1"
+      "bytes": 56089,
+      "sha256": "2df546c9213631fe8eae54615b69d8103b7dd041acfef7d5fa893047b7136fb4"
     },
     {
       "path": "qa_v7/chromium_e2e.py",
@@ -1710,6 +1710,11 @@
       "sha256": "90e2e4178c96c6ff7434cc2065b9ed0ef636b21c6aacb91b333b51b78e0f4fa3"
     },
     {
+      "path": "tests_org_design_repair.py",
+      "bytes": 15314,
+      "sha256": "059045fa6252262fc49d2426eea4a5da3e79e65945b2092d85eebe14752262d9"
+    },
+    {
       "path": "tests_org_design_website.py",
       "bytes": 9727,
       "sha256": "036a6847a187286ba4954e06fb3f00496e070e4c9ee939816d93ed94b3b3cc5e"
@@ -1871,8 +1876,8 @@
     },
     {
       "path": "web/app.js",
-      "bytes": 252717,
-      "sha256": "3e9563c0009083a11fc8803877392f3234d4e36c78b12c67ac64684bb55285c9"
+      "bytes": 252984,
+      "sha256": "b391552283f335803f5da21ecc61a9021cb22277c11c17987718c5375750673d"
     },
     {
       "path": "web/index.html",

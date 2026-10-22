@@ -982,6 +982,26 @@ def _terminate_pid(pid, timeout=15.0):
         return False, f'SIGKILL falló: {exc}'
 
 
+def pids_vivos(pids, timeout=6.0):
+    """Filtra `pids` dejando SOLO los que siguen vivos de verdad.
+
+    `tasklist` es una sonda rapida (~60 ms) y no depende de la tabla de
+    perfiles: sirve para no declarar huerfano a un proceso que ya termino pero
+    cuya entrada tarda en desaparecer.
+    """
+    vivos = []
+    for pid in pids:
+        try:
+            hecho = subprocess.run(['tasklist', '/FI', 'PID eq %d' % int(pid), '/NH', '/FO', 'CSV'],
+                                   capture_output=True, timeout=timeout,
+                                   creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+            if str(int(pid)) in (hecho.stdout or b'').decode('utf-8', 'replace'):
+                vivos.append(pid)
+        except (OSError, subprocess.SubprocessError, ValueError):
+            vivos.append(pid)   # ante la duda, no se borra un huerfano del informe
+    return vivos
+
+
 def profile_processes(profile, timeout=15.0):
     """Procesos de navegador vivos que aún usan `profile` como `--user-data-dir`.
 
@@ -1088,7 +1108,17 @@ def terminate(handle, keep_profile=False, timeout=20.0, kill_timeout=15.0):
         for action in actions:
             action['resolved'] = True
     if profile:
+        # Huerfano = proceso VIVO que usa este perfil. Antes se fotografiaba la
+        # tabla nada mas matar y se declaraban pids ya muertos (falso huerfano,
+        # medido: 3 declarados, 3 muertos). Ahora se sondean los pids con
+        # `tasklist` durante un plazo de 8 s y solo los que sobreviven cuentan.
         final = profile_processes(profile)
+        vivos = pids_vivos(final.get('pids') or [])
+        limite = time.monotonic() + 8.0
+        while vivos and time.monotonic() < limite:
+            time.sleep(0.2)
+            vivos = pids_vivos(vivos)
+        final = dict(final, pids=vivos)
         report['orphans'] = final
         if not keep_profile and getattr(handle, 'created_profile', False):
             removed = False

@@ -46,6 +46,18 @@ _CONTINUATION_INSTRUCTION = ("Continua EXACTAMENTE donde cortaste el JSON anteri
                              "caracter ya emitido, no anadas preambulos ni explicaciones ni cierres "
                              "anticipados: entrega solo la continuacion literal hasta completar el JSON "
                              "completo del perfil.")
+# REPARACION ACOTADA de un lote que repite valores (duplicate_value). Una respuesta que
+# repite un valor ya no tumba el diseno entero: se reemite UNA sola vez ESA misma
+# solicitud con una instruccion que solo nombra el CAMPO y los SLOTS en conflicto (nunca
+# valores del diseno, contenido del usuario, datos de la fuente ni el proveedor), y solo
+# si el techo aprobado permite una solicitud mas. Si la respuesta reparada vuelve a
+# repetir, el fallo es limpio: no hay tercera tentativa ni reescritura silenciosa.
+REPAIRS_PER_REQUEST = 1
+_REPAIR_DUPLICATE_INSTRUCTION = ("La respuesta anterior repitio un valor que debe ser distinto en el campo "
+                                 "'{field}' en {slots}. Reenvia el MISMO JSON completo y valido, con esos "
+                                 "perfiles diferenciados en el campo '{field}': cada uno con un valor propio y "
+                                 "distinto tambien de los perfiles ya aceptados. No cambies ningun otro campo, "
+                                 "no anadas texto fuera del JSON y no repitas valores entre perfiles.")
 MAX_REQUESTS = 64
 MAX_OUTPUT_TOKENS = 131_072
 # ORDEN DEL PROPIETARIO (no estrangular la salida): 65 536 por defecto — un cuarto
@@ -109,6 +121,41 @@ def _safe_field(value):
     return value if all(re.fullmatch(r"[a-z_]+(?:\[[0-9]{1,3}\])?", item) and item.split("[", 1)[0] in _FIELD_KEYS for item in parts) else None
 
 
+def _clashing_slots(values):
+    """Slots (1-based) que comparten valor con otro: solo indices, nunca los valores."""
+    seen, clashes = {}, set()
+    for index, value in enumerate(values, 1):
+        if value in seen:
+            clashes.update((seen[value], index))
+        else:
+            seen[value] = index
+    return sorted(clashes)
+
+
+def _duplicate_details(field, slots=None, name=None):
+    """Claves ADITIVAS del diagnostico duplicate_value: que campo y que slots chocan.
+
+    Solo nombres e indices: no viaja ningun valor del diseno, ni contenido del usuario,
+    ni dato de la fuente. `profile_specs[N]` es 0-based en las rutas del esquema; el slot
+    publico es 1-based y queda acotado a MAX_AGENTS, ordenado y sin duplicados.
+    """
+    if name is None and isinstance(field, str):
+        last = re.sub(r"\[[0-9]{1,3}\]", "", field.split(".")[-1])
+        name = last if re.fullmatch(r"[a-z_]+", last) else None
+    if slots is None and isinstance(field, str):
+        slots = [int(index) + 1 for index in re.findall(r"profile_specs\[([0-9]{1,3})\]", field)]
+    clean = sorted({value for value in (slots or [])
+                    if type(value) is int and 1 <= value <= MAX_AGENTS})
+    return {"duplicate_field": name, "duplicate_slots": clean}
+
+
+def _repair_duplicate_instruction(field, slots):
+    """Instruccion estable de reparacion: solo campo y slots (sin valores ni fuente)."""
+    name = field if isinstance(field, str) and re.fullmatch(r"[a-z_]+", field) else "repeated_value"
+    positions = ("los slots " + ", ".join(str(slot) for slot in slots)) if slots else "los perfiles de este lote"
+    return _REPAIR_DUPLICATE_INSTRUCTION.format(field=name, slots=positions)
+
+
 def _diagnostic(code, **details):
     code = code if isinstance(code, str) and code in _FAILURES else "unknown_design_failure"
     category, message, action = _FAILURES[code]
@@ -116,6 +163,18 @@ def _diagnostic(code, **details):
     field = _safe_field(details.get("field"))
     if field:
         result["field"] = field
+    # Diagnostico accionable del duplicate_value (claves ADITIVAS): QUE campo y QUE
+    # slots chocan. El mensaje y la accion no cambian; esto es lo que permite saber a
+    # quien mirar. Solo nombres e indices, nunca valores ni contenido.
+    duplicate_field = details.get("duplicate_field")
+    if isinstance(duplicate_field, str) and re.fullmatch(r"[a-z_]+", duplicate_field):
+        result["duplicate_field"] = duplicate_field
+    duplicate_slots = details.get("duplicate_slots")
+    if isinstance(duplicate_slots, (list, tuple)):
+        clean_slots = sorted({value for value in duplicate_slots
+                              if type(value) is int and 1 <= value <= MAX_AGENTS})
+        if clean_slots:
+            result["duplicate_slots"] = clean_slots
     for key, maximum in (("profile_slot", MAX_AGENTS), ("batch_index", MAX_REQUESTS), ("http_status", 599)):
         value = details.get(key)
         if type(value) is int and 1 <= value <= maximum and (key != "http_status" or value >= 100):
@@ -299,7 +358,7 @@ def _list(values, minimum, maximum, text_limit=400, field=None):
         _invalid("invalid_count", field)
     clean = [_text(value, text_limit, f"{field}[{index}]" if field else None) for index, value in enumerate(values)]
     if len(set(v.casefold().strip() for v in clean)) != len(clean):
-        _invalid("duplicate_value", field)
+        _invalid("duplicate_value", field, **_duplicate_details(field))
     return clean
 
 
@@ -688,7 +747,8 @@ def _validate_profile_shape(value, allowed_paths, slot):
         _paths(skill["evidence_paths"], allowed_paths, 1, 8, field + ".evidence_paths")
         name = skill["name"].casefold().strip()
         if name in skill_names:
-            _invalid("duplicate_value", field + ".name")
+            _invalid("duplicate_value", field + ".name",
+                     **_duplicate_details(field + ".name", [slot]))
         skill_names.add(name)
     cv = value["cv"]
     field = base + ".cv"
@@ -804,14 +864,20 @@ def _usage(response):
 def _unique(profiles):
     for field in ("name", "display_name", "role", "title", "mission", "personality"):
         values = [re.sub(r"\W+", " ", spec[field].casefold()).strip() for spec in profiles]
-        if len(set(values)) != len(values):
-            _invalid("duplicate_value", "profile_specs." + field)
-    for values in ([spec["cv"]["summary"].casefold().strip() for spec in profiles],
-                   [p._dump([{"scope": row["scope"], "achievements": row["achievements"]}
-                             for row in spec["cv"]["experience"]]).casefold() for spec in profiles],
-                   [tuple(sorted(skill["name"].casefold().strip() for skill in spec["skills"])) for spec in profiles]):
-        if len(set(values)) != len(values):
-            _invalid("duplicate_value", "profile_specs")
+        clashes = _clashing_slots(values)
+        if clashes:
+            _invalid("duplicate_value", "profile_specs." + field,
+                     **_duplicate_details("profile_specs." + field, clashes))
+    for field, values in (
+            ("summary", [spec["cv"]["summary"].casefold().strip() for spec in profiles]),
+            ("experience", [p._dump([{"scope": row["scope"], "achievements": row["achievements"]}
+                                     for row in spec["cv"]["experience"]]).casefold() for spec in profiles]),
+            ("skills", [tuple(sorted(skill["name"].casefold().strip() for skill in spec["skills"]))
+                        for spec in profiles])):
+        clashes = _clashing_slots(values)
+        if clashes:
+            _invalid("duplicate_value", "profile_specs",
+                     **_duplicate_details("profile_specs", clashes, name=field))
 
 
 def _analysis(data, profiles, provider, model, warnings):
@@ -873,7 +939,7 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
              "payload_sha256": expected["payload_sha256"], "request_hashes": list(expected["request_hashes"]),
              "requests": 0, "completed_requests": 0, "max_requests": expected["max_requests"],
              "completed_profiles": 0, "requested_profiles": expected["agent_count"], "receipts": [],
-             "splits": 0,
+             "splits": 0, "repairs": 0,
              "max_total_output_tokens": expected["max_total_output_tokens"], "started_at": p._now()}
     profiles, warnings, usages = [], [], []
 
@@ -921,6 +987,44 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
             response_id = response.get("id")
             if isinstance(response_id, str) and len(response_id) <= 4096:
                 receipt["response_id_sha256"] = hashlib.sha256(response_id.encode("utf-8")).hexdigest()
+
+        def _duplicate_repair(request, receipt, diagnostic):
+            """REPARACION ACOTADA de duplicate_value: reemite UNA vez la misma solicitud.
+
+            Solo si el techo aprobado permite una solicitud mas y la solicitud no es una
+            continuacion (su estado es un fragmento de JSON, no un JSON completo). La
+            instruccion nombra solo el campo y los slots en conflicto. Devuelve True si
+            encolo la reparacion; False deja que el fallo siga su curso limpio.
+            """
+            if request.get("_raw") or request.get("_repairs", 0) >= REPAIRS_PER_REQUEST:
+                return False
+            if audit["requests"] + 1 > expected["request_limit"]:
+                return False
+            details = diagnostic if isinstance(diagnostic, dict) else {}
+            slots = [slot for slot in (details.get("duplicate_slots") or [])
+                     if type(slot) is int and 1 <= slot <= MAX_AGENTS]
+            if not slots:
+                slots = [slot for slot in request.get("slots", []) if type(slot) is int]
+            payload = copy.deepcopy(request["payload"])
+            payload["messages"].append({"role": "user",
+                                        "content": _repair_duplicate_instruction(details.get("duplicate_field"), slots)})
+            request2 = dict(request)
+            # Indice propio, como el auto-split: la reparacion es una solicitud MAS,
+            # asi su recibo no pisa el de la tentativa reparada ni se hace pasar por
+            # el lote planificado.
+            nonlocal next_index
+            next_index += 1
+            request2["index"] = next_index
+            request2["payload"] = payload
+            request2["payload_sha256"] = _digest(payload)
+            request2["payload_bytes"] = len(p._dump(payload).encode("utf-8"))
+            request2["_repairs"] = request.get("_repairs", 0) + 1
+            audit["repairs"] = audit.get("repairs", 0) + 1
+            audit["max_requests"] = expected["request_limit"]
+            receipt["status"] = "repaired_duplicate"
+            queue.insert(0, request2)
+            progress("repairing_duplicate")
+            return True
 
         def procesar(request, receipt, response):
             """Parsea UNA respuesta. True = validada; False = se encalo la continuacion."""
@@ -978,11 +1082,23 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
                             queue.insert(0, request2)
                             progress("continuing_agent")
                             return False
+                # REPARACION ACOTADA (duplicate_value): una respuesta que repite valores
+                # ya no tumba el diseno; se reemite UNA sola vez con la instruccion que
+                # nombra campo y slots. La segunda repeticion falla limpia.
+                if code == "duplicate_value" and _duplicate_repair(request, receipt, diagnostic):
+                    return False
                 raise
             if isinstance(api_key, str) and api_key in p._dump(response):
                 _invalid("sensitive_output")
             receipt["normalization"] = normalization
-            _unique(profiles + batch)
+            # `_unique` vive fuera del `_response` anterior: su colision se repara con la
+            # MISMA ruta acotada y, si no procede, se propaga como fallo tipado.
+            try:
+                _unique(profiles + batch)
+            except DesignValidationError as exc:
+                if _duplicate_repair(request, receipt, getattr(exc, "diagnostic", None)):
+                    return False
+                raise
             profiles.extend(batch)
             warnings.extend(notes)
             usages.append(usage)
