@@ -28,3 +28,23 @@
    tests_v8_ui_contract exige que todo CSS nuevo cuelgue de un contenedor de
    pagina declarado, para que ningun estilo se filtre al resto de la app. */
 #council .mention { font-weight: 600; color: var(--accent, #0b7a5c); background: rgba(11, 122, 92, .08); padding: 0 .15em; border-radius: 3px; }
+
+/* GenTeam P3: panel de seguimiento (Compromisos) del Council.
+   Acotado a su pagina (#council, donde vive #followups-panel) igual que el bloque P2:
+   el contrato tests_v8_ui_contract exige que todo CSS nuevo cuelgue de un contenedor
+   de pagina declarado, para que ningun estilo se filtre al resto de la app. */
+#council .followups-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0; }
+#council .followups-metrics>div { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+#council .followups-metrics strong { display: block; font-size: 20px; font-weight: 550; letter-spacing: -.5px; }
+#council .followups-metrics span { display: block; font-size: 10px; color: #859382; }
+#council .followups-drain-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-top: 14px; }
+#council .followups-drain-row select { min-width: 200px; }
+@media (max-width: 540px) { #council .followups-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* GenTeam P1/M4 (sandbox en dos pasos): reglas acotadas a #council, como el bloque P3. */
+#council .sandbox-request { border-left: 3px solid var(--border); }
+#council .sandbox-request[data-blocked="human_approval_required"] { border-left-color: #f59e0b; }
+#council .sandbox-request[data-blocked="ready"] { border-left-color: #2e9e5b; }
+#council .sandbox-request[data-blocked="policy_denied"] { border-left-color: #d33; }
+#council .sandbox-code, #council .sandbox-output { max-height: 220px; overflow: auto; font-size: 12px; line-height: 1.45; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #f7f8f5; }
+#council .sandbox-run { border-left: 3px solid #2e9e5b; }
+#council .sandbox-run[data-status="failed"], #council .sandbox-run[data-status="timeout"] { border-left-color: #d33; }

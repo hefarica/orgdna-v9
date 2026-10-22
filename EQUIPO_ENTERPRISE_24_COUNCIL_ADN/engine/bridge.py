@@ -59,8 +59,12 @@ try:
     from .coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
     from .team_channel import TeamChannel, ChannelError
     from .team_memory import TeamMemoryStore
+    from .followups import (FollowupsEngine, FollowupsError, FOLLOWUP_TOPIC,
+                            PROVENANCE as FOLLOWUPS_PROVENANCE)
     from .memory_governance import MemoryGovernanceError, MEMORY_ID_PATTERN
     from .tenants import TenantBoundary, TenantRegistry
+    from . import policy_engine as platform_policy
+    from . import sandbox_executor as sandbox_runtime
     from .governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 except ImportError:
     from launcher import instance_identity
@@ -78,8 +82,12 @@ except ImportError:
     from coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
     from team_channel import TeamChannel, ChannelError
     from team_memory import TeamMemoryStore
+    from followups import (FollowupsEngine, FollowupsError, FOLLOWUP_TOPIC,
+                           PROVENANCE as FOLLOWUPS_PROVENANCE)
     from memory_governance import MemoryGovernanceError, MEMORY_ID_PATTERN
     from tenants import TenantBoundary, TenantRegistry
+    import policy_engine as platform_policy
+    import sandbox_executor as sandbox_runtime
     from governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -98,6 +106,28 @@ TEAM_CHANNEL_ACTIONS = frozenset({
 })
 TEAM_MEMORY_ACTIONS = frozenset({'memory-append'})
 TEAM_ACTIONS = TEAM_CHANNEL_ACTIONS | TEAM_MEMORY_ACTIONS
+#: GenTeam P3 (follow-ups): persecucion explicita de compromisos detectados en el canal.
+#: Dos acciones locales y versionadas: un tick (escanea y persigue) y un drenaje del
+#: inbox de UN miembro (lectura destructiva, igual que channel-inbox). Ninguna ejecuta
+#: agentes, llama proveedores, abre red ni escribe fuera del proyecto local.
+FOLLOWUPS_ACTIONS = frozenset({'followups-tick', 'followups-drain'})
+FOLLOWUPS_MAX_DRAIN = 100
+#: GenTeam P1/M4 (sandbox con aprobacion en DOS pasos). `sandbox-request` valida y
+#: consulta la politica SIN ejecutar; `sandbox-approve` registra una aprobacion de un solo
+#: uso ligada a (request_id, scope_hash); `sandbox-exec` es el unico camino que ejecuta,
+#: vuelve a evaluar la politica (deny gana) y consume la aprobacion pase lo que pase.
+#: Deny by default: sin las tres piezas no se ejecuta nada. Usa engine/policy_engine.py
+#: TAL CUAL (las ocho puertas no se relajan ni se duplican) y engine/sandbox_executor.py
+#: sin modificarlo (su doctrina: ninguna ejecucion sin puerta aprobada, workspace por run,
+#: subprocess acotado y artefacto firmado entregado al canal).
+SANDBOX_ACTIONS = frozenset({'sandbox-request', 'sandbox-approve', 'sandbox-exec'})
+SANDBOX_MAX_REQUESTS = 24
+SANDBOX_MAX_CODE_CHARS = 20000
+SANDBOX_CODE_VIEW_CHARS = 1200
+SANDBOX_APPROVAL_TTL_SECONDS = 900
+SANDBOX_MAX_RUNS = 32
+SANDBOX_APPROVER_ROLE = 'operador-panel'
+SANDBOX_PROVENANCE = 'panel:sandbox-p1'
 PROVIDER_ROUTES = {'openai': 'openai', 'deepseek': 'deepseek', 'deepseek-official': 'deepseek', 'zai': 'zai', 'zai-official': 'zai'}
 ALLOWED_PROVIDERS = set(PROVIDER_ROUTES)
 DEFAULT_CONFIG = {
@@ -518,7 +548,7 @@ def sheet_payload(organization, catalog, receipts):
 
 
 class BridgeState:
-    def __init__(self, workbook=None, credential_store=None, provider_module=None, project_store=None, coordination_store=None, gang_registry=None):
+    def __init__(self, workbook=None, credential_store=None, provider_module=None, project_store=None, coordination_store=None, gang_registry=None, *, sandbox_policy=None, sandbox_data_root=None, sandbox_clock=None):
         self.lock = threading.RLock()
         self.csrf = secrets.token_urlsafe(32)
         self.cookie = secrets.token_urlsafe(32)
@@ -541,6 +571,21 @@ class BridgeState:
         self._team_memory_registry = None
         self._team_memory_store = None
         self._team_memory_signature = None
+        # GenTeam P3: motor de seguimiento montado sobre EL MISMO canal del panel (una
+        # sola instancia). Se reconstruye cuando cambia el roster, declarado en la vista.
+        self.team_followups = None
+        self._followups_signature = None
+        self.followups_agent_member_id = None       # identidad de coordinacion (def. miembro raiz)
+        self.followups_supervisor_member_id = None  # supervision declarada (def. la misma identidad)
+        # GenTeam P1/M4: sandbox con aprobacion en dos pasos. La politica es inyectable
+        # SOLO por pruebas; el defecto es la politica v1 del contrato (las ocho puertas en
+        # require_human_approval). Estado en memoria de la sesion: nada se persiste.
+        self._sandbox_policy_override = sandbox_policy
+        self._sandbox_policy_cache = None
+        self._sandbox_data_root_override = sandbox_data_root
+        self.sandbox_clock = sandbox_clock or time.time
+        self.sandbox_requests = {}   # request_id -> registro (orden de alta)
+        self.sandbox_runs = []       # ejecuciones (acotado por SANDBOX_MAX_RUNS)
         self.records_version = 1
         self.project = {'id': None, 'name': '', 'version_id': None, 'dirty': False}
         self.records = {'council_sessions': [], 'skill_registry': [], 'remediation_records': [], 'subteams': [], 'performance_records': [], 'promotion_records': [], 'governance_events': []}
@@ -887,6 +932,7 @@ class BridgeState:
                 'project': self.project, 'records_version': self.records_version,
                 'coordination': self.coordination_store.public(), 'tool_catalog': self.tool_catalog(),
                 'team_channel': self.team_channel_public(), 'team_memory': self.team_memory_public(),
+                'team_followups': self.followups_public(), 'sandbox': self.sandbox_public(),
 'gang': self._gang_public(),
                 'scoreboard': build_scoreboard(self.organization, self.records) if self.organization else {'rows': [], 'evidence_status': 'manual_records_not_runtime_verified'},
                 'generation_stale': self.generation_stale, 'has_manual_edits': self.has_manual_edits, **self.records,
@@ -1070,6 +1116,543 @@ class BridgeState:
                 raise BridgeError('Acción GenTeam desconocida.')
         except ChannelError as error:
             raise BridgeError('El canal rechazó la acción: %s' % error) from None
+
+    # ------------------------------------------------------------- GenTeam P3: seguimiento
+
+    def _followups_clock(self):
+        """Reloj del motor de seguimiento (epoch float).
+
+        Es un SEAM DE PRUEBA, no una superficie de producto: el arnes de navegador lo
+        sobrescribe en una subclase para avanzar el tiempo sin esperar el intervalo real
+        (3600 s) y poder observar un recordatorio. El bridge de produccion no expone
+        control de tiempo por HTTP, no lee variables de entorno y no toca el reloj global.
+        """
+        return time.time()
+
+    def _followups_clock_source(self):
+        """`system` o `injected`, por introspeccion del seam (nunca por variable de entorno)."""
+        return 'system' if type(self)._followups_clock is BridgeState._followups_clock else 'injected'
+
+    def _followups_identities(self):
+        """(identidad de coordinacion, supervision) resueltas sobre el roster vigente.
+
+        Por defecto la coordinacion es el miembro raiz (reports_to externo) y la supervision
+        declarada es esa misma identidad: el owner es externo y el panel no inventa un
+        supervisor dentro del roster. Ambas pueden fijarse por atributo para operacion.
+        """
+        roster = self._team_roster()
+        if not roster:
+            return None, None
+        root = next((member for member in roster if member.get('reports_to') is None), roster[0])
+        agent = self.followups_agent_member_id or root['member_id']
+        supervisor = self.followups_supervisor_member_id or agent
+        return agent, supervisor
+
+    def _followups_authority(self):
+        """Declaracion de autoria de los recordatorios: identidad de coordinacion, no un miembro."""
+        agent, supervisor = self._followups_identities()
+        roster = {member['member_id']: member for member in self._team_roster()}
+        member = roster.get(agent) or {}
+        detail = '"%s (%s)"' % (member.get('name') or 'coordinacion', agent) if agent else 'sin diseno'
+        return {'kind': 'coordination', 'is_member_authored': False,
+                'actor_member_id': agent, 'supervisor_member_id': supervisor,
+                'topic': FOLLOWUP_TOPIC, 'provenance': FOLLOWUPS_PROVENANCE,
+                'role_label': 'Coordinacion local (motor de seguimiento)',
+                'identity_verified': False,
+                'note': 'Los recordatorios y escalaciones los emite el motor engine.followups con la '
+                        'identidad de coordinacion %s (miembro raiz, reports_to externo); ningun miembro '
+                        'del roster es su autor.' % detail}
+
+    def _team_loop_public(self):
+        """Sobre de solo lectura del bucle continuo (engine/team_loop.py).
+
+        NO se cablea a esta vista, y el motivo es de honestidad, no de pereza: cada paso
+        del bucle lo ejecuta un TRABAJADOR (`worker=`), y aqui ese trabajador seria el
+        runtime de agentes, que este producto no tiene (el envio a DSH es
+        CAPABILITY_UNAVAILABLE y la app es inerte por diseno). Cablearlo con un trabajador
+        simulado produciria «ciclos» que no hacen nada: apariencia de trabajo continuo.
+        Asi que el bucle se publica como lo que es —modulo probado y disponible para un
+        LLAMADOR (lanzador, cron, prueba o el dia que exista runtime)— y no se finge.
+        """
+        return {
+            'available': False,
+            'wired': False,
+            'module': 'engine/team_loop.py',
+            'tests': 'tests_team_loop.py',
+            'driver': 'run(cycles=N) desde el llamador; start()/stop() son maquina de estados, '
+                      'sin hilos dentro del modulo',
+            'reason': 'El bucle existe y esta verificado, pero cada paso necesita un trabajador '
+                      '(worker=) que ejecute el trabajo del slot. Ese trabajador es el runtime de '
+                      'agentes, que no esta disponible en esta app (envio a DSH: '
+                      'CAPABILITY_UNAVAILABLE). No se simula: un ciclo sin trabajador real no es '
+                      'trabajo, es teatro.',
+            'state': None,
+        }
+
+    def _followups_unavailable(self, reason):
+        """Vista degradada: available=False con motivo. Nunca lanza."""
+        try:
+            authority, clock = self._followups_authority(), self._followups_clock_source()
+        except Exception:  # el motivo ya se declara; la autoria cae a su forma vacia
+            authority = {'kind': 'coordination', 'is_member_authored': False, 'actor_member_id': None,
+                         'supervisor_member_id': None, 'topic': FOLLOWUP_TOPIC,
+                         'provenance': FOLLOWUPS_PROVENANCE,
+                         'role_label': 'Coordinacion local (motor de seguimiento)',
+                         'identity_verified': False,
+                         'note': 'Los recordatorios y escalaciones los emite el motor engine.followups; '
+                                 'ningun miembro del roster es su autor.'}
+            clock = 'system'
+        return {'available': False, 'reason': reason, 'authority': authority,
+                'clock_source': clock, 'loop': self._team_loop_public()}
+
+    def _ensure_team_followups(self):
+        """Motor de seguimiento sobre EL MISMO TeamChannel del panel (una sola instancia).
+
+        Se reconstruye cuando cambia la firma del roster (el canal tambien se reconstruye,
+        de modo que el motor nuevo no puede duplicar tareas de un ledger anterior).
+        """
+        channel = self._ensure_team_channel()
+        if channel is None:
+            return None
+        agent, supervisor = self._followups_identities()
+        if agent is None:
+            return None
+        signature = (self._team_channel_signature, agent, supervisor)
+        if self.team_followups is None or self._followups_signature != signature:
+            self.team_followups = FollowupsEngine(channel, agent, supervisor,
+                                                  clock=self._followups_clock)
+            self._followups_signature = signature
+        return self.team_followups
+
+    def followups_public(self):
+        """Vista del seguimiento (P3) para el panel: ledger del motor + autoria declarada.
+
+        `public()` se llama en cada lectura de estado: esta vista NUNCA lanza. Sin diseno,
+        sin canal o con roster invalido devuelve `available: false` con el motivo.
+        """
+        try:
+            channel = self._ensure_team_channel()
+            if channel is None:
+                return self._followups_unavailable('Genera un diseno para abrir el seguimiento del equipo.')
+            engine = self._ensure_team_followups()
+            if engine is None:
+                return self._followups_unavailable('Genera un diseno para abrir el seguimiento del equipo.')
+            view = engine.ledger_view()
+            view.update({'available': True, 'reason': None, 'in_memory_session_only': True,
+                         'reset_policy': 'session_only', 'authority': self._followups_authority(),
+                         'clock_source': self._followups_clock_source(),
+                         'loop': self._team_loop_public()})
+            return view
+        except (ChannelError, FollowupsError) as error:
+            return self._followups_unavailable('El motor de seguimiento no esta disponible: %s' % error)
+        except Exception as error:  # defensa explicita: una vista rota no tumba el panel
+            return self._followups_unavailable(
+                'El motor de seguimiento fallo (%s): %s' % (type(error).__name__, error))
+
+    def _followups_apply(self, action, body):
+        """Despacha las acciones P3 y devuelve el sobre efimero de la accion.
+
+        Registro local: no ejecuta agentes, no llama proveedores, no abre red y no escribe
+        fuera del proyecto local. El sobre (`followups_tick` / `followups_drained`) viaja
+        solo en la respuesta de la accion, nunca en /api/state.
+        """
+        engine = self._ensure_team_followups()
+        if engine is None:
+            raise BridgeError('Genera un diseno actualizado antes de usar el seguimiento del equipo.')
+        if action == 'followups-tick':
+            events = engine.tick()
+            counts = {}
+            for row in events:
+                kind = row.get('event') if isinstance(row, dict) else None
+                counts[kind] = counts.get(kind, 0) + 1
+            envelope = {'events': len(events), 'commitments': counts.get('commitment', 0),
+                        'reminders': counts.get('reminder', 0),
+                        'escalations': counts.get('escalated', 0),
+                        'reported': counts.get('reported', 0),
+                        'skipped': counts.get('commitment_skipped', 0), 'at': now()}
+            self.receipt(action, 'success',
+                         'Tick explicito de seguimiento: %d evento(s), %d recordatorio(s), %d escalacion(es). '
+                         'No se ejecutaron agentes ni se llamo a ningun proveedor.'
+                         % (len(events), envelope['reminders'], envelope['escalations']))
+            return {'followups_tick': self.redact(envelope)}
+        if action == 'followups-drain':
+            member = body.get('member')
+            max_count = body.get('max_count')
+            if not isinstance(member, str) or not member.strip():
+                raise BridgeError('member debe ser un miembro del roster vigente.')
+            if isinstance(max_count, bool) or not isinstance(max_count, int) \
+                    or not 1 <= max_count <= FOLLOWUPS_MAX_DRAIN:
+                raise BridgeError('max_count debe ser un entero entre 1 y %d.' % FOLLOWUPS_MAX_DRAIN)
+            channel = self._ensure_team_channel()
+            try:
+                channel.resolve(member)
+            except ChannelError:
+                raise BridgeError('member debe ser un miembro del roster vigente.') from None
+            drained = list(channel.inbox(member, max_count=max_count))
+            reminders = [row for row in drained if row.get('topic') == FOLLOWUP_TOPIC]
+            other = [row for row in drained if row.get('topic') != FOLLOWUP_TOPIC]
+            authority = self._followups_authority()
+            for row in reminders:
+                row['authority'] = dict(authority)
+            envelope = {'member': member, 'max_count': max_count, 'at': now(),
+                        'reminders': reminders, 'other': other,
+                        'counts': {'delivered': len(drained), 'reminders': len(reminders),
+                                   'other': len(other)}}
+            self.receipt(action, 'success',
+                         'Inbox de seguimiento drenado: %d mensaje(s) entregados (%d recordatorio(s) de '
+                         'seguimiento, %d de otros topicos; lectura destructiva).'
+                         % (len(drained), len(reminders), len(other)))
+            return {'followups_drained': self.redact(envelope)}
+        raise BridgeError('Accion de seguimiento desconocida.')
+
+    # -------------------------------------------------- GenTeam P1/M4: sandbox
+
+    def _sandbox_policy(self):
+        """Politica v1 que gobierna el sandbox: la del contrato, o la inyectada en pruebas.
+
+        No se construye ninguna puerta nueva ni se relaja ninguna: se consume
+        `engine/policy_engine.py` tal cual. Por defecto, las ocho puertas quedan en
+        `require_human_approval` y la escritura (`write_file`) levanta la puerta `write`.
+        """
+        if self._sandbox_policy_override is not None:
+            return self._sandbox_policy_override
+        if self._sandbox_policy_cache is None:
+            organization_id = str((self.organization or {}).get('organization_id') or '')
+            candidate = organization_id if re.fullmatch(r'[a-z0-9][a-z0-9._-]{1,40}',
+                                                        organization_id) else 'orgdna-plataforma'
+            self._sandbox_policy_cache = platform_policy.Policy.default(candidate)
+        return self._sandbox_policy_cache
+
+    def _sandbox_instant(self):
+        return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(self.sandbox_clock()))
+
+    def _sandbox_data_root(self):
+        if self._sandbox_data_root_override is not None:
+            return Path(self._sandbox_data_root_override)
+        return self.project_store.root / '_sandbox'
+
+    def _sandbox_member(self, agent_id):
+        """El agente debe ser miembro del roster vigente; se valida ANTES de tocar el disco."""
+        if not isinstance(agent_id, str) or not agent_id.strip():
+            raise BridgeError('agent_id debe ser un miembro del roster vigente.')
+        channel = self._ensure_team_channel()
+        if channel is None:
+            raise BridgeError('Genera un diseno actualizado antes de usar el sandbox.')
+        try:
+            member = channel.resolve(agent_id.strip())
+        except ChannelError:
+            raise BridgeError('agent_id debe ser un miembro del roster vigente; no se toco '
+                              'el disco ni se creo ninguna solicitud.') from None
+        roster = {row['member_id']: row for row in self._team_roster()}
+        return roster.get(member.member_id) or {'member_id': member.member_id,
+                                                'name': member.member_id}
+
+    def _sandbox_recipient(self, member):
+        """Destinatario de la entrega: la identidad de coordinacion (miembro raiz)."""
+        roster = self._team_roster()
+        roots = [row for row in roster if not row.get('reports_to')]
+        return (roots[0] if roots else (roster[0] if roster else member))['member_id']
+
+    @staticmethod
+    def _sandbox_digest(value):
+        return hashlib.sha256(value.encode('utf-8')).hexdigest()
+
+    def _sandbox_limits(self, body):
+        timeout = body.get('timeout_seconds', sandbox_runtime.DEFAULT_TIMEOUT_SECONDS)
+        if isinstance(timeout, bool) or not isinstance(timeout, int) \
+                or not 1 <= timeout <= sandbox_runtime.MAX_TIMEOUT_SECONDS:
+            raise BridgeError('timeout_seconds debe ser un entero entre 1 y %d.'
+                              % sandbox_runtime.MAX_TIMEOUT_SECONDS)
+        limit = body.get('max_output_bytes', sandbox_runtime.DEFAULT_MAX_OUTPUT_BYTES)
+        if isinstance(limit, bool) or not isinstance(limit, int) \
+                or not sandbox_runtime.MIN_MAX_OUTPUT_BYTES <= limit <= sandbox_runtime.MAX_MAX_OUTPUT_BYTES:
+            raise BridgeError('max_output_bytes debe ser un entero entre %d y %d.'
+                              % (sandbox_runtime.MIN_MAX_OUTPUT_BYTES,
+                                 sandbox_runtime.MAX_MAX_OUTPUT_BYTES))
+        return timeout, limit
+
+    def _sandbox_request_or_error(self, request_id):
+        if not isinstance(request_id, str) or request_id not in self.sandbox_requests:
+            raise BridgeError('request_id desconocido: crea primero la solicitud con '
+                              'sandbox-request.')
+        return self.sandbox_requests[request_id]
+
+    def _sandbox_request_view(self, record):
+        """Vista declarativa de la solicitud: sin ejecutar, con el motivo del bloqueo."""
+        approval = record.get('approval') or {}
+        if not record['executable']:
+            blocked = 'policy_denied'
+        elif not approval:
+            blocked = 'human_approval_required'
+        elif record.get('consumed_at'):
+            blocked = 'approval_consumed'
+        elif self.sandbox_clock() - (record.get('approval_epoch') or 0) > SANDBOX_APPROVAL_TTL_SECONDS:
+            blocked = 'approval_expired'
+        else:
+            blocked = 'ready'
+        return {'request_id': record['request_id'], 'agent_id': record['agent_id'],
+                'agent_name': record.get('agent_name'), 'created_at': record['created_at'],
+                'code_view': record['code_view'], 'code_truncated': record['code_truncated'],
+                'code_bytes': record['code_bytes'], 'code_sha256': record['code_sha256'],
+                'timeout_seconds': record['timeout_seconds'],
+                'max_output_bytes': record['max_output_bytes'],
+                'scope_hash': record['scope_hash'], 'policy': dict(record['policy']),
+                'action': {'action_kind': record['action']['action_kind'],
+                           'target': record['action']['target']},
+                'executable': record['executable'], 'approved': bool(approval),
+                'approved_at': record.get('approved_at'),
+                'approver_role': approval.get('approver_role'),
+                'approval_ttl_seconds': SANDBOX_APPROVAL_TTL_SECONDS,
+                'consumed_at': record.get('consumed_at'),
+                'consumed_reason': record.get('consumed_reason'),
+                'blocked_reason': blocked, 'run_id': record.get('run_id')}
+
+    def _sandbox_run_view(self, run):
+        """Vista acotada de la ejecucion: estado real, artefacto firmado y evidencia."""
+        artifact = run.get('artifact') or None
+        return {'run_id': run['run_id'], 'agent_id': run['agent_id'],
+                'status': run['status'], 'ok': run['ok'], 'exit_code': run['exit_code'],
+                'timed_out': run['timed_out'], 'output_truncated': run['output_truncated'],
+                'stdout': run['stdout'][:2000], 'stderr': run['stderr'][:2000],
+                'stdout_bytes': run['stdout_bytes'], 'stderr_bytes': run['stderr_bytes'],
+                'error': run['error'], 'sandboxed': False,
+                'os_isolation': run['os_isolation'],
+                'policy': dict(run['policy']),
+                'artifact': dict(artifact) if artifact else None,
+                'artifact_error': run['artifact_error'],
+                'evidence_id': run['evidence_id'], 'delivered_to': run['delivered_to'],
+                'delivery_error': run['delivery_error']}
+
+    def _sandbox_request(self, body):
+        """Paso 1: valida, evalua la politica y devuelve request_id + scope_hash + vista."""
+        member = self._sandbox_member(body.get('agent_id'))
+        code = body.get('code')
+        if not isinstance(code, str) or not code.strip():
+            raise BridgeError('code debe ser codigo explicito no vacio.')
+        if len(code) > SANDBOX_MAX_CODE_CHARS:
+            raise BridgeError('code supera el tope de %d caracteres.'
+                              % SANDBOX_MAX_CODE_CHARS)
+        timeout_seconds, max_output_bytes = self._sandbox_limits(body)
+        if len(self.sandbox_requests) >= SANDBOX_MAX_REQUESTS:
+            raise BridgeError('Cola de solicitudes llena (%d): resuelve o ejecuta las '
+                              'pendientes antes de crear otra.' % SANDBOX_MAX_REQUESTS)
+        policy = self._sandbox_policy()
+        request_id = uuid.uuid4().hex
+        action = {'action_kind': 'write_file',
+                  'target': 'sandbox/%s/%s.py' % (request_id, member['member_id']),
+                  'idempotency_key': 'sbx-' + request_id}
+        scope_hash = policy.scope_hash(action)
+        action['scope_hash'] = scope_hash
+        decision = platform_policy.evaluate(policy, action, now=self._sandbox_instant())
+        record = {'request_id': request_id, 'agent_id': member['member_id'],
+                  'agent_name': member.get('name'), 'code': code,
+                  'code_sha256': self._sandbox_digest(code),
+                  'code_bytes': len(code.encode('utf-8')),
+                  'code_view': code[:SANDBOX_CODE_VIEW_CHARS],
+                  'code_truncated': len(code) > SANDBOX_CODE_VIEW_CHARS,
+                  'timeout_seconds': timeout_seconds, 'max_output_bytes': max_output_bytes,
+                  'action': action, 'scope_hash': scope_hash,
+                  'policy': {'decision': decision['decision'], 'gate': decision['gate'],
+                             'reason': decision['reason'],
+                             'policy_id': decision['policy_id'],
+                             'policy_revision': decision['policy_revision'],
+                             'rules': [rule['rule_id'] for rule in decision['matched_rules']]},
+                  'executable': decision['decision'] != platform_policy.DECISION_DENY,
+                  'created_at': now(), 'approved_at': None, 'approval': None,
+                  'approval_epoch': None, 'consumed_at': None, 'consumed_reason': None,
+                  'run_id': None}
+        self.sandbox_requests[request_id] = record
+        self.receipt('sandbox-request', 'pending',
+                     'Solicitud de sandbox preparada SIN ejecutar: agente %s, %d bytes de codigo, '
+                     'puerta %s, decision %s. Faltan la aprobacion humana y la ejecucion explicita.'
+                     % (member.get('name') or member['member_id'], record['code_bytes'],
+                        decision['gate'] or 'ninguna', decision['decision']),
+                     request_id=request_id, scope_hash=scope_hash,
+                     policy_decision=decision['decision'])
+        return self.redact(self._sandbox_request_view(record))
+
+    def _sandbox_approve(self, body):
+        """Paso 2: registra la aprobacion de un solo uso ligada a (request_id, scope_hash)."""
+        record = self._sandbox_request_or_error(body.get('request_id'))
+        scope_hash = body.get('scope_hash')
+        if not isinstance(scope_hash, str) or scope_hash != record['scope_hash']:
+            raise BridgeError('scope_mismatch: el scope_hash no corresponde a esta solicitud '
+                              '(vigente: %s); la aprobacion no se registra.'
+                              % record['scope_hash'])
+        if record.get('consumed_at'):
+            raise BridgeError('replay_rejected: la aprobacion de esta solicitud ya fue consumida '
+                              '(%s); crea una solicitud nueva.' % record['consumed_reason'])
+        if not record['executable'] or record['policy']['decision'] == platform_policy.DECISION_DENY:
+            raise BridgeError("La politica deniega esta solicitud (gate %s): ninguna aprobacion "
+                              'del panel la convierte en allow.' % (record['policy']['gate'] or 'write'))
+        role = body.get('approver_role', SANDBOX_APPROVER_ROLE)
+        if not isinstance(role, str) or not role.strip() or len(role) > 120 \
+                or any(ord(character) < 32 for character in role):
+            raise BridgeError('approver_role debe ser un rol declarativo de 1 a 120 caracteres.')
+        if not record.get('approval'):
+            record['approval'] = {'gate': record['policy']['gate'] or 'write',
+                                  'approver_role': role.strip(),
+                                  'approved_at': now(),
+                                  'scope_hash': record['scope_hash'], 'one_shot': True}
+            record['approved_at'] = record['approval']['approved_at']
+            record['approval_epoch'] = self.sandbox_clock()
+            self.receipt('sandbox-approve', 'success',
+                         "Aprobacion de un solo uso registrada para la solicitud %s (puerta '%s', "
+                         'scope_hash %s). Declarativa: identidad no autenticada. Aun no se ejecuto nada.'
+                         % (record['request_id'], record['approval']['gate'],
+                            record['scope_hash'][:16]),
+                         request_id=record['request_id'], scope_hash=record['scope_hash'])
+        return self.redact(self._sandbox_request_view(record))
+
+    def _sandbox_executor(self, policy, record):
+        """Ejecutor P1 con un aprobador que traduce la aprobacion del panel UNA sola vez."""
+        minted = {'done': False}
+
+        def approver(*, gate, action, expected_scope_hash, decision):
+            approval = record.get('approval') or {}
+            if minted['done'] or not approval or approval.get('scope_hash') != record['scope_hash']:
+                return None
+            minted['done'] = True
+            return {'gate': gate, 'approver_role': approval.get('approver_role')
+                    or SANDBOX_APPROVER_ROLE,
+                    'approved_at': approval.get('approved_at') or now(),
+                    'scope_hash': expected_scope_hash, 'one_shot': True}
+
+        return sandbox_runtime.SandboxExecutor(policy, data_root=self._sandbox_data_root(),
+                                               approver=approver, clock=self.sandbox_clock)
+
+    def _sandbox_exec(self, body):
+        """Paso 3: unico camino que ejecuta. Exige aprobacion vigente; la politica manda."""
+        record = self._sandbox_request_or_error(body.get('request_id'))
+        submitted_code = body.get('code')
+        if submitted_code is not None:
+            if not isinstance(submitted_code, str):
+                raise BridgeError('code debe ser texto si se envia.')
+            if self._sandbox_digest(submitted_code) != record['code_sha256']:
+                raise BridgeError('scope_mismatch: el codigo enviado no es el aprobado (sha256 '
+                                  'distinto); la aprobacion no autoriza esta ejecucion y no se '
+                                  'ejecuta nada.')
+        submitted_agent = body.get('agent_id')
+        if submitted_agent is not None and submitted_agent != record['agent_id']:
+            raise BridgeError('scope_mismatch: el agent_id no es el de la solicitud aprobada.')
+        gate_name = record['policy']['gate'] or 'write'
+        if not record.get('approval'):
+            raise BridgeError("gate '%s': requiere aprobacion humana en dos pasos "
+                              '(sandbox-request -> sandbox-approve) antes de ejecutar; '
+                              'no se ejecuto nada.' % gate_name)
+        if record.get('consumed_at'):
+            raise BridgeError('replay_rejected: la aprobacion de esta solicitud ya fue consumida '
+                              '(%s); crea una solicitud nueva y apruebala.'
+                              % record['consumed_reason'])
+        if self.sandbox_clock() - (record.get('approval_epoch') or 0) > SANDBOX_APPROVAL_TTL_SECONDS:
+            raise BridgeError('approval_expired: la aprobacion supero su vigencia de %d s; '
+                              'solicita y aprueba de nuevo.' % SANDBOX_APPROVAL_TTL_SECONDS)
+        policy = self._sandbox_policy()
+        decision = platform_policy.evaluate(policy, record['action'], now=self._sandbox_instant())
+        if decision['decision'] == platform_policy.DECISION_DENY:
+            record['consumed_at'] = now()
+            record['consumed_reason'] = 'policy_denied'
+            self.receipt('sandbox-exec', 'warning',
+                         'La politica denego la ejecucion en el momento de ejecutar: no se ejecuto '
+                         'nada. La aprobacion del panel se consumio en el intento.',
+                         request_id=record['request_id'])
+            raise BridgeError('deny: la politica deniega esta ejecucion (gate %s): %s'
+                              % (decision['gate'], decision['reason']))
+        # La aprobacion se consume ANTES de ejecutar: pase lo que pase, no se reutiliza.
+        record['consumed_at'] = now()
+        record['consumed_reason'] = 'exec_attempted'
+        member = self._sandbox_member(record['agent_id'])
+        channel = self._ensure_team_channel()
+        executor = self._sandbox_executor(policy, record)
+        try:
+            run = executor.execute(record['agent_id'], record['code'], channel=channel,
+                                   recipient=self._sandbox_recipient(member),
+                                   timeout_seconds=record['timeout_seconds'],
+                                   max_output_bytes=record['max_output_bytes'])
+        except sandbox_runtime.SandboxPolicyError as exc:
+            record['consumed_reason'] = 'policy_gate'
+            self.receipt('sandbox-exec', 'warning',
+                         "El ejecutor bloqueo la ejecucion en la puerta '%s': no se ejecuto nada. "
+                         'La aprobacion se consumio en el intento.' % (exc.gate or gate_name),
+                         request_id=record['request_id'])
+            raise BridgeError("gate '%s': %s" % (exc.gate or gate_name, exc)) from None
+        except sandbox_runtime.SandboxConfigError as exc:
+            record['consumed_reason'] = 'invalid_config'
+            raise BridgeError('No se pudo ejecutar: %s La aprobacion se consumio en el intento.'
+                              % exc) from None
+        record['run_id'] = run['run_id']
+        self.sandbox_runs.append(run)
+        self.sandbox_runs = self.sandbox_runs[-SANDBOX_MAX_RUNS:]
+        artifact = run.get('artifact') or {}
+        self.receipt('sandbox-exec', 'success' if run['ok'] else 'warning',
+                     'Ejecucion sandbox %s para %s: status %s, exit_code %s. Artefacto sha256=%s '
+                     'entregado a %s (evidencia %s). Aprobacion consumida.'
+                     % (run['run_id'], run['agent_id'], run['status'], run['exit_code'],
+                        artifact.get('sha256') or '(sin firma: %s)' % run['artifact_error'],
+                        run['delivered_to'] or '(sin canal)', run['evidence_id'] or '(ninguna)'),
+                     request_id=record['request_id'], run_id=run['run_id'])
+        return self.redact(self._sandbox_run_view(run))
+
+    def _sandbox_apply(self, action, body):
+        """Despacha las acciones P1/M4 y devuelve el sobre de la accion."""
+        if action == 'sandbox-request':
+            return {'sandbox_request': self._sandbox_request(body)}
+        if action == 'sandbox-approve':
+            return {'sandbox_approval': self._sandbox_approve(body)}
+        if action == 'sandbox-exec':
+            return {'sandbox_execution': self._sandbox_exec(body)}
+        raise BridgeError('Accion de sandbox desconocida.')
+
+    def sandbox_public(self):
+        """Estado de las puertas, solicitudes y ejecuciones. Nunca lanza (vista degradada)."""
+        view = {'available': False,
+                'reason': 'Genera un diseno para abrir el sandbox del panel.',
+                'provenance': SANDBOX_PROVENANCE,
+                'flow': {'steps': ['sandbox-request', 'sandbox-approve', 'sandbox-exec'],
+                         'two_step_required': True, 'single_use_approval': True,
+                         'deny_by_default': True,
+                         'approval_ttl_seconds': SANDBOX_APPROVAL_TTL_SECONDS,
+                         'consumes_policy_gates': True, 'adds_new_gates': False},
+                'policy': None, 'requests': [], 'executions': [],
+                'counts': {'requests': 0, 'pending': 0, 'approved': 0, 'executed': 0},
+                'sandboxed': False,
+                'os_isolation': sandbox_runtime.OS_ISOLATION_NOTE,
+                'in_memory_session_only': True,
+                'max_requests': SANDBOX_MAX_REQUESTS,
+                'max_code_chars': SANDBOX_MAX_CODE_CHARS}
+        try:
+            if self.organization is None:
+                return self.redact(view)
+            policy = self._sandbox_policy()
+            limits = policy.limits
+            view['available'] = True
+            view['reason'] = None
+            view['policy'] = {'policy_id': policy.policy_id,
+                              'policy_revision': policy.policy_revision,
+                              'policy_hash': policy.policy_hash,
+                              'gates': [{'gate': gate,
+                                         'default_outcome': policy.gate_default_outcome(gate),
+                                         'required': gate in limits['approvals_required']}
+                                        for gate in platform_policy.GATES],
+                              'approvals_required': list(limits['approvals_required']),
+                              'write_allowed': limits['write_allowed'],
+                              'network_allowed': limits['network_allowed'],
+                              'autonomy_ceiling': limits['autonomy_ceiling'],
+                              'gates_total': len(platform_policy.GATES)}
+            requests = [self._sandbox_request_view(record)
+                        for record in self.sandbox_requests.values()]
+            view['requests'] = requests
+            view['executions'] = [self._sandbox_run_view(run) for run in self.sandbox_runs]
+            view['counts'] = {'requests': len(requests),
+                              'pending': sum(1 for row in requests
+                                             if row['blocked_reason'] == 'human_approval_required'),
+                              'approved': sum(1 for row in requests if row['approved']),
+                              'executed': len(self.sandbox_runs)}
+            return self.redact(view)
+        except Exception as exc:  # la vista nunca revienta public()
+            view['available'] = False
+            view['reason'] = 'Sandbox no disponible: %s' % self.redact(str(exc))
+            return self.redact(view)
 
 
     def merge_preferences(self, preferences):
@@ -1362,6 +1945,28 @@ class BridgeState:
                     raise BridgeError('Una clave de sesión aparece en los datos del canal; no se puede guardar.')
                 self._team_apply(action, body)
                 return self.public()
+            if action in FOLLOWUPS_ACTIONS:
+                # GenTeam P3: seguimiento de compromisos sobre el MISMO canal del panel.
+                # Versionado igual que el canal; registro en memoria, sin efectos externos.
+                self.require_version(body)
+                if self.redact(body) != body:
+                    raise BridgeError('Una clave de sesión aparece en los datos del seguimiento; no se puede guardar.')
+                envelope = self._followups_apply(action, body)
+                result = self.public()
+                result.update(envelope)
+                return result
+            if action in SANDBOX_ACTIONS:
+                # GenTeam P1/M4: sandbox con aprobacion humana en DOS pasos. Consume el
+                # policy_engine TAL CUAL (no relaja ni anade puertas) y el ejecutor probado
+                # de engine/sandbox_executor.py sin modificarlo. Deny by default.
+                self.require_version(body)
+                if self.redact(body) != body:
+                    raise BridgeError('Una clave de sesión aparece en los datos del sandbox; '
+                                      'no se puede ejecutar.')
+                envelope = self._sandbox_apply(action, body)
+                result = self.public()
+                result.update(envelope)
+                return result
             if action in COORDINATION_ACTIONS:
                 if action == 'lease-acquire' and (self.organization is None or self.generation_stale):
                     raise BridgeError('Genera un diseño actualizado antes de adquirir tickets.')

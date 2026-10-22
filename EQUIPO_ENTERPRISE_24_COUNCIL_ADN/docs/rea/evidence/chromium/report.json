@@ -1,0 +1,596 @@
+{
+  "all_steps_present": true,
+  "browser": {
+    "origin": "standard",
+    "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  },
+  "browser_info": {
+    "launch_port": 54872,
+    "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "pid": 56028,
+    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-1d2e5f34a119418cb5030d1c7d6d37d0",
+    "protocol_version": "1.3",
+    "version": "Chrome/155.0.8059.85"
+  },
+  "chromium_available": true,
+  "chromium_unavailable": false,
+  "cleanup": {
+    "exit_code": 0,
+    "exited": true,
+    "killed_tree": [
+      {
+        "detail": "CORRECTO: el proceso con PID 38716 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 55412 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 48144 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 4636 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 23168 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 32436 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 52808 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 46260 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 32820 (proceso secundario de PID 56028)\r\nha sido terminado.\r\nCORRECTO: el proceso con PID 56028 (proceso secundario de PID 26648)\r\nha sido terminado.",
+        "ok": true,
+        "pid": 56028,
+        "resolved": true,
+        "target": "browser"
+      }
+    ],
+    "log_removed": true,
+    "orphans": {
+      "checked": true,
+      "pids": [],
+      "reason": "",
+      "top_level_pids": []
+    },
+    "pid": 56028,
+    "profile": "C:\\Users\\HFRC\\AppData\\Local\\Temp\\orgdna-chromium-1d2e5f34a119418cb5030d1c7d6d37d0",
+    "profile_removed": true,
+    "tree_cleared": true
+  },
+  "duration_s": 9.299,
+  "error": null,
+  "evidence_dir": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium",
+  "failed_steps": [],
+  "findings": [
+    {
+      "id": "E2E-F1",
+      "problem": "El roster del canal no está disponible antes de generar: las referencias se resuelven tras el paso de generación.",
+      "requiredFix": "Ninguno en este arnés: se re-resuelven en el paso de canal.",
+      "severity": "medium"
+    }
+  ],
+  "ok": true,
+  "orphans": {
+    "checked": true,
+    "pids": [],
+    "profile_removed": true,
+    "tree_cleared": true
+  },
+  "panel": {
+    "mode": "in-process LocalServer",
+    "origin": "http://127.0.0.1:54852",
+    "port": 54852,
+    "session": {
+      "cookie": true,
+      "csrf": true
+    }
+  },
+  "panel_cleanup": {
+    "stopped": true,
+    "workdir_removed": true
+  },
+  "passed_steps": [
+    "app_load",
+    "generate",
+    "channel",
+    "memory",
+    "followups",
+    "sandbox_block"
+  ],
+  "protocol": "CDP sobre WebSocket RFC 6455 (stdlib)",
+  "references": {
+    "coordinator_member_id": "c9dc9c48-93cd-5c44-bc0b-43998402167c",
+    "mention_token": "Architect",
+    "sender_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44"
+  },
+  "screenshot_digests": {
+    "app_load": "26bef1b2f862f1ab608eada4b382de2ec12c0902e56c60423a4be89cb96cb52b",
+    "channel": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019",
+    "followups": "5d422f7d1f5fbdb2d67fa2fab659068dd7bbee6f39568685cc40d69360b5271a",
+    "generate": "4e89e67175e092f2a269b32ed6c7f812d2d4d2e2c171a571b487b6dea61a3bb4",
+    "memory": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019",
+    "sandbox_block": "38fbc95f4181abb2653fb3e9c6b1552deaf37b4996d768d1164bedc1b0127ea6"
+  },
+  "steps": [
+    {
+      "assertions": [
+        {
+          "assert": "title",
+          "needle": "OrgDNA",
+          "ok": true
+        },
+        {
+          "assert": "home_heading",
+          "detail": {
+            "heading": "El ADN de tu organización."
+          },
+          "ok": true
+        },
+        {
+          "assert": "backend_sin_organizacion",
+          "backend": null,
+          "dom": null,
+          "ok": true
+        },
+        {
+          "assert": "seccion_inicio_visible",
+          "ok": true
+        }
+      ],
+      "detail": {
+        "document_title": "Inicio · OrgDNA Local Studio",
+        "heading": "El ADN de tu organización.",
+        "panel_version": null,
+        "render_instrumented": true
+      },
+      "duration_s": 0.233,
+      "ok": true,
+      "screenshot": {
+        "bytes": 91095,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_00_app_load.png",
+        "relative": "docs/rea/evidence/chromium/step_00_app_load.png",
+        "sha256": "26bef1b2f862f1ab608eada4b382de2ec12c0902e56c60423a4be89cb96cb52b"
+      },
+      "step": "app_load",
+      "uncaught_errors": []
+    },
+    {
+      "assertions": [
+        {
+          "assert": "hay_agentes",
+          "detail": {
+            "agents": 24
+          },
+          "ok": true
+        },
+        {
+          "assert": "dom_tarjetas_igual_backend",
+          "backend": 24,
+          "dom": 24,
+          "ok": true
+        },
+        {
+          "assert": "stat_agents_igual_backend",
+          "backend": 24,
+          "dom": 24,
+          "ok": true
+        },
+        {
+          "assert": "profile_count_formato",
+          "needle": "24 / 24 perfiles",
+          "ok": true
+        },
+        {
+          "assert": "generacion_offline_sin_proveedor",
+          "detail": {
+            "generation_status": null
+          },
+          "ok": true
+        },
+        {
+          "assert": "rejilla_visible",
+          "ok": true
+        }
+      ],
+      "detail": {
+        "agent_names": [
+          "Elena Valdés",
+          "Gabriel Montes",
+          "Santiago Vidal",
+          "Alba Prieto"
+        ],
+        "agents": 24,
+        "cards": 24,
+        "profile_count": "24 / 24 perfiles"
+      },
+      "duration_s": 0.499,
+      "ok": true,
+      "screenshot": {
+        "bytes": 91540,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_01_generate.png",
+        "relative": "docs/rea/evidence/chromium/step_01_generate.png",
+        "sha256": "4e89e67175e092f2a269b32ed6c7f812d2d4d2e2c171a571b487b6dea61a3bb4"
+      },
+      "step": "generate",
+      "uncaught_errors": []
+    },
+    {
+      "assertions": [
+        {
+          "assert": "tarea_creada",
+          "detail": {
+            "tasks": 1
+          },
+          "ok": true
+        },
+        {
+          "assert": "dom_tareas_igual_backend",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "dom_mensajes_igual_backend",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "contador_canal",
+          "needle": "1 mensajes",
+          "ok": true
+        },
+        {
+          "assert": "contador_canal_tareas",
+          "needle": "1 tareas",
+          "ok": true
+        },
+        {
+          "assert": "tarea_en_dom",
+          "needle": "2-0",
+          "ok": true
+        },
+        {
+          "assert": "titulo_tarea_en_dom",
+          "needle": "luego subo el informe del puerto",
+          "ok": true
+        },
+        {
+          "assert": "mencion_pintada",
+          "needle": "@Architect",
+          "ok": true
+        },
+        {
+          "assert": "tarea_dirigida_al_miembro",
+          "backend": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "dom": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "ok": true
+        }
+      ],
+      "detail": {
+        "channel_count": "1 mensajes · 1 tareas",
+        "messages": 1,
+        "owner_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+        "task_id": "2-0",
+        "task_title": "luego subo el informe del puerto"
+      },
+      "duration_s": 0.422,
+      "ok": true,
+      "screenshot": {
+        "bytes": 94128,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_02_channel.png",
+        "relative": "docs/rea/evidence/chromium/step_02_channel.png",
+        "sha256": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019"
+      },
+      "step": "channel",
+      "uncaught_errors": []
+    },
+    {
+      "assertions": [
+        {
+          "assert": "fragmento_persistido",
+          "detail": {
+            "fragments": 1
+          },
+          "ok": true
+        },
+        {
+          "assert": "dom_fragmentos_igual_backend",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "contador_memoria",
+          "needle": "1 fragmentos",
+          "ok": true
+        },
+        {
+          "assert": "indice_mrmory_titulo",
+          "needle": "MEMORY.md",
+          "ok": true
+        },
+        {
+          "assert": "fragmento_en_indice",
+          "needle": "decision-e2e-01.md",
+          "ok": true
+        },
+        {
+          "assert": "descripcion_en_indice",
+          "needle": "Decisión registrada por el arnés E2E",
+          "ok": true
+        },
+        {
+          "assert": "plano_project",
+          "detail": {
+            "planes": [
+              "project"
+            ]
+          },
+          "ok": true
+        }
+      ],
+      "detail": {
+        "fragments": 1,
+        "index_excerpt": "- [project] decision-e2e-01.md (2026-10-22): Decisión registrada por el arnés E2E",
+        "memory_id": "decision-e2e-01"
+      },
+      "duration_s": 0.749,
+      "ok": true,
+      "screenshot": {
+        "bytes": 94128,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_03_memory.png",
+        "relative": "docs/rea/evidence/chromium/step_03_memory.png",
+        "sha256": "adf0aeb2ffbb5ee48802ddaf231be958e2e03c1c3145bf2909d5e0b84de93019"
+      },
+      "step": "memory",
+      "uncaught_errors": []
+    },
+    {
+      "assertions": [
+        {
+          "assert": "tick_habilitado",
+          "ok": true
+        },
+        {
+          "assert": "disponible",
+          "detail": {
+            "available": true
+          },
+          "ok": true
+        },
+        {
+          "assert": "stat_active",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "stat_chasing",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "stat_escalated",
+          "backend": 0,
+          "dom": 0,
+          "ok": true
+        },
+        {
+          "assert": "stat_reported",
+          "backend": 0,
+          "dom": 0,
+          "ok": true
+        },
+        {
+          "assert": "compromiso_detectado",
+          "detail": {
+            "active": 1,
+            "events": [
+              {
+                "at": "2026-10-22T12:43:34.321548Z",
+                "event": "commitment",
+                "message_id": "1-0",
+                "owner_member_id": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+                "snippet": "luego subo",
+                "task_id": "fu-1"
+              }
+            ],
+            "tasks": 1
+          },
+          "ok": true
+        },
+        {
+          "assert": "compromiso_del_emisor",
+          "backend": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "dom": "dcd52f00-439a-5f35-a99a-7676d84d9a44",
+          "ok": true
+        },
+        {
+          "assert": "estado_tick_en_dom",
+          "needle": "Tick ejecutado",
+          "ok": true
+        },
+        {
+          "assert": "eventos_en_dom",
+          "needle": "commitment",
+          "ok": true
+        },
+        {
+          "assert": "autoridad_declarada",
+          "detail": {
+            "authority": "Los recordatorios y escalaciones los emite el motor engine.followups con la identidad de coordinacion \"Planner (c9dc9c48-93cd-5c44-bc0b-43998402167c)\" (miembro "
+          },
+          "ok": true
+        },
+        {
+          "assert": "lista_dom_igual_backend",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        }
+      ],
+      "detail": {
+        "events": 1,
+        "snippet": "luego subo",
+        "stats": {
+          "active": 1,
+          "chasing": 1,
+          "escalated": 0,
+          "reported": 0
+        },
+        "status": "Tick ejecutado: 1 evento(s), 0 recordatorio(s), 0 escalacion(es).",
+        "tasks": 1
+      },
+      "duration_s": 0.72,
+      "ok": true,
+      "screenshot": {
+        "bytes": 80375,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_04_followups.png",
+        "relative": "docs/rea/evidence/chromium/step_04_followups.png",
+        "sha256": "5d422f7d1f5fbdb2d67fa2fab659068dd7bbee6f39568685cc40d69360b5271a"
+      },
+      "step": "followups",
+      "uncaught_errors": []
+    },
+    {
+      "assertions": [
+        {
+          "assert": "sin_ejecuciones_antes",
+          "backend": 0,
+          "dom": 0,
+          "ok": true
+        },
+        {
+          "assert": "boton_solicitar_habilitado",
+          "ok": true
+        },
+        {
+          "assert": "solicitud_registrada",
+          "detail": {
+            "requests": 1
+          },
+          "ok": true
+        },
+        {
+          "assert": "veredicto_sin_ejecutar",
+          "needle": "preparada SIN ejecutar",
+          "ok": true
+        },
+        {
+          "assert": "dom_solicitudes_igual_backend",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "dom_ejecuciones_igual_backend",
+          "backend": 0,
+          "dom": 0,
+          "ok": true
+        },
+        {
+          "assert": "backend_sin_ejecuciones",
+          "backend": 0,
+          "dom": 0,
+          "ok": true
+        },
+        {
+          "assert": "sin_aprobacion",
+          "detail": {
+            "approved": false,
+            "consumed_at": null
+          },
+          "ok": true
+        },
+        {
+          "assert": "bloqueo_declarado_por_politica",
+          "detail": {
+            "blocked_reason": "human_approval_required",
+            "decision": "require_human_approval",
+            "gate": "write"
+          },
+          "ok": true
+        },
+        {
+          "assert": "veredicto_menciona_estado",
+          "needle": "requiere aprobacion humana",
+          "ok": true
+        },
+        {
+          "assert": "tarjeta_muestra_estado",
+          "needle": "requiere aprobacion humana",
+          "ok": true
+        },
+        {
+          "assert": "atributo_blocked_codigo",
+          "backend": "human_approval_required",
+          "dom": "human_approval_required",
+          "ok": true
+        },
+        {
+          "assert": "politica_deny_by_default",
+          "needle": "deny by default=true",
+          "ok": true
+        },
+        {
+          "assert": "panel_no_afirma_ejecucion",
+          "detail": {
+            "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+          },
+          "ok": true
+        },
+        {
+          "assert": "estado_sandbox_inerte",
+          "needle": "Sandbox inerte",
+          "ok": true
+        },
+        {
+          "assert": "sandbox_render_defined",
+          "detail": {
+            "notice": "Solicitud preparada SIN ejecutar. Revisa la puerta y apruebala explicitamente.",
+            "sandbox_error": "",
+            "uncaught": []
+          },
+          "ok": true
+        },
+        {
+          "assert": "tarjeta_solicitud_renderizada",
+          "backend": 1,
+          "dom": 1,
+          "ok": true
+        },
+        {
+          "assert": "render_completa_tras_solicitud",
+          "detail": {
+            "after": 5,
+            "before": 4,
+            "calls": 5
+          },
+          "ok": true
+        },
+        {
+          "assert": "veredicto_presente",
+          "detail": {
+            "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+          },
+          "ok": true
+        }
+      ],
+      "detail": {
+        "blocked_reason": "human_approval_required",
+        "executions": 0,
+        "policy": {
+          "decision": "require_human_approval",
+          "gate": "write",
+          "policy_id": "orgdna.platform.d9bf4896-ae85-408d-b30f-8246cb0ec4d5",
+          "policy_revision": 1,
+          "reason": "La accion 'write_file' sobre 'sandbox/f7efbcd44bfb40a392430266829b52a5/dcd52f00-439a-5f35-a99a-7676d84d9a44.py' levanta la puerta humana 'write' (write) y no hay aprobacion registrada para el alcance vigente 804b108b381979794cb8869ad876ff0b80e50a74b4389831f469c0f7ae340b08.",
+          "rules": [
+            "gate.write",
+            "approval.missing"
+          ]
+        },
+        "render_after": 5,
+        "render_before": 4,
+        "render_instrumented": true,
+        "requests": 1,
+        "ui_error": "",
+        "verdict": "Solicitud f7efbcd4 preparada SIN ejecutar: decision require_human_approval, puerta write, estado requiere aprobacion humana."
+      },
+      "duration_s": 0.799,
+      "ok": true,
+      "screenshot": {
+        "bytes": 80396,
+        "path": "C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\docs\\rea\\evidence\\chromium\\step_05_sandbox_block.png",
+        "relative": "docs/rea/evidence/chromium/step_05_sandbox_block.png",
+        "sha256": "38fbc95f4181abb2653fb3e9c6b1552deaf37b4996d768d1164bedc1b0127ea6"
+      },
+      "step": "sandbox_block",
+      "uncaught_errors": []
+    }
+  ],
+  "tool": "qa_v7/chromium_e2e.py"
+}

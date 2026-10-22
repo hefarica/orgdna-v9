@@ -1,0 +1,521 @@
+[
+  {
+    "id": "AV-01",
+    "segmento": "team_process",
+    "nombre": "checkpoint_reanuda_desde_el_ultimo_paso_confirmado",
+    "mecanismo_id": "M1",
+    "mechanism": "Checkpoint durable: el equipo conserva un estado serializable tras cada paso y el ciclo siguiente continua desde ahi.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams, seccion 'Resuming a Team' (equipos stateful que se reanudan sin tarea nueva); vocabulario de estado alineado con docs/rea/TEAM_API_CONTRACT_v1.md (checkpoint v1)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "checkpoint guardado con modo=sequential, paso=2 de 5, resultados={slot1: ok, slot2: ok} y presupuesto restante {tokens: 800}; se pide un ciclo nuevo sin reiniciar el trabajo",
+    "salida_esperada": "el ciclo arranca en el paso 3; los resultados de slot1 y slot2 se conservan sin reejecutar; el checkpoint nuevo declara step=3 y resumptions=1",
+    "derivacion": "Sin estado durable, reanudar equivale a reiniciar; el vector fija que reanudar no repite trabajo ya confirmado.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-02",
+    "segmento": "team_process",
+    "nombre": "checkpoint_de_version_desconocida_se_rechaza",
+    "mecanismo_id": "M1",
+    "mechanism": "Checkpoint durable con version de formato explicita: una version no soportada falla en vez de migrarse en silencio.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: estado mantenido entre ejecuciones; ninguna migracion implicita declarada",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "checkpoint con campo de version de formato igual a 2 mientras el modulo solo conoce la version 1",
+    "salida_esperada": "error tipado 'unsupported_checkpoint_version' con las versiones declaradas; cero miembros avanzados; el checkpoint en disco no se reescribe ni se degrada a la version 1",
+    "derivacion": "Misma doctrina que el contrato TaskSpec v1: una version desconocida no se interpreta con tolerancia.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-03",
+    "segmento": "team_loop",
+    "nombre": "el_bucle_lee_y_reescribe_el_checkpoint_por_ciclo",
+    "mecanismo_id": "M1",
+    "mechanism": "El bucle continuo lee el checkpoint antes de cada ciclo y lo reescribe al cerrarlo, sin dejar estado a medias.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams (run/run_stream devuelven un resultado con el estado del equipo al cerrar)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "tres ciclos consecutivos sobre el mismo almacen local, con un fallo simulado de serializacion en el segundo cierre",
+    "salida_esperada": "el ciclo 1 y el 3 producen checkpoint valido; el ciclo 2 no deja checkpoint parcial (el anterior intacto byte a byte) y reporta 'checkpoint_write_failed'; el conteo de pasos avanzados es 2, nunca 3",
+    "derivacion": "La continuidad exige que el unico estado en disco sea siempre un estado confirmado.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-04",
+    "segmento": "team_process",
+    "nombre": "delegacion_abierta_impide_cerrar_el_ciclo",
+    "mecanismo_id": "M1",
+    "mechanism": "Mientras exista una delegacion abierta el ciclo no puede declararse completo, porque su resultado forma parte del estado.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_notebook.md (delegacion con park hasta confirmacion del miembro)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "modo=hierarchical con una delegacion al slot2 registrada y aun sin resultado; los demas pasos ya cumplidos",
+    "salida_esperada": "estado de ciclo 'incomplete' con la lista de delegaciones abiertas (slot2); jamas 'completed'; el presupuesto consumido se conserva",
+    "derivacion": "Un ciclo 'completo' con trabajo delegado pendiente seria una afirmacion falsa del estado.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-05",
+    "segmento": "team_loop",
+    "nombre": "parada_entre_ciclos_deja_estado_consistente",
+    "mecanismo_id": "M2",
+    "mechanism": "La parada explicita se atiende entre ciclos, deja el checkpoint consistente y declara su motivo.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams, seccion 'Stopping a Team' (ExternalTermination y stop_reason)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "bucle en marcha con 2 ciclos cerrados; llega una peticion de parada antes del ciclo 3",
+    "salida_esperada": "stop_reason='stop_requested'; no se inicia el ciclo 3; el checkpoint conserva los 2 ciclos; el recibo del ultimo ciclo cerrado no se altera",
+    "derivacion": "Parar no puede destruir trabajo ya confirmado ni arrancar trabajo nuevo.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-06",
+    "segmento": "team_loop",
+    "nombre": "parada_repetida_es_idempotente",
+    "mecanismo_id": "M2",
+    "mechanism": "Pedir la parada dos veces no produce error, ni duplica recibos, ni reinicia el estado.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: reset/stop como operaciones sobre estado ya detenido",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "dos peticiones de parada consecutivas sobre un bucle ya detenido",
+    "salida_esperada": "la segunda devuelve el mismo stop_reason y el mismo numero de ciclos; recibos=1; cero excepciones",
+    "derivacion": "Un operador humano pulsa dos veces; el sistema debe tolerarlo sin efectos duplicados.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-07",
+    "segmento": "team_loop",
+    "nombre": "parada_antes_del_primer_ciclo_no_finge_trabajo",
+    "mecanismo_id": "M2",
+    "mechanism": "Parar antes de empezar deja el trabajo en 'not_run', nunca en 'completed'.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: distincion entre parada externa, aborto y reset",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "peticion de parada registrada antes de que el bucle ejecute su primer ciclo",
+    "salida_esperada": "ciclos=0; estado 'not_run' con motivo 'stopped_before_start'; recibos=0; ningun miembro marcado como avanzado",
+    "derivacion": "Reutiliza el vocabulario congelado del contrato TaskSpec v1, donde 'not_run' nunca se aproxima a 'completed'.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-08",
+    "segmento": "team_process",
+    "nombre": "modo_desconocido_es_error_tipado",
+    "mecanismo_id": "M2",
+    "mechanism": "El modo de proceso es un dato con vocabulario cerrado; un modo desconocido corta en vez de degradar.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: los tipos de equipo son presets declarados, no una cadena libre",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "solicitud de ciclo con modo='democratico' (fuera de sequential | hierarchical | parallel_waves)",
+    "salida_esperada": "error tipado 'unknown_mode' con la lista de modos admitidos; cero miembros ejecutados; el checkpoint no se modifica",
+    "derivacion": "Una degradacion silenciosa del modo cambiaria el significado del estado guardado.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-09",
+    "segmento": "team_process",
+    "nombre": "delegacion_jerarquica_devuelve_el_resultado_al_coordinador",
+    "mecanismo_id": "M3",
+    "mechanism": "Delegacion jerarquica con retorno: el coordinador recibe el resultado del miembro con su slot y su estado.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_notebook.md + docs/rea/agentscope_vectors.json (TeamAssign con retorno al lider)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "FoundationAgents/MetaGPT (70 957 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "OpenBMB/ChatDev (34 563 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "modo=hierarchical; el coordinador delega al slot3 una tarea de analisis; el miembro del slot3 responde 'ok: 42'",
+    "salida_esperada": "el checkpoint registra la delegacion cerrada con {slot: 3, estado: 'success', resultado: 'ok: 42'}; el coordinador queda como responsable del cierre; ninguna otra delegacion se altera",
+    "derivacion": "El resultado tipado que vuelve es lo que permite al proceso avanzar sin releer el historial completo.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-10",
+    "segmento": "team_process",
+    "nombre": "delegacion_a_miembro_inexistente_es_error_tipado",
+    "mecanismo_id": "M3",
+    "mechanism": "Delegar a un miembro que no esta en el roster falla con codigo, sin dejar la delegacion abierta para siempre.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_vectors.json (asignaciones dirigidas a miembros declarados)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "FoundationAgents/MetaGPT (70 957 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "OpenBMB/ChatDev (34 563 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "modo=hierarchical; delegacion dirigida al slot9 cuando el roster solo declara slots 1 a 4",
+    "salida_esperada": "error tipado 'unknown_member' con el slot y el roster declarado; cero delegaciones abiertas nuevas; el ciclo sigue siendo reanudable",
+    "derivacion": "Una delegacion huerfana bloquearia el cierre del ciclo para siempre.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-11",
+    "segmento": "team_process",
+    "nombre": "dos_delegaciones_del_mismo_coordinador_se_consolidan_por_slot",
+    "mecanismo_id": "M3",
+    "mechanism": "Varias delegaciones del mismo coordinador se consolidan en orden canonico de slot, sin depender del orden de llegada.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_vectors.json (resultados consolidados en orden de llamada)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "FoundationAgents/MetaGPT (70 957 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "OpenBMB/ChatDev (34 563 estrellas, ya permitido)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "una ronda del coordinador con dos delegaciones (slot2 y slot4); el slot4 responde antes que el slot2",
+    "salida_esperada": "el checkpoint consolida [slot2, slot4] en orden de slot aunque el orden de finalizacion sea 4 y luego 2; ambos estados 'success'",
+    "derivacion": "El orden estable es lo que hace reproducible el recibo y la prueba.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-12",
+    "segmento": "team_process",
+    "nombre": "olas_paralelas_acotadas_particionan_por_slot",
+    "mecanismo_id": "M4",
+    "mechanism": "El modo de olas acotadas reparte a los miembros en olas de tamano fijo en orden canonico de slot.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_vectors.json (delegaciones concurrentes en una sola ronda)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "microsoft/autogen (61 518 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "modo=parallel_waves, tamano de ola=2, roster de 5 miembros (slots 1 a 5)",
+    "salida_esperada": "olas declaradas=[[slot1, slot2], [slot3, slot4], [slot5]]; ninguna ola empieza antes de cerrar la anterior; el ciclo reporta 3 olas",
+    "derivacion": "Acotar la ola mantiene el coste por ciclo predecible y el estado pequeno.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-13",
+    "segmento": "team_process",
+    "nombre": "resultados_de_ola_en_orden_de_entrada",
+    "mecanismo_id": "M4",
+    "mechanism": "Los resultados de una ola se consolidan en el orden de entrada, no en el orden de finalizacion.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_vectors.json (vector 'delegaciones_concurrentes_resultados_en_orden_de_llamada')",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "microsoft/autogen (61 518 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "ola con slots [1, 2, 3] donde finalizan en orden 3, 1, 2",
+    "salida_esperada": "resultados consolidados = [slot1, slot2, slot3]; el recibo de la ola enumera los slots en orden ascendente",
+    "derivacion": "Si el orden dependiera de la finalizacion, dos ejecuciones equivalentes darian estados distintos.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-14",
+    "segmento": "team_process",
+    "nombre": "una_ola_no_se_solapa_con_la_siguiente",
+    "mecanismo_id": "M4",
+    "mechanism": "Una ola solo cierra cuando todos sus miembros terminan; la siguiente no se solapa.",
+    "source": "agentscope-ai/agentscope",
+    "fuente_documental": "docs/rea/agentscope_vectors.json (la ronda concurrente cierra antes de continuar)",
+    "source_metric": "33 613 estrellas · ultimo push 2026-10-22T03:06:31Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "microsoft/autogen (61 518 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "ola [slot1, slot2] donde el slot1 termina de inmediato y el slot2 tarda; se pide el estado a mitad de ola",
+    "salida_esperada": "estado de ola 'running' con slot1='success' y slot2='pending'; no se inicia la ola siguiente; cero miembros de la ola siguiente ejecutados",
+    "derivacion": "El solapamiento haria impredecible el consumo de presupuesto por ola.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-15",
+    "segmento": "team_process",
+    "nombre": "tamano_de_ola_invalido_es_error_tipado",
+    "mecanismo_id": "M4",
+    "mechanism": "Un tamano de ola no positivo se rechaza antes de ejecutar; nunca se interpreta como 'sin limite'.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: los limites de iteracion se declaran explicitamente",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "agentscope-ai/agentscope (33 613 estrellas, ya permitido)",
+      "crewAIInc/crewAI (59 966 estrellas)",
+      "microsoft/autogen (61 518 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "modo=parallel_waves con tamano de ola 0 y luego con -3",
+    "salida_esperada": "error tipado 'invalid_wave_size' en ambos casos; cero miembros ejecutados; el checkpoint no se escribe",
+    "derivacion": "Un cero interpretado como infinito es la forma clasica de romper el presupuesto.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-16",
+    "segmento": "team_process",
+    "nombre": "presupuesto_de_tokens_agotado_corta_el_ciclo",
+    "mecanismo_id": "M5",
+    "mechanism": "Presupuesto por ciclo con corte: al agotarse los tokens, el ciclo para con estado explicito y no avanza mas members.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams (models_usage por mensaje y totales de la corrida; max_tool_iterations como cota)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "ciclo con presupuesto de tokens=100; el paso 2 consume 90 y el paso 3 requeriria 30",
+    "salida_esperada": "estado 'budget_exhausted' con motivo 'tokens'; pasos avanzados=2; el paso 3 no se ejecuta; el presupuesto consumido declarado es 90, nunca negativo",
+    "derivacion": "El corte explicito es lo que permite sostener el bucle en el tiempo sin coste ilimitado.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-17",
+    "segmento": "team_loop",
+    "nombre": "presupuesto_de_tiempo_agotado_corta_el_bucle",
+    "mecanismo_id": "M5",
+    "mechanism": "El bucle respeta un presupuesto de tiempo por ciclo y corta declarando el motivo en vez de alargarlo.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams (condiciones de parada declaradas por el propio equipo)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "ciclo con presupuesto de tiempo=5 s y un reloj inyectable que avanza 6 s durante el paso 1",
+    "salida_esperada": "stop_reason='time_exhausted'; el ciclo cierra con el paso 1 marcado; el recibo declara los 6 s observados y el limite de 5 s",
+    "derivacion": "Sin corte por tiempo, un ciclo lento bloquea la exclusividad y el siguiente ciclo.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-18",
+    "segmento": "team_process",
+    "nombre": "presupuesto_invalido_o_negativo_se_rechaza",
+    "mecanismo_id": "M5",
+    "mechanism": "Un presupuesto negativo o no entero se rechaza al declarar el ciclo; los contadores nunca retroceden.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams (los consumos se cuentan en enteros de tokens por mensaje)",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/team_process.py",
+    "entrada": "declaracion de ciclo con tokens=-5, y despues con tokens='cien'",
+    "salida_esperada": "error tipado 'invalid_budget' en ambos casos; cero contadores escritos; tras un ciclo valido posterior los contadores son monotonicos no decrecientes",
+    "derivacion": "Reutiliza la doctrina del contrato TaskSpec v1: las cuatro magnitudes son enteras y no negativas.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-19",
+    "segmento": "followups",
+    "nombre": "persecucion_de_compromisos_con_intentos_acotados",
+    "mecanismo_id": "M5",
+    "mechanism": "La persecucion de un compromiso tiene un numero maximo de recordatorios declarado y despues escala, en vez de insistir sin fin.",
+    "source": "orgdna-plataforma-v9 (doctrina local; sin fuente externa en este barrido)",
+    "fuente_documental": "docs/rea/PORT_REPORT.md (P3 follow-ups: deteccion, chasing, 3 recordatorios, escalated, reported)",
+    "source_metric": "sin metrica externa: doctrina local de este repo · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "ag2ai/ag2 (5 010 estrellas)"
+    ],
+    "modulo_destino": "engine/followups.py",
+    "entrada": "compromiso sin atender tras 4 ticks, con maximo de recordatorios=3 declarado",
+    "salida_esperada": "recordatorios=3 y despues estado 'escalated'; el cuarto tick no emite recordatorio nuevo; el historial es append-only y conserva los 3 envios",
+    "derivacion": "El limite de intentos es la version de M5 aplicada a compromisos; sin el, el perseguidor es un bucle infinito.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-20",
+    "segmento": "team_loop",
+    "nombre": "cada_ciclo_cerrado_emite_recibo_con_motivo",
+    "mecanismo_id": "M6",
+    "mechanism": "Todo ciclo cerrado produce un recibo local con numero de ciclo, modo, pasos, presupuesto y motivo de cierre.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: run_stream entrega eventos durante la ejecucion y un resultado final con stop_reason",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "un ciclo cerrado por presupuesto y otro cerrado por parada",
+    "salida_esperada": "dos recibos, cada uno con {ciclo, modo, pasos_avanzados, presupuesto_consumido, motivo}; motivos distintos ('budget_exhausted' y 'stop_requested'); ninguno enviado a ningun proveedor",
+    "derivacion": "El recibo es la forma local y verificable de observabilidad que el encargo permite (sin red).",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-21",
+    "segmento": "team_loop",
+    "nombre": "cero_ciclos_cero_recibos",
+    "mecanismo_id": "M6",
+    "mechanism": "Sin ciclo cerrado no hay recibo: un recibo sin trabajo seria una afirmacion falsa de actividad.",
+    "source": "microsoft/autogen",
+    "fuente_documental": "AutoGen Teams: el resultado se emite al cerrar la corrida, no antes",
+    "source_metric": "61 518 estrellas · ultimo push 2026-10-16T16:14:37Z · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "bucle creado que nunca ejecuta un ciclo (parado antes de arrancar)",
+    "salida_esperada": "recibos=0; estado 'not_run'; el panel no muestra actividad; jamas un recibo con pasos=0 y motivo 'completed'",
+    "derivacion": "Coherente con la regla congelada de que 'not_run' no se aproxima a 'completed'.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-22",
+    "segmento": "followups",
+    "nombre": "historial_de_compromisos_append_only_y_acotado",
+    "mecanismo_id": "M6",
+    "mechanism": "El historial de un compromiso solo crece por el final y su tamano esta acotado, para que un bucle largo no infle el estado.",
+    "source": "orgdna-plataforma-v9 (doctrina local; sin fuente externa en este barrido)",
+    "fuente_documental": "docs/rea/PORT_REPORT.md (P3 follow-ups con historial y contadores)",
+    "source_metric": "sin metrica externa: doctrina local de este repo · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "microsoft/autogen (61 518 estrellas)",
+      "langchain-ai/langgraph (43 682 estrellas)",
+      "crewAIInc/crewAI (59 966 estrellas)"
+    ],
+    "modulo_destino": "engine/followups.py",
+    "entrada": "compromiso con 12 eventos historicos y limite declarado de 8 entradas por compromiso",
+    "salida_esperada": "el historial conserva las 8 entradas mas recientes en orden cronologico, declara cuantas descarto y nunca reescribe entradas previas",
+    "derivacion": "La observabilidad no puede crecer sin cota dentro de un bucle continuo.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-23",
+    "segmento": "team_loop",
+    "nombre": "dos_bucles_no_duplican_trabajo",
+    "mecanismo_id": "M7",
+    "mechanism": "Un solo dueno del bucle: si otro proceso tiene el arrendamiento vigente, el segundo no avanza y lo declara.",
+    "source": "orgdna-plataforma-v9 (doctrina local; sin fuente externa en este barrido)",
+    "fuente_documental": "engine/coordination.py (lease local con owner_agent_id, task_id, ttl_seconds, expected_version)",
+    "source_metric": "sin metrica externa: doctrina local de este repo · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "sin fuente externa: doctrina local de este repo (engine/coordination.py)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "dos instancias del bucle sobre el mismo almacen de coordinacion; la primera ya tiene el arrendamiento vigente",
+    "salida_esperada": "la primera avanza un ciclo; la segunda no avanza (ciclos=0), reporta 'lease_held' con el dueno observado y no escribe checkpoint",
+    "derivacion": "Dos bucles duplicando trabajo rompen a la vez el presupuesto y la trazabilidad.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-24",
+    "segmento": "team_loop",
+    "nombre": "arrendamiento_vencido_se_toma_declarandolo",
+    "mecanismo_id": "M7",
+    "mechanism": "Un arrendamiento vencido se puede tomar, pero el cambio de dueno queda declarado con su motivo y su sello de tiempo.",
+    "source": "orgdna-plataforma-v9 (doctrina local; sin fuente externa en este barrido)",
+    "fuente_documental": "engine/coordination.py (ttl y renovacion con expected_version)",
+    "source_metric": "sin metrica externa: doctrina local de este repo · lectura 2026-10-21",
+    "fuentes_corroborantes": [
+      "sin fuente externa: doctrina local de este repo (engine/coordination.py)"
+    ],
+    "modulo_destino": "engine/team_loop.py",
+    "entrada": "arrendamiento de otro agente con ttl_seconds vencido hace dos ciclos",
+    "salida_esperada": "el segundo bucle toma el arrendamiento y registra motivo 'lease_expired' con dueno anterior y sello de tiempo; el primer ciclo toma el estado del checkpoint mas reciente",
+    "derivacion": "Sin toma declarada, un proceso caido bloquearia el equipo para siempre.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-25",
+    "segmento": "sandbox_executor",
+    "nombre": "sin_aprobacion_no_hay_ejecucion",
+    "mecanismo_id": "M8",
+    "mechanism": "El sandbox no ejecuta nada mientras falte la aprobacion humana correspondiente y lo declara en su estado.",
+    "source": "OpenBMB/ChatDev",
+    "fuente_documental": "docs/rea/chatdev_notebook.md + docs/rea/PORT_REPORT.md (P1: subprocess, timeout y workspace por agente bajo puertas)",
+    "source_metric": "34 563 estrellas · ultimo push 2026-10-16T15:55:30Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "OpenBMB/ChatDev (34 563 estrellas, ya permitido)",
+      "openinterpreter/openinterpreter (68 631 estrellas)",
+      "stitionai/devika (19 549 estrellas)",
+      "OpenHands/OpenHands (91 514 estrellas)",
+      "SWE-agent/SWE-agent (20 606 estrellas)"
+    ],
+    "modulo_destino": "engine/sandbox_executor.py",
+    "entrada": "peticion de ejecucion de un artefacto cuyo scope_hash no tiene aprobacion registrada",
+    "salida_esperada": "estado 'awaiting_approval' con la puerta que falta; cero procesos lanzados; el archivo marcador del sandbox no se crea",
+    "derivacion": "Decision del operador: la ejecucion viva solo ocurre bajo las puertas require_human_approval.",
+    "no_es_port": true
+  },
+  {
+    "id": "AV-26",
+    "segmento": "sandbox_executor",
+    "nombre": "aprobacion_de_otro_alcance_no_autoriza",
+    "mecanismo_id": "M8",
+    "mechanism": "Una aprobacion con un scope_hash distinto no autoriza esta ejecucion, aunque sea reciente.",
+    "source": "OpenBMB/ChatDev",
+    "fuente_documental": "docs/rea/PORT_REPORT.md (P1 bajo el contrato de aprobacion de la capa de plataforma)",
+    "source_metric": "34 563 estrellas · ultimo push 2026-10-16T15:55:30Z · lectura 2026-10-21 (fuente ya permitida)",
+    "fuentes_corroborantes": [
+      "OpenBMB/ChatDev (34 563 estrellas, ya permitido)",
+      "openinterpreter/openinterpreter (68 631 estrellas)",
+      "stitionai/devika (19 549 estrellas)",
+      "OpenHands/OpenHands (91 514 estrellas)",
+      "SWE-agent/SWE-agent (20 606 estrellas)"
+    ],
+    "modulo_destino": "engine/sandbox_executor.py",
+    "entrada": "aprobacion valida y no consumida cuyo scope_hash corresponde a otro artefacto",
+    "salida_esperada": "estado 'awaiting_approval'; motivo 'scope_mismatch' con ambos hashes declarados; cero procesos lanzados; la aprobacion no se marca como consumida",
+    "derivacion": "Reutiliza la regla ya congelada del contrato PolicyDecision v1: una aprobacion de otro alcance no autoriza esta accion.",
+    "no_es_port": true
+  }
+]

@@ -16,9 +16,9 @@ class Markup(HTMLParser):
 class V8UIContracts(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.js = (ROOT / 'web/app.js').read_text()
-        cls.html = (ROOT / 'web/index.html').read_text()
-        cls.css = (ROOT / 'web/style.css').read_text()
+        cls.js = (ROOT / 'web/app.js').read_text(encoding='utf-8')
+        cls.html = (ROOT / 'web/index.html').read_text(encoding='utf-8')
+        cls.css = (ROOT / 'web/style.css').read_text(encoding='utf-8')
         parser = Markup(); parser.feed(cls.html)
         cls.fields = {a['id']: (tag, a) for tag, a in parser.tags if 'id' in a}
 

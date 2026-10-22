@@ -7,7 +7,11 @@ import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-BASELINE = json.loads((Path(__file__).parent / 'dsh_baseline.json').read_text())
+# Lectura con encoding explicito: el contrato compara hashes de texto, no bytes del
+# locale del host. Sin esto, en Windows con cp1252 el test moria en el setUp por un
+# caracter no ASCII dentro de una funcion pineada, y el veredicto dependia de una
+# variable de entorno (PYTHONUTF8) en vez de la ley del contrato.
+BASELINE = json.loads((Path(__file__).parent / 'dsh_baseline.json').read_text(encoding='utf-8'))
 
 def sha(value):
     return hashlib.sha256(value).hexdigest()
@@ -19,7 +23,7 @@ class DshPreservationIndependent(unittest.TestCase):
                 self.assertEqual(sha((ROOT / name).read_bytes()), expected)
 
     def test_dsh_javascript_functions_unchanged(self):
-        source = (ROOT / 'web/app.js').read_text()
+        source = (ROOT / 'web/app.js').read_text(encoding='utf-8')
         actual = {}
         for match in re.finditer(r'^(?:async )?function (\w+)\(', source, re.M):
             if match[1] in BASELINE['javascript_functions']:
@@ -28,12 +32,12 @@ class DshPreservationIndependent(unittest.TestCase):
         self.assertEqual(actual, BASELINE['javascript_functions'])
 
     def test_dsh_javascript_event_handlers_unchanged(self):
-        source = (ROOT / 'web/app.js').read_text()
+        source = (ROOT / 'web/app.js').read_text(encoding='utf-8')
         lines = [line for line in source.splitlines() if re.match(r"\$\('#(?:dsh|harness|cordis|prepare-cordis)", line)]
         self.assertEqual(sha('\n'.join(lines).encode()), BASELINE['javascript_handler_lines_sha256'])
 
     def test_dsh_bridge_dispatch_branches_unchanged(self):
-        source = (ROOT / 'engine/bridge.py').read_text()
+        source = (ROOT / 'engine/bridge.py').read_text(encoding='utf-8')
         actual = {}
         for node in ast.walk(ast.parse(source)):
             if isinstance(node, ast.If) and ast.unparse(node.test) in BASELINE['bridge_dispatch_branches']:

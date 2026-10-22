@@ -1,0 +1,384 @@
+{
+  "name": "orgdna-forense",
+  "id": "orgdna-forense",
+  "description": "Diagnóstico forense del bloqueo de OrgDNA V9 en la etapa api_design con código unsafe_instructions, del estado del frontend en 127.0.0.1:7860-7865, y de la integridad del paquete sellado. Restricción dura: PROHIBIDO tocar DSH.",
+  "captainSessionId": "session-71c2f508-fa25-4bf8-a01a-cc40a8e3959b",
+  "createdAt": 1792643140795,
+  "phase": "running",
+  "members": [
+    {
+      "id": "89020a03-40fd-41de-8a72-cc5a74231782",
+      "name": "forense",
+      "role": "Forense de datos: extrae el registro del trabajo fallido",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "max",
+      "joinedAt": 1792643140795,
+      "status": "removed"
+    },
+    {
+      "id": "db724397-bb6e-40a4-a1be-f9f011135bf0",
+      "name": "guardian",
+      "role": "Analista del guardián _UNSAFE: busca falso positivo en los CV ficticios",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "max",
+      "joinedAt": 1792643140795,
+      "status": "removed"
+    },
+    {
+      "id": "d5223acf-c26e-4c4f-88f8-03fd08309d63",
+      "name": "runtime",
+      "role": "Analista de runtime: instancias del panel, puertos y BUILD_ID",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "max",
+      "joinedAt": 1792643140795,
+      "status": "removed"
+    },
+    {
+      "id": "3462aad6-8ed2-4d79-b588-eeda8f71404c",
+      "name": "sintesis",
+      "role": "Consolida la causa raíz única con evidencia citada",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "max",
+      "joinedAt": 1792643140795,
+      "status": "removed"
+    },
+    {
+      "id": "7ae5864b-96a9-4d4f-b805-083ed6ede3e0",
+      "name": "dictamen",
+      "role": "Revisión adversarial independiente del veredicto",
+      "provider": "deepseek-official",
+      "model": "deepseek-flash",
+      "reasoningEffort": "max",
+      "joinedAt": 1792643140795,
+      "status": "removed"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "t1",
+      "profileSeedId": "T1",
+      "subject": "Extraer del registro el trabajo fallido: etapa, código, campo señalado",
+      "description": "CONTEXTO: App OrgDNA V9 en C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN. El panel mostró: 'Etapa: api_design. Un campo contiene instrucciones de control, código ejecutable o una atribución no admitida. Revisa el campo señalado.' Se crearon varios agentes antes de detenerse.\n\nOBJETIVO: Determinar el campo EXACTO que disparó el rechazo y la etapa exacta, desde el registro persistido, NO por inferencia.\n\nFUENTES (solo lectura): data\\registry.sqlite3 (200704 bytes, mtime vivo), los 11 *.json y 1 *.jsonl de data\\, y data\\...\\MEMORY.md. El sqlite debe abrirse en SOLO LECTURA con python stdlib: sqlite3.connect('file:<ruta>?mode=ro', uri=True). NO escribir, NO VACUUM, NO crear -wal/-shm si es evitable, NO copiar el archivo.\n\nPASOS: (1) listar tablas con SELECT name FROM sqlite_master WHERE type='table'. (2) localizar la tabla con trabajos/jobs y la que guarda diagnosticos o poblaciones. (3) buscar la fila cuyo codigo sea unsafe_instructions o cuyo stage sea api_design. (4) extraer el campo senalado, el category, el mensaje y el timestamp. (5) si hay varias, decir cuantas y cuales.\n\nENTREGABLE: informe con el SQL exacto ejecutado, la fila cruda relevante (recortada), el nombre del campo, y el timestamp. FAIL-HONEST: si no existe ningun registro del fallo, decirlo explicito y NO inventar un campo. Cita cada numero con el comando o el SELECT que lo produjo.\n\nPROHIBICIONES DURAS: no tocar DSH ni C:\\Users\\HFRC\\.dsh-vscode. No modificar el paquete (esta sellado). No ejecutar resella_paquete.py. No git commit. No borrar nada.",
+      "status": "completed",
+      "assignee": "forense",
+      "dependencies": [],
+      "attempt": 1,
+      "createdAt": 1792643140795,
+      "updatedAt": 1792672031005,
+      "attemptId": "b01eefee-99ab-4fa2-b7df-156626774154",
+      "reassigning": false,
+      "output": "VEREDICTO FAIL-HONEST: NO EXISTE registro persistido del rechazo unsafe_instructions en etapa api_design. Cero filas, cero campo, cero timestamp. No invento campo.\n\nFUENTES PRESCRITAS, MEDIDAS:\n1) `data\\registry.sqlite3` NO EXISTE. El único es `data\\projects\\_capabilities\\registry.sqlite3`, 249856 B (no 200704). Mismo fichero: 200704 = 49 págs × 4096; hoy PRAGMA page_count=61 → 61×4096=249856.\n2) Tablas: assignments, events, items, projects, requests. NINGUNA es de jobs ni diagnósticos. Conteos: assignments 0, events 0, items 0, requests 0, projects 2379→2393 (TODAS revision=0, ids hex aleatorios). `items.body` y `events.body` — el único sitio donde cabría un diagnóstico — están VACÍOS.\n3) Búsqueda del fallo: LIKE '%unsafe%' → 0; '%api_design%' → 0; '%stage%'/'%job%'/'%generation%'/'%diag%'/'%fail%' → 0 cada uno.\n\nDÓNDE VIVE EL ESTADO: generation_pipeline.py:415 `self.jobs[job_id]=job` — diccionario EN MEMORIA. Persiste por (a) generation_history en el snapshot (generation_pipeline.py:148-206, que SÍ preserva error.field vía _diagnostic) y (b) receipts (bridge.py:654). Medido: generation_history en los 11 snapshots → version 1, current_job_id None, **jobs: 0 en TODOS**, incluido el del 22/10 (20261022T121937536156Z-ba26363a, 2176552 B, saved_at 2026-10-22T12:19:37Z). Recibos en estado vivo: 36, ninguno con api_design/unsafe. Barrido de tokens en los 13 ficheros de data\\: unsafe_instructions=0, api_design=0, output_truncated=0. Barrido del paquete entero: unsafe_instructions sólo en CÓDIGO (web/app.js:767, tests_generation_robustness_v7.py:111, engine/org_design.py:88 y :262), NUNCA en datos.\n\nREGISTRO VIVO — hay un fallo, pero es OTRO: :8770 (PID 13452, arrancado 07:08:02) job 7ee18828-d318-4445-b397-5bed9113e802, failed_stage=**inventory**, error.code=**repository_http_error**, http_status=403, created_at 2026-10-22T12:23:00Z, finished 12:23:01Z, sent_requests=0, potentially_billed=false. :60723 (PID 33124) sin job, 0 recibos.\n\nMAPEO EXACTO (esto sí está establecido): el texto del panel coincide VERBATIM con engine/org_design.py:88 → code `unsafe_instructions`, category `schema_validation`. Se lanza en org_design.py:261-262 dentro de _text() por el regex _UNSAFE (org_design.py:205-218). El campo se publica sólo si respeta _safe_field (org_design.py:105-109): ruta por puntos, segmentos snake_case con índice [N], base en _FIELD_KEYS → forma tipo `profile_specs[7].mission`, `responsibilities[2]`. IMPORTANTE: si el campo no respeta esa forma, _diagnostic NO lo publica (org_design.py:116-118) — ausencia de `field` ≠ ausencia de causa.\n\nPOR QUÉ api_design ES CORRECTO (no es contradicción): generation_pipeline.py:561 pone stage='api_design'; :607 `design_with_llm()` envía Y valida la respuesta; :624 pasa a 'validating_profiles' SÓLO después de que retorne. Todo unsafe_instructions ocurre con stage=api_design y _fail (:843) lo copia a failed_stage. Combinación estructuralmente esperada.\n\nDOS CORRECCIONES DURAS PARA EL EQUIPO:\nA) 127.0.0.1:7860-7865 NO ES OrgDNA. Los seis son `APLICACION_CONTROL_PAGOS_MULTIINGENIO_V6_1_6_FULL_WIDTH\\app.py` (CanaSuite venv). OrgDNA sirve en :8770 y :60723. Cualquier diagnóstico de frontend que asuma 7860-7865 como OrgDNA parte de premisa falsa.\nB) data\\ está FUERA del sello: MANIFIESTO_SHA256.txt tiene 377 líneas y 0 cubren data/ (registry.sqlite3 no figura) → las escrituras vivas ahí no rompen el sello. PERO el árbol muta durante la sesión: registry mtime 07:14:55→07:24:35, projects 2379→2393; current.json 459 B→477 B apuntando a versión nueva; versions\\ 10→11 archivos. Toda verificación de sello debe hacerse con el árbol quieto o declarando que no lo estaba.\nC) MEMORY.md: 416 archivos, 415 VACÍOS (0 B). El único con contenido, 60 B: \"- [project] port-rea-p2.md (2026-10-22): canal P2 integrado\". Los \"agentes creados antes de detenerse\" no dejaron memoria.\n\nHALLAZGO COLATERAL: el paquete documenta OTRO fallo de api_design — GUIA_PRODUCCION_ORGDNA_V9.md:36 y docs\\PLATAFORMA_VERIFICACION_V1.md:186 dicen `output_truncated`. Hay DOS eventos api_design con códigos distintos; no fusionarlos.\n\nEVIDENCIA QUE FALTA: (1) si la ejecución fue en un proceso ya terminado, su self.jobs murió con él → irrecuperable desde disco; (2) el generation-diagnostic.json que el operador descargara en su momento contendría error.field verbatim — buscarlo fuera del paquete; (3) candidatos acotados por el guardián, cross-ref NO medido por mí: .agent-teams/orgdna-forense/team.json:88 (cv.working_style, responsibilities, skills[].description, mission, cv.summary, cv.experience[].scope, cv.certifications[].acceptance).\n\nINTEGRIDAD DE MI LECTURA: sqlite abierto con ?mode=ro (journal_mode=delete), SIN crear -wal/-shm (verificado listando el dir antes y después). Cero escrituras en el paquete; scripts y volcados en %TEMP%. DSH no tocado. resella_paquete.py no ejecutado. Sin git. Nada borrado. Sólo GET a :8770 y :60723.\n\nINFORME COMPLETO: C:\\Users\\HFRC\\AppData\\Local\\Temp\\T1_FORENSE_informe.md\nAuditoría metacog de la tesis central: SOPORTADO 4/4, 0 no soportados.",
+      "acceptanceResults": [
+        {
+          "criterion": "Determinar la etapa exacta desde el registro persistido",
+          "status": "passed",
+          "evidence": "Etapa del registro persistido/vivo medida: failed_stage=inventory en el unico job existente (7ee18828-..., :8770). `api_design` NO aparece en ningun almacen persistido: 0 coincidencias en las 5 tablas del sqlite, 0 en los 13 ficheros de data\\, 0 en los 416 MEMORY.md. Mecanismo por el que api_design seria la etapa correcta documentado con lineas: generation_pipeline.py:561 / :607 / :624 / :843."
+        },
+        {
+          "criterion": "Determinar el campo EXACTO que disparo el rechazo",
+          "status": "passed",
+          "evidence": "FAIL-HONEST: el campo exacto de esa ejecucion NO existe en el registro persistido; se declara explicitamente en vez de inventarlo. Lo que si se determino: code unsafe_instructions (org_design.py:88), category schema_validation, validador org_design.py:261-262, regex _UNSAFE org_design.py:205-218, y la forma que el campo debe tener para ser publicado (_safe_field, org_design.py:105-109)."
+        },
+        {
+          "criterion": "Citar el SQL exacto ejecutado y la fila cruda",
+          "status": "passed",
+          "evidence": "SQL completo y DDL de las 5 tablas en el informe (secciones 3 y 11). Fila cruda: NO HAY NINGUNA del fallo; lo unico poblado es projects con 2393 ids hex y revision=0. Fila cruda del fallo REAL (inventory/403) extraida verbatim del estado vivo."
+        },
+        {
+          "criterion": "Extraer category, mensaje y timestamp",
+          "status": "passed",
+          "evidence": "category=schema_validation y mensaje derivados de org_design.py:88 (coincidencia verbatim con el panel). Timestamp del unico fallo persistido/vivo: created_at 2026-10-22T12:23:00Z, finished_at 2026-10-22T12:23:01Z, recibo generation-failed 2026-10-22T12:23:01Z. Timestamp del fallo unsafe_instructions/api_design: NO EXISTE."
+        },
+        {
+          "criterion": "Decir cuantas ocurrencias hay y cuales",
+          "status": "passed",
+          "evidence": "0 ocurrencias del fallo buscado en todas las fuentes prescritas. 1 job existente en total (7ee18828-...), 36 recibos en :8770, 0 en :60723, 0 jobs en los 11 snapshots."
+        },
+        {
+          "criterion": "No tocar DSH ni modificar el paquete sellado",
+          "status": "passed",
+          "evidence": "Cero escrituras en el paquete: scripts de inspeccion y volcados en %TEMP% (orgdna_forense_*.py, orgdna_state_*.json, orgdna_diag_*.json, T1_FORENSE_informe.md). sqlite abierto ?mode=ro sin crear -wal/-shm (dir verificado antes y despues). resella_paquete.py no ejecutado. Sin git. Nada borrado. DSH y C:\\Users\\HFRC\\.dsh-vscode no tocados. Solo GET HTTP a :8770 y :60723."
+        }
+      ],
+      "commandsRun": [
+        {
+          "command": "Get-Item data\\projects\\_capabilities\\registry.sqlite3 (verificar ruta/tamaño)",
+          "status": "passed",
+          "evidence": "249856 B, mtime 22/10/2026 07:24:35. La ruta del brief data\\registry.sqlite3 NO existe (Get-Item error)."
+        },
+        {
+          "command": "python: sqlite3.connect('file:...?mode=ro', uri=True) + SELECT name FROM sqlite_master WHERE type='table'",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "assignments, events, items, projects, requests. 0 vistas. PRAGMA journal_mode=delete, page_count=61, page_size=4096, 61x4096=249856."
+        },
+        {
+          "command": "python: SELECT COUNT(*) por cada tabla + SELECT COUNT(*) FROM projects WHERE project LIKE '%unsafe%' / '%api_design%'",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "assignments 0, events 0, items 0, requests 0, projects 2379 (luego 2393). LIKE unsafe=0, LIKE api_design=0, LIKE stage/job/generation/diag/fail=0."
+        },
+        {
+          "command": "python: extraer snapshot.generation_history de los 11 snapshots de data\\projects\\98d8ec4f...\\versions\\*.json",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "En los 11: version 1, current_job_id None, jobs 0. Incluido 20261022T121937536156Z-ba26363a.json (2176552 B)."
+        },
+        {
+          "command": "python: GET / (cookie orgdna_session) + GET /api/state en 127.0.0.1:8770 y :60723",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "8770: job 7ee18828-d318-4445-b397-5bed9113e802 failed_stage=inventory, repository_http_error, http 403, 2026-10-22T12:23:00Z. Tokens unsafe_instructions/api_design/output_truncated = 0. 60723: sin job, 0 recibos."
+        },
+        {
+          "command": "python: GET /download/generation-diagnostic.json?job_id=7ee18828-... (8770)",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "HTTP 200, 2642 B, format orgdna-generation-diagnostic v2, failed_stage inventory, error.code repository_http_error, http_status 403."
+        },
+        {
+          "command": "grep -r 'unsafe_instructions' sobre todo el paquete",
+          "status": "passed",
+          "evidence": "4 coincidencias, todas en CODIGO: web/app.js:767, tests_generation_robustness_v7.py:111, engine/org_design.py:88, engine/org_design.py:262. Cero en datos."
+        },
+        {
+          "command": "Get-NetTCPConnection -State Listen (7860..7865) + Get-CimInstance Win32_Process por PID",
+          "status": "passed",
+          "evidence": "Los 6 puertos son APLICACION_CONTROL_PAGOS_MULTIINGENIO_V6_1_6_FULL_WIDTH\\app.py. OrgDNA en 127.0.0.1:8770 (PID 13452) y :60723 (PID 33124)."
+        },
+        {
+          "command": "grep 'registry.sqlite3|_capabilities' en MANIFIESTO_SHA256.txt + conteo de lineas con 'data/'",
+          "status": "passed",
+          "evidence": "Sin coincidencias. 377 lineas totales, 0 con 'data/'. data\\ esta fuera del sello."
+        },
+        {
+          "command": "python: censo de MEMORY.md bajo data\\projects\\_team_memory",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "416 archivos, 415 con 0 bytes. 1 con 60 B: orgdna-052462a77b59481bbbed0ac001a18821\\equipo\\MEMORY.md."
+        },
+        {
+          "command": "Listado de data\\projects\\_capabilities antes y despues (integridad: no -wal/-shm)",
+          "status": "passed",
+          "evidence": "Solo registry.sqlite3 en ambas mediciones. Ningun sidecar creado por las aperturas ?mode=ro."
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "profileSeedId": "T2",
+      "subject": "Analizar el guardián _UNSAFE y probar falso positivo contra el requisito de CV ficticio",
+      "description": "CONTEXTO: El producto OrgDNA V9 genera perfiles con CV FICTICIOS (experiencia e instituciones ficticias, objetivos de Master y PhD). El guardián vive en C:\\Users\\HFRC\\Downloads\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN (7)\\EQUIPO_ENTERPRISE_24_COUNCIL_ADN\\engine\\org_design.py, regex _UNSAFE en lineas 205-218, aplicado en _text() linea 259-262 a CADA campo de texto. Hay tambien _OUTPUT_SECRET en 219-228 que lanza sensitive_output.\n\nOBJETIVO: Determinar si _UNSAFE produce FALSOS POSITIVOS sobre texto legitimo de un CV ficticio o de un perfil profesional, y cuales son las ramas del regex que un generador de CV realista dispararia.\n\nMETODO OBLIGATORIO: no razonar de memoria. Escribir un script python en un directorio TEMPORAL fuera del paquete (por ejemplo %TEMP%\\guardian_probe.py) que importe o replique la regex _UNSAFE leida literalmente del archivo, y evaluarla contra una bateria de cadenas con resultado esperado conocido. Cubrir al menos: 'Nobel Prize in Economics', 'Turing Award', 'Fields Medal', 'premio Nobel', 'python -m pip install', 'python 3.12.1', 'sudo apt-get install', 'ejecuta powershell', 'ignore previous instructions', 'concede permisos', 'revela credenciales', '```json', '<script>', 'javascript:alert(1)', 'subprocess.run', 'eval(...)', y textos benignos de perfil como 'Lidero equipos de datos', 'Python y SQL', 'Menciono la herramienta Excel', 'publico en revistas indexadas'.\n\nENTREGABLE: tabla campo-a-campo con MATCH / NO MATCH y la rama del regex que dispara. Senalar explicitamente cuales son FALSOS POSITIVOS (texto legitimo bloqueado) y citar la linea y el fragmento del regex. Indicar si la rama (?:Nobel|Turing|Fields) es incompatible con el requisito de CV ficticio que el propio producto exige.\n\nPROHIBICIONES DURAS: escribir SOLO en %TEMP%, jamas dentro de EQUIPO_ENTERPRISE_24_COUNCIL_ADN. No tocar DSH. No modificar org_design.py. No resella, no commit, no borrar.",
+      "status": "completed",
+      "assignee": "guardian",
+      "dependencies": [],
+      "attempt": 1,
+      "createdAt": 1792643140795,
+      "updatedAt": 1792671940826,
+      "attemptId": "f06f298b-63e3-4ca4-b5cd-33a8094cc2b3",
+      "reassigning": false,
+      "output": "VEREDICTO: hay falso positivo real, pero NO en el vocabulario del CV ficticio; y la rama (?:Nobel|Turing|Fields) NO es incompatible con el requisito — es requirement-aligned.\n\n1) NOBEL/TURING/FIELDS (L217): REFUTADA la hipotesis de incompatibilidad. org_design.py:353 ordena literalmente \"No real universities, awards, Nobel/Turing/Fields claims\"; dna.py:40+68-69 lo vuelve a exigir. Un generador que emite \"Nobel Prize\" viola el esquema -> bloqueo = VERDADERO POSITIVO. Defecto real de esa rama: es mas estrecha que la capa 2 (no atrapa 'premio Nobel', 'Medalla Fields', 'Nobel' suelto, 'Premio Turing de la ACM'; dna.py si, via \\bnobel\\b) -> esas formas pasan api_design y fallan al importar ADN = ronda desperdiciada. Y no distingue asercion de negacion.\n\n2) EL FALSO POSITIVO ESTA EN OTRO LADO — prosa legitima de competencia en seguridad: 12 de 15 cadenas (80%) bloqueadas. Ramas: B09 L213-214 'omitir instrucciones'/'bypass de policy'/'ignorando politicas'; B10 L215 'habilitar permisos'/'conceder permisos'; B11 L216 'revelar credenciales'/'enviar credenciales'. Bloquea incluso la PROHIBICION de la conducta: 6 de 8 frases tipo 'No omitir instrucciones de seguridad' / 'Nunca revelar credenciales' / 'Sin bypass de policy'. Campos de maximo riesgo: cv.working_style (80% medido), responsibilities, skills[].description, mission, cv.summary, cv.experience[].scope, cv.certifications[].acceptance.\n\n3) SEGUNDA FUENTE, CODIGO DISTINTO: _OUTPUT_SECRET (L219-228) da 9 de 10 falsos positivos sobre 'password: rotacion trimestral', 'api_key: se inyecta desde el vault', 'Authorization: delegada al Owner' -> diagnostico sensitive_output, no unsafe_instructions. El comentario L255-258 declara que solo asignaciones reales deben bloquearse: no lo cumple.\n\n4) EL ESQUEMA DEL CV NO SE BLOQUEA: 0 de 105 cadenas de fixtures canonicas del producto (qa_v3/fixtures.py, tests/e2e/synthetic_data.py, tests_org_design.py) resultan bloqueadas. El guardian NO es incompatible con el requisito de CV ficticio a nivel de esquema.\n\n5) HUECO (severidad baja): 'sudo apt-get install jq' y 'apt-get update && apt-get install' pasan _UNSAFE, dna.AWARDS y dna.INJECTION; solo 'apt install' (sin guion) se detecta.\n\n6) DECISIVO PARA ADJUDICAR EL BLOQUEO: el diagnostico unsafe_instructions se arma en _diagnostic (L112-143) desde allowlist fija (code/category/message/next_action/field) SIN fragmento del texto. No se puede distinguir FP de TP desde el diagnostico. Protocolo: si el campo reportado es cv.working_style/responsibilities/skills[].description/mission/cv.summary/cv.experience[].scope -> alta probabilidad de FALSO POSITIVO (B09/B10/B11); si el campo es cv.education[].program/institution o hay premio -> VERDADERO POSITIVO (regenerar); si el codigo es sensitive_output -> FP casi seguro.\n\nMETODO: 4 sondas python en %TEMP% (guardian_probe.py..probe4.py + JSONs + guardian_t2_informe.md), patron extraido por AST del archivo real y atribucion de linea por tokenize (cero transcripcion). Paquete solo lectura: org_design.py SHA256 770840A708CCF7257884396FB9F44FE8FFD2738AC28083B3DF3C1ED11267F733, LastWriteTime 2026-10-21 10:55:11, 0 archivos tocados en engine/ y tests*/.\n\nCORRECCION DE METODO declarada: la primera pasada de la sonda 2 no extraia los flags de re.compile y reporto 4 huecos de premio inexistentes (dna.py lleva re.I). Se corrigio el extractor, se verifico flags _UNSAFE=0 _OUTPUT_SECRET=0 AWARDS=2 INJECTION=2 y se re-ejecuto antes de fijar conclusiones. La sonda 1 queda valida porque los patrones de org_design no tienen flags externos.\n\nPARCHE PROPUESTO (NO aplicado, prohibicion dura respetada): (a) polaridad en B09/B10/B11 para no bloquear la negacion; (b) adoptar en L217 la forma de dna.py:40 para igualar capas; (c) _OUTPUT_SECRET exigiendo forma de secreto y no 'palabra tras dos puntos'; (d) incluir group(0) acotado o indice de rama en el diagnostico.\n\nAVISO (ajeno a esta sonda): durante la sesion hubo escrituras dentro del paquete no causadas por este analisis — data/projects/_team_memory/orgdna-*/equipo/MEMORY.md, data/projects/_capabilities/registry.sqlite3 y docs/REVISION_AGILIDAD_V1.md (07:21-07:24 del 2026-10-22).",
+      "acceptanceResults": [
+        {
+          "criterion": "Tabla campo-a-campo con MATCH / NO MATCH y la rama del regex que dispara",
+          "status": "passed",
+          "evidence": "%TEMP%\\guardian_t2_informe.md secciones 2.1/2.2/2.3 y 3: 12 ramas con linea, 20 cadenas del enunciado con MATCH/NO MATCH + rama, y tabla de los 18 campos de texto con limite, punto de aplicacion y riesgo de FP"
+        },
+        {
+          "criterion": "Senalar explicitamente los falsos positivos (texto legitimo bloqueado) citando linea y fragmento",
+          "status": "passed",
+          "evidence": "14 filas en 2.2 con fragmento y linea (B09 L213-214, B10 L215, B11 L216) + 7 filas en 2.3 para _OUTPUT_SECRET (L219-228); medido: 12/15 y 9/10"
+        },
+        {
+          "criterion": "Indicar si la rama (?:Nobel|Turing|Fields) es incompatible con el requisito de CV ficticio",
+          "status": "passed",
+          "evidence": "Seccion 1b: NO es incompatible, es requirement-aligned. org_design.py:353 prohibe esos claims y dna.py:40+68-69 lo re-exige; refutada la hipotesis. Defecto real: mas estrecha que la capa 2"
+        },
+        {
+          "criterion": "Metodo obligatorio: script python en directorio TEMPORAL que use la regex leida literalmente del archivo",
+          "status": "passed",
+          "evidence": "%TEMP%\\guardian_probe.py..probe4.py: patron extraido por AST del propio org_design.py y linea por tokenize STRING (sin transcripcion manual); reconstruccion token==constante AST verificada con assert"
+        },
+        {
+          "criterion": "Prohibiciones duras: escribir solo en %TEMP%, no modificar org_design.py, no resellar/commitear/borrar",
+          "status": "passed",
+          "evidence": "org_design.py SHA256 770840A708CCF7257884396FB9F44FE8FFD2738AC28083B3DF3C1ED11267F733 sin cambios, LastWriteTime 2026-10-21 10:55:11; 0 archivos tocados en engine/ y tests*/; los 9 artefactos escritos estan en %TEMP%; ningun comando de escritura, git ni borrado sobre el paquete"
+        }
+      ],
+      "commandsRun": [
+        {
+          "command": "python %TEMP%\\guardian_probe.py",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "59 casos: 8 falsos positivos, 5 falsos negativos, 46 OK; 12 ramas de nivel 0; patron de 820 caracteres; JSON en %TEMP%\\guardian_probe_result.json"
+        },
+        {
+          "command": "python %TEMP%\\guardian_probe2.py",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "105 fixtures canonicas del producto: 0 bloqueadas. Higiene de seguridad en cv.working_style: 12/15 bloqueadas (80%). Capa 2 dna.py con re.I cubre los 4 huecos de premio. apt-get install: hueco en ambas capas"
+        },
+        {
+          "command": "python %TEMP%\\guardian_probe3.py",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "6 de 8 frases de prohibicion/negacion legitimas bloqueadas por B09/B10/B11; 'legado de Nobel' pasa _UNSAFE y lo bloquea dna.AWARDS"
+        },
+        {
+          "command": "python %TEMP%\\guardian_probe4.py",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "_OUTPUT_SECRET: 9 de 10 falsos positivos sobre prosa de politica de credenciales, codigo sensitive_output"
+        },
+        {
+          "command": "python -c (extractor de flags sobre guardian_probe2.py)",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "flags _UNSAFE=0 _OUTPUT_SECRET=0 AWARDS=2 INJECTION=2 — valida que compilar el literal de _UNSAFE equivale a re.compile del archivo"
+        },
+        {
+          "command": "Get-FileHash org_design.py -Algorithm SHA256 ; Get-ChildItem -Recurse -File | Where LastWriteTime -gt (Get-Date).AddHours(-3)",
+          "status": "passed",
+          "exitCode": 0,
+          "evidence": "org_design.py SHA256 770840A708CCF7257884396FB9F44FE8FFD2738AC28083B3DF3C1ED11267F733, LastWriteTime 2026-10-21 10:55:11; 0 archivos modificados en engine/ y tests*/; escrituras ajenas solo en data/projects y docs/REVISION_AGILIDAD_V1.md"
+        }
+      ]
+    },
+    {
+      "id": "t3",
+      "profileSeedId": "T3",
+      "subject": "Mapear las instancias del panel en 7860-7865, cuál sirve y cuál está colgada",
+      "description": "CONTEXTO: En este host hay seis servidores python escuchando en 127.0.0.1:7860,7861,7862,7863,7864,7865. Son instancias del panel OrgDNA V9 (engine\\bridge.py, web\\index.html+app.js+style.css). Una sonda GET previa dio: 7860 HTTP 200, 7861 HTTP 200, 7863 HTTP 200, 7864 HTTP 200, 7865 HTTP 200, y 7862 SIN RESPUESTA por timeout de 3s. El lanzador es engine\\launcher.py, con DEFAULT_PORT 8765 y --port 0 para puerto libre.\n\nOBJETIVO: Determinar cuantas instancias estan vivas y sanas, cual esta colgada, y si alguna corresponde al codigo actual (BUILD_ID).\n\nMETODO (solo lectura): (1) Get-NetTCPConnection para mapear puerto a OwningProcess. (2) para cada PID: Get-CimInstance Win32_Process con CommandLine y CreationDate, y Get-Process para CPU y Threads. (3) GET http://127.0.0.1:<puerto>/api/instance con timeout corto y anotar el JSON devuelto (application, version, protocol, build, installation, origin). (4) GET / y anotar StatusCode y longitud. (5) el BUILD_ID real se calcula con _build_fingerprint() de engine\\launcher.py: sha256 sobre engine/*.py y web/*. Comparar el build que declara cada instancia contra el del codigo en disco: python -c desde el directorio del paquete.\n\nENTREGABLE: tabla puerto / PID / creado / CPU_s / responde si-no / build declarado / coincide con disco. Identificar la instancia colgada y la mas vieja. NO cerrar ningun proceso: solo medir.\n\nPROHIBICIONES DURAS: NO terminar procesos (ni Stop-Process ni taskkill). NO tocar DSH ni el puerto 3080. No modificar el paquete. No resella, no commit.",
+      "status": "completed",
+      "assignee": "runtime",
+      "dependencies": [],
+      "attempt": 1,
+      "createdAt": 1792643140795,
+      "updatedAt": 1792671806634,
+      "attemptId": "1a355708-5667-4aba-8b96-8851ed4c8d2d",
+      "reassigning": false,
+      "output": "T3 COMPLETADA — MAPEO DE INSTANCIAS 7860-7865 + UBICACION REAL DEL PANEL\n\n== 1. HALLAZGO QUE ROMPE LA PREMISA (leer primero) ==\nLos seis puertos 7860-7865 NO alojan OrgDNA V9. Los seis PIDs ejecutan \"app.py\" de APLICACION_CONTROL_PAGOS_MULTIINGENIO_V6_1_6_FULL_WIDTH bajo CanaSuite\\venv_v6_1_14, y las seis devuelven HTTP 404 en /api/instance — ruta que OrgDNA sí expone (engine\\bridge.py:2587). Cualquier conclusion de linea base que atribuya estado del panel OrgDNA a 7860-7865 esta mal medida.\n\n== 2. TABLA 7860-7865 (puerto / PID / creado / CPU_s / hilos / responde si-no / build declarado / coincide con disco) ==\n7860 | 35168 | 2026-10-15 16:06:24 | 3375.47 | 18 | /api/instance NO (404, 419 ms); GET / SI (200, 3.221.415 B, 1940 ms) | NINGUNO | n/a - no es OrgDNA\n7861 | 39756 | 2026-10-14 21:19:00 | 2895.92 | 19 | NO (404, 467 ms); SI (200, 3.220.781 B, 1268 ms) | NINGUNO | n/a\n7862 | 21020 | 2026-10-08 13:39:06 | 5231.38 | 18 | NO (404, 221 ms); SI (200, 3.219.453 B, 1504 ms) | NINGUNO | n/a\n7863 | 11832 | 2026-10-15 08:35:41 | 2476.94 | 18 | NO (404, 284 ms); SI (200, 3.220.780 B, 2228 ms) | NINGUNO | n/a\n7864 | 2784  | 2026-10-15 11:57:56 | 2682.83 | 19 | NO (404, 140 ms); SI (200, 3.221.960 B, 1965 ms) | NINGUNO | n/a\n7865 | 48348 | 2026-10-18 18:27:15 | 1395.36 | 18 | NO (404, 103 ms); SI (200, 3.221.687 B, 5235 ms) | NINGUNO | n/a\nNota: cada PID que escucha tiene un padre vivo con CommandLine identica (Gradio padre/hijo): son 12 procesos, no 6. Mas viejo de este grupo: 21020 (7862), 2026-10-08.\n\n== 3. CUAL ESTA COLGADA: NINGUNA ==\n7862, la señalada como \"SIN RESPUESTA\", responde: 404 en /api/instance a 221 ms y GET / a 1504 ms. Con presupuesto de 3 s mi corrida marco timeout en 7860/7861/7862/7865; con presupuesto de 30 s las SEIS contestaron 200. \"Sin respuesta a 3 s\" sobre una pagina de 3,2 MB no es un cuelgue: es el umbral de la sonda. No hay instancia colgada en 7860-7865.\n\n== 4. DONDE ESTA REALMENTE OrgDNA Y SI ES EL CODIGO ACTUAL ==\nBUILD_ID disco  = b319f440641c3dc7c2c373cbaa21761925bd45567b7db3f18efebe5d44e8350e (75 archivos: 72 engine/*.py + 3 web/*)\nINSTALLATION_ID disco = 1214aa46c6dc7227f19e2cb967c6b512651440362aac29e88e37306a651f7916\n\n8765 | 27460 | 2026-10-06 22:04:41 | CPU 176.05 | 2 hilos | CMD \"py -3 -m engine.bridge\" (Python 3.14)\n  /api/instance -> 404 (no declara build). GET / -> 200, 30.589 B, 105 ms.\n  /style.css -> 26.069 B (disco 44.801) | /app.js -> 44.599 B (disco 252.717)\n  => NO COINCIDE con disco. Frontend de ~3 versiones atras. ES LA MAS VIEJA DEL HOST (16 dias). Es la unica instancia en estado anomalo verificable: obsoleta, no colgada.\n\n8770 | 13452 | 2026-10-22 07:08:02 | CPU 11.94 | 7 hilos | CMD \"-m engine.launcher --port 8770 --no-browser\" (padre huerfano)\n  /api/instance -> 200 {\"application\":\"orgDNA.local.panel\",\"version\":\"3.1\",\"protocol\":1,\"build\":\"b319f440...e8350e\",\"installation\":\"1214aa46...f7916\"}\n  GET / -> 200, 107.869 B, 146 ms | /app.js 252.717 B = disco | /style.css 44.801 B = disco\n  => COINCIDE CON DISCO. SANA.\n\n60723 | 33124 | 2026-10-22 01:27:52 | CPU 1.47 | 1 hilo | CMD \"-m engine.launcher --port 60723\" (padre huerfano)\n  /api/instance -> 200, mismo build y misma installation. GET / -> 200, 107.869 B, 48 ms. CSRF token distinto del de 8770 => dos servidores vivos distintos, no un proxy.\n  => COINCIDE CON DISCO. SANA.\n  Anomalia declarada: Get-Process reporta 1 hilo / 7,3 MB WS, identico en dos mediciones. Responde HTTP correctamente; NO tengo evidencia que explique ese conteo -> NO COMPUTADO.\n\nVeredicto: 2 instancias OrgDNA vivas y sanas sobre el codigo actual (8770, 60723) + 1 obsoleta (8765). La copia del paquete es la misma en ambas (installation identica). Ninguna instancia OrgDNA corresponde a un build distinto del disco salvo 8765, que ni siquiera expone la ruta de identidad porque su bridge es anterior a ella.\n\n== 5. HALLAZGO LATERAL QUE AFECTA AL EQUIPO ==\nPID 21544 = %TEMP%\\t28_watchdog.py, hijo de un pwsh que lanzo \"unittest discover -s EQUIPO_ENTERPRISE_24_COUNCIL_ADN -p test*.py\" con faulthandler a 150 s y salida a %TEMP%\\t28_suite_watch.txt. Vivo desde 2026-10-22 07:11:44 con 382 s de CPU y escuchando en 54773 (la suite levanta servidores locales reales). No lo toque. Si t28 se reporto terminada, ese proceso sigue vivo.\n\n== 6. RESTRICCIONES RESPETADAS ==\nCero Stop-Process / taskkill. Cero escrituras: no cree ni modifique archivos, no reselle, no commitee. Sin tocar DSH ni 3080. Solo Get-NetTCPConnection, Get-CimInstance, Get-Process, GET HTTP y sha256 en python -c.\n\n== 7. AUDITORIA METACOG ==\nmetacog_audit: 0 fragmentos CONTRADICHOS. Los NO_SOPORTADO que quedan son artefacto de binding del filtro (el item no declara `objetivo` como subcadena); cada numero reportado tiene comando ejecutado y salida observada en esta sesion.",
+      "acceptanceResults": [
+        {
+          "criterion": "Mapear puerto -> OwningProcess para 7860-7865",
+          "status": "passed",
+          "evidence": "Get-NetTCPConnection -State Listen: 7860->35168, 7861->39756, 7862->21020, 7863->11832, 7864->2784, 7865->48348"
+        },
+        {
+          "criterion": "Para cada PID: CommandLine, CreationDate, CPU, Threads",
+          "status": "passed",
+          "evidence": "Get-CimInstance Win32_Process + Get-Process sobre los 6 PIDs: los seis son app.py de APLICACION_CONTROL_PAGOS_MULTIINGENIO_V6_1_6_FULL_WIDTH (CanaSuite venv), no OrgDNA"
+        },
+        {
+          "criterion": "GET /api/instance por puerto con timeout corto y anotar JSON",
+          "status": "passed",
+          "evidence": "Los seis devuelven HTTP 404 (419/467/221/284/140/103 ms). Ninguno devuelve el JSON de instance_identity"
+        },
+        {
+          "criterion": "GET / y anotar StatusCode y longitud",
+          "status": "passed",
+          "evidence": "Con presupuesto 30 s los seis devuelven 200 con 3.219.453-3.221.960 B en 1268-5235 ms"
+        },
+        {
+          "criterion": "Calcular BUILD_ID real con _build_fingerprint() del disco",
+          "status": "passed",
+          "evidence": "b319f440641c3dc7c2c373cbaa21761925bd45567b7db3f18efebe5d44e8350e sobre 75 archivos; INSTALLATION_ID 1214aa46...f7916"
+        },
+        {
+          "criterion": "Comparar build declarado por cada instancia contra el del disco",
+          "status": "passed",
+          "evidence": "8770 y 60723 declaran build b319f440... e installation 1214aa46... = disco (sanas). 8765 devuelve 404 en /api/instance y sirve app.js 44.599 B vs 252.717 B del disco (obsoleta)"
+        },
+        {
+          "criterion": "Identificar la instancia colgada y la mas vieja",
+          "status": "passed",
+          "evidence": "Colgada: NINGUNA (7862 responde 404 en 221 ms y / en 1504 ms; el timeout era el umbral de 3 s). Mas vieja del host: 8765 (PID 27460, 2026-10-06 22:04:41)"
+        }
+      ],
+      "commandsRun": [
+        {
+          "command": "Get-NetTCPConnection -State Listen -LocalAddress 127.0.0.1 | Where LocalPort -ge 7860 -and -le 7865",
+          "status": "passed",
+          "evidence": "Seis sockets LISTEN con PIDs distintos (35168,39756,21020,11832,2784,48348)"
+        },
+        {
+          "command": "Get-CimInstance Win32_Process -Filter ProcessId=<pid> + Get-Process -Id <pid>",
+          "status": "passed",
+          "evidence": "Los seis CommandLine apuntan a app.py de APLICACION_CONTROL_PAGOS_MULTIINGENIO_V6_1_6_FULL_WIDTH; CreationDate 2026-10-08 a 2026-10-18; CPU 1395-5231 s"
+        },
+        {
+          "command": "Invoke-WebRequest http://127.0.0.1:<7860..7865>/api/instance -TimeoutSec 3",
+          "status": "passed",
+          "evidence": "HTTP 404 en los seis"
+        },
+        {
+          "command": "Invoke-WebRequest http://127.0.0.1:<7860..7865>/ -TimeoutSec 30",
+          "status": "passed",
+          "evidence": "HTTP 200 en los seis: 1940/1268/1504/2228/1965/5235 ms con 3,22 MB cada uno"
+        },
+        {
+          "command": "python -c replica exacta de launcher._build_fingerprint() sobre engine/*.py y web/*",
+          "status": "passed",
+          "evidence": "BUILD_ID_DISK=b319f440641c3dc7c2c373cbaa21761925bd45567b7db3f18efebe5d44e8350e, FILES_HASHED=75"
+        },
+        {
+          "command": "Invoke-WebRequest http://127.0.0.1:8770/api/instance y :60723/api/instance y :8765/api/instance",
+          "status": "passed",
+          "evidence": "8770 y 60723 devuelven build b319f440... + installation 1214aa46...; 8765 devuelve 404"
+        },
+        {
+          "command": "Invoke-WebRequest http://127.0.0.1:8765/app.js y :8770/app.js y /style.css en ambos",
+          "status": "passed",
+          "evidence": "8765: app.js 44599 B / style.css 26069 B; 8770: app.js 252717 B / style.css 44801 B (= disco)"
+        },
+        {
+          "command": "Get-CimInstance Win32_Process sobre los PPID de las instancias",
+          "status": "passed",
+          "evidence": "Padres 26780 y 21596 muertos (8770 y 60723 huerfanas pero vivas); 27312 vivo (py -3 -m engine.bridge, padre de 8765)"
+        }
+      ]
+    },
+    {
+      "id": "t4",
+      "profileSeedId": "T4",
+      "subject": "Consolidar causa raíz única con evidencia y separar bloqueo de cuelgue",
+      "description": "CONTEXTO: Los tres informes previos estan disponibles. El hallazgo de partida: el panel NO se colgo; se detuvo FAIL-CLOSED en la etapa api_design (generation_pipeline.py:561 pone stage='api_design', progress=30) porque _text() de engine\\org_design.py:261 lanzo unsafe_instructions, y por diseno no se rellenaron perfiles ni se publico un diseno parcial.\n\nOBJETIVO: Producir UNA causa raiz por cada sintoma, sin fusionar sintomas distintos. Hay al menos tres cosas separables: (a) el trabajo de generacion detenido por el guardian, (b) la instancia 7862 que no responde, (c) el paquete sellado con 1 sobrante (_focus1.txt) que hace fallar verifica_manifiesto.py.\n\nMETODO: no agregar opinion nueva; consolidar lo medido. Para cada sintoma: causa, evidencia citada (ruta:linea o comando + salida), y que NO se sabe todavia. Si T1 y T2 discrepan sobre el campo culpable, decirlo y no elegir uno por mayoria.\n\nENTREGABLE: informe con una tabla sintoma / causa / evidencia / incognita. Cerrar con la lista exacta de evidencia que falta para afirmar cada cosa.\n\nPROHIBICIONES DURAS: no tocar DSH, no escribir en el paquete, no resella, no commit.",
+      "status": "completed",
+      "assignee": "sintesis",
+      "dependencies": [
+        "t1",
+        "t2",
+        "t3"
+      ],
+      "attempt": 1,
+      "createdAt": 1792643140795,
+      "updatedAt": 1792672471128,
+      "attemptId": "8ee9dd7c-71e3-4d44-93cc-f572d3320bcc",
+      "reassigning": false,
+      "output": "T4 COMPLETADA — causa raíz separada por síntoma, con corrección de premisa y oposición adversarial. Informe: `INFORME_T4_CAUSA_RAIZ_UNICA.md` (raíz del workspace, no dentro del paquete).\n\nADVERTENCIA DE MEDICIÓN: el paquete estaba siendo rescrito durante la forensia. 3 resellados (MANIFIESTO mtime 07:28:05 / 07:28:45 / 07:31:05) y 3 versiones de engine/org_design.py (07:27:56 / 07:28:31 / 07:30:15) dentro de 4 minutos. Toda cifra lleva hora.\n\nA) TRABAJO DETENIDO EN api_design — mecanismo verificado, atribución NO probada.\n- Mecanismo: `_text()` (engine/org_design.py:248) ejecuta `_UNSAFE.search` y llama `_invalid(\"unsafe_instructions\")` (:261-262) sin distinguir prohibir de ejecutar. Reproducción propia con import del módulo real: prohibiciones legítimas BLOQUEADAS 6/6 ('No omitir instrucciones de seguridad', 'Nunca revelar credenciales', 'Sin bypass de policy', 'No habilitar permisos sin aprobacion', 'Evitar conceder permisos permanentes', 'Jamás enviar credenciales por correo') y aserciones 6/6 — resultado idéntico ⇒ la regex no discrimina. `_OUTPUT_SECRET` (:219-227 → :259-260) da código DISTINTO `sensitive_output`: 3/3 sobre las cadenas que nombra T2.\n- Etapa + fail-closed: generation_pipeline.py:561 fija stage='api_design', progress=30 justo antes de lanzar el worker (:567-568, que ejecuta design_with_llm :607); :636-637 \"No se exporta un lote parcial\"; :674 \"se conserva el ADN anterior\"; :843-851 failed_stage + recibo generation-failed.\n- CAMPO CULPABLE: DESCONOCIDO. Barrido propio de data/ (6 tokens: unsafe_instructions, api_design, sensitive_output, failed_stage, repository_http_error, output_truncated) = 0 ficheros con hit. Además :8770 fue REINICIADO a las 07:29:16 (PID 44136; T1 midió PID 13452 a las 07:08:02) ⇒ el dict `self.jobs` (generation_pipeline.py:415, en memoria) murió con el proceso.\n- T1 vs T2 NO discrepan sobre un campo medido: T1 mide que no hay campo registrado; T2 mide el inventario de campos EN RIESGO. No elijo uno por mayoría.\n- OPOSICIÓN ADVERSARIAL (adversarial_frame + adversarial_verdict): SOBREVIVE LA CONTRA (7 vs 5). La atribución \"el falso positivo causó el aborto\" queda REFUTADA/no probada (pudo ser sensitive_output, una violación REAL de Nobel/Turing/Fields exigida en org_design.py:353 + dna.py:40, u otra excepción). El defecto del guardián sigue en pie como defecto accionable, no como explicación del job.\n\nB) 7862 \"colgada\" — FALSO. Sonda propia 07:31:24, presupuesto 30 s: /api/instance → HTTP 404 en 368 ms; / → HTTP 200, 3.219.453 B en 1.348 ms. Las seis 7860-7865 son AJENAS a OrgDNA (404 en /api/instance; 200 en /, 3,22 MB), como midió T3. NO reproduzco el timeout a 3 s de T3 (mi muestra fue 1.348 ms): su explicación \"umbral 3 s\" es plausible y NO verificada.\n\nB-bis) PANEL REAL = :8770. /api/instance 200, 14 ms, 346 B: application orgDNA.local.panel, version 3.1, build ccd3dd3d2a9a678f…, installation 1214aa46…. Semántica: launcher.py:23-34 congela BUILD_ID (sha256 de engine/*.py + web/*) AL ARRANCAR. Disco recalculado ahora = 04fad72cb4501642… ≠ build servido. Tres identidades: proceso ccd3dd3d… / disco hoy 04fad72c… / disco cuando T3 b319f4…. El proceso en vuelo ejecuta código que YA NO está en disco.\n\nC) PAQUETE SELLADO — la premisa es falsa en 3 puntos; el fallo es intermitente por carrera.\n- No existe `_focus1.txt`: 0 ficheros con patrón *focus* en todo el workspace.\n- Cuando falló no era 1 sobrante: 07:28:0x → 377 entradas / 374 ok / 3 DIVERGENTES (docs/PLATAFORMA_ENTREGA_V9.md, engine/bundle.py, engine/org_design.py) / 1 sobrante real = **docs/REVISION_AGILIDAD_V1.md** / RESULTADO FALLO (exit 1).\n- Cuatro estados del mismo verificador: 07:28:0x FALLO → 07:30:12 **OK 378/378** (manifiesto e445e486…, mtime 07:28:45) → 07:30:58 FALLO 377/378 con 1 divergente (`engine/org_design.py` declarado b10e0ae4 vs real 770840a7) → 07:32:47 **OK 378/378** (manifiesto 41fb333e…, mtime 07:31:05).\n- Causa: carrera de escritores sin dueño único; los resellados quedan ordenados antes/después de las ediciones arbitrariamente. La transición OK→FALLO de 07:30:12→07:30:58 la produce la REVERSIÓN de engine/org_design.py a bytes de HEAD a las 07:30:15, 3 s después del resellado.\n- Arimética verificada: 832 ficheros (sin __pycache__) = 378 declarados + 453 exentos + 1 manifiesto; 453 = 445 (data/) + 7 (docs/rea/evidence/chromium/) + 1 (docs/PLATAFORMA_VERIFICACION_V1.md).\n- COROLARIO DURO: \"sello coherente\" ≠ \"código correcto\". El resellado de 07:31:05 dejó el sello OK declarando la versión SIN el guardián de polaridad, es decir certifica el falso positivo.\n\nA4) HALLAZGO TRANSVERSAL: el parche que corregía el falso positivo EXISTIÓ, SE SELLÓ Y FUE REVERTIDO, sin commit. engine/org_design.py a las 07:29:45 = b10e0ae4a023f549, 80.023 B, 1.114 líneas, con `_INTENT_BRANCH` (L233-238), `_NEGATOR` (L244-247), `_negated()` (L250-251) y `_unsafe_hit()` (L254-259: `if _INTENT_BRANCH.search(...) and _negated(...): continue`). HEAD/ahora = 770840a708ccf725, 78.717 B, sin `_NEGATOR`; `git diff HEAD -- engine/org_design.py` hoy = vacío. Supervivientes: el manifiesto de 07:28:45 declaró b10e0ae4… y el proceso :8770 cargó el parche a las 07:29:16 (build ccd3dd3d…). NO sobrevive en bytecode (org_design.cpython-312.pyc recompilado 07:30:28; ningún .pyc contiene _NEGATOR).\n\nA5) SÍNTOMA DISTINTO, NO FUSIONAR: el fallo que sí está en el registro vivo (T1) es otro: job 7ee18828-d318-4445-b397-5bed9113e802, failed_stage=**inventory**, error.code=**repository_http_error**, http_status 403, sent_requests=0, potentially_billed=false. No es el de api_design.\n\nNO ATRIBUIDO (evidencia faltante exacta en §3 y §6 del informe): quién reselló en 07:28:05/07:28:45/07:31:05 (sin tarea programada ni vigilante); procedencia de dos digests del manifiesto de 07:28:05 que no coinciden con HEAD, ni con disco, ni con variantes CRLF (bundle.py ef737bde75893c58, acta 2a0ec2e935bc6d8b); y el error.code/field del job detenido.\n\nVerificaciones: `python verifica_manifiesto.py` ×4 (FALLO/OK/FALLO/OK, salidas crudas arriba); `Get-FileHash` sobre 5 ficheros; `git cat-file blob HEAD:` para hashes de HEAD; import del módulo real con PYTHONDONTWRITEBYTECODE=1; `engine.launcher.BUILD_ID` recalculado; `Invoke-WebRequest -TimeoutSec 30` a 7862 y 8770; `Get-CimInstance Win32_Process`, `Get-ScheduledTask`, `Get-ChildItem -Filter *focus*`, `Select-String -SimpleMatch` sobre data/. Sin escrituras dentro del paquete, sin resellado, sin commit, DSH intacto."
+    },
+    {
+      "id": "t5",
+      "profileSeedId": "T5",
+      "subject": "Dictamen adversarial: qué está probado y qué no",
+      "description": "CONTEXTO: Existe un informe de sintesis con la causa raiz de tres sintomas en la app OrgDNA V9. Tu papel es adversarial: intentar refutar cada afirmacion, no confirmarla.\n\nOBJETIVO: Emitir un veredicto por afirmacion con uno de: PROBADO (hay artefacto reproducible), NO PROBADO (falta artefacto), REFUTADO (la evidencia lo contradice).\n\nMETODO: para cada afirmacion del informe, buscar el artefacto citado y comprobar que existe y dice lo que se le atribuye. Una cita de un documento o de una skill NO es artefacto. 'Compila' no es 'funciona'. 'Exit 0' no es 'el evento ocurrio'. 'La ventana de logs no lo muestra' no es 'nunca ocurrio'.\n\nENTREGABLE: tabla afirmacion / veredicto / artefacto comprobado / que falta. Si el informe afirma que el panel no se colgo, exigir la prueba (el job detenido con codigo de error frente a un proceso sin progreso). Si afirma un campo culpable, exigir el registro que lo nombra.\n\nPROHIBICIONES DURAS: no tocar DSH, no escribir en el paquete, no resella, no commit. No corregir el informe de otro: solo dictaminar.",
+      "status": "completed",
+      "assignee": "dictamen",
+      "dependencies": [
+        "t4"
+      ],
+      "attempt": 1,
+      "createdAt": 1792643140795,
+      "updatedAt": 1792672891558,
+      "attemptId": "21eb24a5-3b8a-451e-b994-4297edba2388",
+      "reassigning": false,
+      "output": "T5 COMPLETADA — Dictamen adversarial emitido. Entregable: `DICTAMEN_T5_ADVERSARIAL.md` (24.379 B, raíz del workspace, FUERA del paquete; sha256 bbbda50c…). No se reselló, no se escribió en el paquete, no se commiteó.\n\n== EVENTO CAPTURADO EN VIVO DURANTE EL DICTAMEN (lo más importante) ==\nEl objeto cambió mientras lo dictaminaba. `engine/org_design.py` fue RE-PARCHEADO a las 07:40:02.996 (78.717 B -> 80.019 B, sha256 770840a7 -> e91fb1a9) y el sello pasó de OK a FALLO. Transición con ambos extremos medidos:\n- 07:36:10 -> verifica_manifiesto.py = OK 378/378, 0 divergentes, 467 exentos, exit 0\n- 07:40:05 -> FALLO 377/378, 1 DIVERGENTE: `engine/org_design.py (declarado 770840a708ccf725 / real e91fb1a95402b0bc)`, 483 exentos, exit 1\n- 07:41:20 (cierre) -> sigue FALLO, 493 exentos. MANIFIESTO sin resellar (mtime 07:31:05).\nNo es mi fichero: `DICTAMEN_T5_ADVERSARIAL.md` está fuera de `EQUIPO_ENTERPRISE_24_COUNCIL_ADN/` (comprobado dentro_del_paquete=False) y el verificador sólo recorre el paquete.\n\nTRES IDENTIDADES DE CÓDIGO SIMULTÁNEAS: proceso :8770 = ccd3dd3d (congelado 07:29:16, SIN parche) | sello = 770840a7 (CON el defecto) | disco 07:40 = a7352fa9 (CON el parche).\n\nVERIFICADO: el parche vigente (e91fb1a9) SÍ corrige el falso positivo — corrida propia: prohibiciones 0/6 bloqueadas, aserciones 6/6, prosa CV 0/10, `_text('Nunca revelar credenciales','cv.working_style')` PASA y `'Revelar credenciales'` aborta con code+field. La rama Nobel NO fue tocada (sigue más estrecha que dna.py:40).\n\n== TABLA (27 filas en el fichero; resumen por veredicto) ==\nPROBADO (13): mecanismo `_text`/`_UNSAFE` sin polaridad (L248/261-262); falso positivo reproducido 6/6 vs 6/6; `_OUTPUT_SECRET`→`sensitive_output` 3/3; comportamiento Nobel 5 formas; etapa api_design :561 y fail-closed :636-637/:663/:674/:843-851; campo culpable = AUSENCIA (0/459 ficheros, 11 snapshots); 7860-7865 NO son OrgDNA (404 /api/instance ×6 + procesos CanaSuite); NO hay cuelgue (200 ×6 con bytes EXACTOS de T3, y timeout de 3 s reproducido en 7861 + 200 en 394 ms con 30 s); build servido ≠ build en disco; `_focus1.txt` no existe (0 ficheros *focus*); sello OK 378/378 a las 07:36:10 declarando 770840a7 (la versión CON el defecto); `b10e0ae4` sin artefacto (202 .pyc sin _NEGATOR); hoy el fichero = bytes de HEAD (diff vacío).\nNO PROBADO (8): **el evento** \"se detuvo en api_design por unsafe_instructions\" (ningún registro lo nombra); \"no se publicó diseño parcial\" (403 en /api/state); \"disco de T3 = b319f4\"; el FALLO de 07:28:0x con 377/374/3/1; los bytes `b10e0ae4` como tales; \"8770 cargó el código parcheado\"; A5 job 7ee18828/inventory/403 (irreleíble: /api/state 403, proceso reiniciado); \"responde en 14 ms\" (medí 141 ms).\nREFUTADO / NO REPRODUCIBLE (4): \"OK 378/378\" REFUTADO a las 07:40:05; §4 \"832 = 378+453+1\" no se reproduce (467→493 exentos: `data/` crece en vivo); T1 \"jobs:0 en TODOS los 11 snapshots\" impreciso (5 de 11 NO tienen `generation_history`); T1 \"registry 249.856 B\" no estable (hoy 253.952 B, 62 págs, projects 2.393→2.464).\nCORREGIDO AL ALZA (2): la explicación del umbral de 3 s que T4 dejó como \"plausible y no verificada\" queda VERIFICADA; la inestabilidad del sello (fila C2) pasa de NO PROBADO a PROBADO por medición directa.\n\n== LAS DOS PRUEBAS QUE LA TAREA EXIGÍA ==\n(1) \"Panel no colgado\": prueba válida para 7860-7865 (byte-exacta, 6/6) y NO EXISTENTE para el job de api_design — `generation_pipeline.py:415` y `bridge.py:656` guardan estado y recibos EN MEMORIA; la única persistencia (`:148-206`) preserva `error.code` Y `field` vía `_diagnostic`, pero sólo al guardar snapshot, y el último snapshot es de 07:19:37 (anterior al fallo) con jobs=0. El proceso murió a las 07:29:16. => \"se detuvo, no se colgó\" es código + inferencia, NO registro.\n(2) \"Campo culpable\": el informe NO lo afirma — dice desconocido, y la ausencia está medida. No hay nada que refutar: pasa el test por la vía difícil.\nHALLAZGO PROPIO H1: la ausencia del campo NO es límite del instrumento — `_diagnostic` (:112-118) + `_safe_field` (:105-109) preservan `field`, y TODOS los call sites de `_text` pasan campo; verificado ejecutando la ruta real: emite `field` exacto para los 7 campos de riesgo de T2. Luego una reproducción controlada nombraría el campo con certeza.\nHALLAZGO PROPIO H2: `failed_stage=api_design` no aísla la causa NI con el registro delante (la etapa cubre design_with_llm + validación + bundle).\nHALLAZGO PROPIO H3: `sensitive_output` tiene una 2ª fuente SIN campo (`:951-952`, scan de credencial de sesión) ⇒ si el aborto fue por ahí, ni reproduciendo aparecería campo.\n\nMÉTODO: verificación por lectura con línea + reproducción ejecutando el módulo real (nunca citando), recomputo de BUILD_ID con el algoritmo de `launcher.py:23-30`, parseo de los 11 snapshots, sqlite `mode=ro`, sondas HTTP con y sin presupuesto. Pasado por `adversarial_frame` + `adversarial_verdict` (TESIS sobrevive 27 vs 14, 9 ítems con artefacto) y `metacog_audit` (8/8 fragmentos SOPORTADOS, 0 sin artefacto)."
+    }
+  ],
+  "taskSeq": 5,
+  "approvedAt": 1792671345077
+}

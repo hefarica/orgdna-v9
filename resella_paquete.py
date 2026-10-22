@@ -32,7 +32,12 @@ PROJECT = 'ArbitrageX'
 AGENT_COUNT = 24
 
 # Fuera del sello por diseno: ver el mismo criterio en verifica_manifiesto.py
-EXENTOS = ('data/', 'docs/PLATAFORMA_VERIFICACION_V1.md')
+#  - data/                       : estado de ejecucion que el producto reescribe.
+#  - PLATAFORMA_VERIFICACION_V1  : expediente de verificacion revisable sin re-sellar.
+#  - docs/rea/evidence/chromium/ : SALIDA VOLATIL del arnes E2E (PNG + report.json con
+#    marca de tiempo). Sellarla obligaria a re-sellar tras cada corrida del arnes; los
+#    demas ficheros de docs/rea/evidence/ (evidencia fija de la mision) SIGUEN sellados.
+EXENTOS = ('data/', 'docs/PLATAFORMA_VERIFICACION_V1.md', 'docs/rea/evidence/chromium/')
 
 
 def _exento(rel):

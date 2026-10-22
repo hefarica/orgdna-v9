@@ -30,6 +30,10 @@ PKG_DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 EXENTOS = (
     'data/',
     'docs/PLATAFORMA_VERIFICACION_V1.md',
+    # Salida volatil del arnes E2E (PNG + report.json con marca de tiempo): sellarla
+    # obligaria a re-sellar tras cada corrida. Los demas ficheros de docs/rea/evidence/
+    # son evidencia fija de la mision y SIGUEN dentro del sello.
+    'docs/rea/evidence/chromium/',
 )
 
 

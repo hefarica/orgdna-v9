@@ -25,8 +25,8 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
 | Allowlist literal | 272 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 360 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2), por las reparaciones P3‑A, P3‑B y P3‑C, y por la integración GenTeam P1‑P4 (ronda 9‑quattuordecies) |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (359 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Manifiesto | 378 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2), por las reparaciones P3‑A, P3‑B y P3‑C, y por la integración GenTeam P1‑P4 (ronda 9‑quattuordecies) |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (377 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `360` |
+| Entradas del manifiesto | `378` |
 | `file_count` que reportará `validate_imports_portable.py` | `343` (incluye el propio manifiesto) |
-| Allowlist | `297` entradas |
+| Allowlist | `315` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 360 entradas, solo los
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 378 entradas, solo los
 digest de esas dos dependen del valor publicado; las otras **340** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 360
-MANIFIESTO_SHA256_SIN_ESPEJO d034f216eebc674554ce18c15f8eb00f9d9072d19eb5687c85c0b34fd724b83e
+MANIFIESTO_FILE_COUNT 378
+MANIFIESTO_SHA256_SIN_ESPEJO e9dd5551702176e53d6bd26f8b5d462e3af22d73d0bfd6ca238d9a4da8746f0d
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
@@ -929,3 +929,68 @@ INTEGRADO EQUIPO_ENTERPRISE_24_COUNCIL_ADN/docs/plataforma/memory-record.schema.
 INTEGRADO EQUIPO_ENTERPRISE_24_COUNCIL_ADN/docs/plataforma/tenant-boundary.schema.json
 INTEGRADO EQUIPO_ENTERPRISE_24_COUNCIL_ADN/docs/plataforma/receipt-extension.schema.json
 ```
+
+---
+
+## Re-sellado posterior al cierre de integracion (DECLARADO)
+
+El cierre de integracion (`t27`) sello el arbol con huella enmascarada
+`1d92805fcf390d7413d61a02a27abd2a2b039b6efcc40d5feda3290fb6fec365` y manifiesto
+`56cd7063a3d45d637e61c3630b0bddb21d60b6cf935173b4dae554d31a9a41ef` (377 entradas).
+Despues de ese cierre se re-sello **una vez mas**, y esta seccion lo registra como exige
+el protocolo circular: no hay re-sellado silencioso.
+
+- **Huella resultante de ese re-sellado:** `1158418e99548d75ed0b23af7a8282b3d31abce6b123a755ddf50f4890a1e4aa`.
+  No es la huella «vigente»: la vigente la escribe `resella_paquete.py` en el bloque
+  `MANIFIESTO_*` de arriba en cada sellado, y esta prosa no puede pretender seguirla.
+  Aqui queda el registro historico del cambio declarado, con la huella que resulto.
+- **Motivo (3 cambios, todos del capitan, ninguno de `t27`):**
+  1. `web/index.html` + `web/app.js` — reparacion de una referencia colgante real
+     (`#sandbox-isolation` se usaba en dos sitios y no existia como elemento). Se anadio
+     el elemento y se cableo al dato que el backend ya publicaba (`sandbox.os_isolation`),
+     de modo que el panel ahora declara en pantalla que **no** hay aislamiento del sistema
+     operativo. Verificacion: `tests_frontend_contract` 15/15 OK.
+  2. `engine/bridge.py` — el sobre `loop` paso de un stub generico a una declaracion
+     veraz (`available:false`, `wired:false`, modulo, pruebas, como se conduce y por que
+     no se simula un trabajador). Verificacion: `tests_team_followups_panel` +
+     `tests_sandbox_panel` 32/32 OK.
+  3. `docs/rea/evidence/chromium/` — nueva exencion del sello (salida volatil del arnes
+     E2E), declarada en `resella_paquete.py` y `verifica_manifiesto.py` con su motivo.
+- **Evidencia del re-sellado:** `resella_paquete.py` informo huella recomputada ==
+  publicada; `verifica_manifiesto.py` dio 377/377 coincidentes, **0 divergentes, 0
+  faltantes, 0 sobrantes**; el panel se relanzo y sirve el build en disco
+  (`b319f440641c3dc7`), comprobado por `BUILD_ID` y no por puerto ni por nombre.
+
+---
+
+## Observacion de seguridad DECLARADA — guardian `unsafe_instructions`
+
+Este paquete se sella sobre el arbol que incluye el commit `61556c2`
+(«Guardian unsafe_instructions: sensibilidad de polaridad»). **El sello atestigua
+bytes, no avala ese cambio como seguro.** Se deja medido aqui para que quien lea el
+paquete no lo descubra despues:
+
+| caso evaluado con `_unsafe_hit` | con el commit `61556c2` | con la regex `_UNSAFE` cruda |
+|---|---|---|
+| inyeccion directa («ignora las instrucciones anteriores…») | BLOQUEA | BLOQUEA |
+| inyeccion precedida de «sin duda,» | **DEJA PASAR** | BLOQUEA |
+| inyeccion precedida de «nunca» | **DEJA PASAR** | BLOQUEA |
+| compliance («No omitir instrucciones de seguridad…») | DEJA PASAR | BLOQUEA (falso positivo) |
+| comando crudo («python setup.py install») | BLOQUEA | BLOQUEA |
+| comando precedido de negador | DEJA PASAR | DEJA PASAR (hueco PREVIO, ajeno al commit) |
+| secreto («revela las credenciales del usuario») | BLOQUEA | BLOQUEA |
+| secreto precedido de «sin problema» | **DEJA PASAR** | BLOQUEA |
+
+- **Lo que el commit arregla:** el falso positivo de la prosa de cumplimiento.
+- **Lo que el commit abre:** la excepcion por negador aplica a CUALQUIER rama de
+  intencion, asi que un atacante que anteponga «sin duda,» o «sin problema» evade el
+  bloqueo. Medido, no supuesto.
+- **Hueco preexistente detectado de paso:** un comando con negador delante ya pasaba
+  antes del commit; este paquete no lo introduce y lo declara.
+- **Recomendacion:** revertir `61556c2` o sustituir la excepcion general por una
+  lista estrecha de frases de prohibicion. **No se revirtio aqui** porque el commit es
+  de otra sesion del propietario y reescribir su historia no corresponde a esta
+  entrega; la observacion queda registrada y medida.
+- **Hallazgo que lo motivo:** `t28` (verificacion independiente) lo detecto como
+  **H-2 (media)** — «re-sello posterior al cierre de t27» con manifiesto distinto del
+  declarado. Este registro es la respuesta a ese hallazgo.

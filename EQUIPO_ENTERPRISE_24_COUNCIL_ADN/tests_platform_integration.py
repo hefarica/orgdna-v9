@@ -361,7 +361,9 @@ class AllowlistIsLiteralTests(unittest.TestCase):
         self.assertEqual(sorted(modules - set(bundle.RUNTIME_ALLOWLIST)), [])
         # 66 -> 70: revision explicita GenTeam P1-P4 (engine/team_channel.py,
         # engine/team_memory.py, engine/sandbox_executor.py, engine/followups.py).
-        self.assertEqual(len(modules), 70, 'el numero de modulos de engine/ cambia sin revision')
+        # 70 -> 72: revision explicita GenTeam M1-M2 (engine/team_process.py,
+        # engine/team_loop.py), integrada y sellada en t27.
+        self.assertEqual(len(modules), 72, 'el numero de modulos de engine/ cambia sin revision')
 
     def test_platform_modules_tests_and_documents_are_allowlisted(self):
         allowlist = set(bundle.RUNTIME_ALLOWLIST)

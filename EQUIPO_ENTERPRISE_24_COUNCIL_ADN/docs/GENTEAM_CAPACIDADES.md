@@ -15,11 +15,12 @@ portado cita owner/name@sha en su docstring.
 |---|-----------|--------------------------|--------------------------|-------------------------------|
 | P1 | Sandbox + entrega | `engine/sandbox_executor.py` | (ver módulo) | (integración de su tarea paralela) |
 | P2 | Canal dirigido + @mención + asignación tipo colega | `engine/team_channel.py` | `tests_team_channel.py` (51 casos con los dos suites) | `engine/cordis_extension.py` + `cordis_extension/runtime.mjs` op. `channel` + panel Council |
-| P3 | Follow-ups | `engine/followups.py` | (ver módulo) | (integración de su tarea paralela) |
+| P3 | Follow-ups (persecución de compromisos) | `engine/followups.py` | `tests_followups.py` + `tests_team_followups_panel.py` | **Panel Council** (sección *Compromisos*) vía `engine/bridge.py`: vista `team_followups` + acciones `followups-tick` / `followups-drain`. **No** se expone como herramienta del addon Cordis (ver §2.1) |
 | P4 | Memoria de equipo (índice MEMORY.md) | `engine/team_memory.py` | `tests_team_memory.py` | `engine/cordis_extension.py` + `cordis_extension/runtime.mjs` op. `team_memory` + panel Council |
 
 Este documento detalla la integración de **P2** y **P4** (canal + memoria), que es la
-parte asignada a la tarea `integrate-roster`.
+parte asignada a la tarea `integrate-roster`, y la de **P3** al panel (§2.1), que es la
+parte asignada a la tarea del panel de seguimiento.
 
 ## 1. Cómo quedan disponibles para los 24 perfiles (un solo mecanismo)
 
@@ -104,10 +105,66 @@ el diseño. El canal es EN MEMORIA por diseño del port (se reinicia con cada re
 el panel lo declara); la memoria persiste en disco y se rehidrata desde los registros
 embebidos en los fragmentos.
 
+### 2.1 P3 · Seguimiento de compromisos (panel *Compromisos*)
+
+Tercera clave aditiva de `public()`: `team_followups`, compuesta sobre
+`FollowupsEngine.ledger_view()` (`engine/followups.py`) **sin recalcular nada** en el
+bridge. El motor se monta sobre **el mismo `TeamChannel` del panel** (una sola instancia)
+y se reconstruye cuando cambia la firma del roster; la vista lo declara con
+`in_memory_session_only: true`, `reset_policy: "session_only"` y `available/reason`.
+
+Campos que viajan: `available`, `reason`, `in_memory_session_only`, `reset_policy`,
+`schema_version`, `provenance`, `agent_member_id`, `supervisor_member_id`,
+`reminder_interval_secs`, `max_reminders`, `processed_message_ids`, `tasks`, `archive`,
+`events`, `stats` y `authority` (más dos opcionales: `clock_source`, que declara si el
+reloj del motor es el del sistema o uno inyectado por el arnés, y el sobre `loop`, hoy
+`available:false` porque `engine/team_loop.py` no está cableado a esta vista).
+
+- **Autoría declarada (no se atribuye a un miembro).** El motor publica recordatorios y
+  escalaciones con la **identidad de coordinación**, por defecto el **miembro raíz**
+  (`reports_to` externo); el destinatario del recordatorio es el miembro comprometido y el
+  de la escalación la supervisión declarada (esa misma identidad, porque el owner es
+  externo y el panel no inventa un supervisor dentro del roster). `authority` lo fija
+  literalmente: `kind: "coordination"`, `is_member_authored: false`,
+  `actor_member_id: <raíz>`, `provenance: "engine.followups"`, `identity_verified: false`
+  y una `note` que el panel muestra tal cual. En la lista, el miembro aparece **solo** en
+  la línea *Dirigido a:*; nunca como autor.
+- **Acciones** (`require_version` + `redact` + recibo local, como el canal):
+  - `followups-tick` → un `tick()` explícito (escanea mensajes nuevos y persigue los
+    vencidos). Devuelve el estado público con el sobre efímero `followups_tick`
+    (`events`, `commitments`, `reminders`, `escalations`, `reported`, `skipped`, `at`),
+    que **no** viaja en `/api/state`.
+  - `followups-drain` → `{"member", "max_count" (1..100)}`; drena el inbox de **un**
+    miembro (lectura destructiva, igual que `channel-inbox`) y clasifica por `topic`:
+    `reminders[]` (topic `followups`, con el bloque `authority`) y `other[]` (otros
+    topicos, con su autor real y **sin** `authority`). Nada se descarta en silencio:
+    `counts = {delivered, reminders, other}`.
+- **Panel**: sección *Compromisos* (dentro de `#council`) con contadores por estado,
+  lista de compromisos activos, historial archivado, eventos del motor, botón de tick y
+  drenaje del inbox del miembro elegido. Todos los ids nuevos llevan prefijo `followups-`
+  y el CSS nuevo está acotado a `#council`, para no tocar los selectores ni las funciones
+  que el contrato de preservación DSH fija (`qa_v7/dsh_baseline.json`).
+- **Sin temporizadores**: no hay `setInterval`/`setTimeout`; el avance es un tick
+  explícito del operador. El intervalo de recordatorio (3600 s por defecto) y el tope
+  (3) son del motor y la vista solo los muestra.
+- **Prueba**: `tests_team_followups_panel.py` ejerce el contrato por HTTP local real
+  (harness de `tests_bridge`): vista completa y autoría, `available:false` sin diseño sin
+  lanzar, 403 sin sesión, 400 por versión obsoleta o parámetros inválidos, tick que crea
+  una persecución sin duplicarla, recordatorio al vencer, escalación tras el tope sin
+  reintento, reporte que archiva, drenaje con autoría de coordinación y sin perder otros
+  topicos, y reinicio del motor por cambio de roster sin duplicar tareas.
+- **No** se añade herramienta Cordis para P3: el addon sigue exponiendo las dos de P2/P4
+  (`manifest['genteam']` no cambia) y esta capacidad se opera solo desde el panel local.
+
 ## 3. Limitaciones declaradas (fail-honest)
 
 - El addon no despierta sesiones ni inyecta mensajes: el inbox se consulta (polling);
   el canal enruta, no ejecuta la delegación (eso es P1/P3).
+- P3 persigue compromisos, no entrega trabajo: el tick detecta promesas en el canal y
+  publica recordatorios/escalaciones en el mismo canal en memoria. No ejecuta agentes, no
+  llama proveedores y no reinicia nada por sí solo (sin temporizadores: el operador
+  decide cuándo tickear). Si el roster cambia, el motor y el canal se reconstruyen y las
+  persecuciones de la sesión anterior no reaparecen (el panel declara el reinicio).
 - La gobernanza completa de planos/permisos/TTL de la memoria vive en el engine Python
   (`engine/memory_governance.py`, materializada por `engine/team_memory.py`); el
   runtime del addon aplica el subconjunto del ledger local (ids, planos, ttl,
@@ -125,8 +182,10 @@ Desde la raíz del repositorio:
 
 ```
 python -m unittest tests_team_channel tests_team_memory -v   # ports P2/P4 (vectores del fuente)
+python -m unittest tests_followups tests_team_followups_panel -v  # P3: motor + panel por HTTP local
 python -m unittest cordis_extension.tests.test_builder -v    # variantes extended-native (deny/256/roster)
 node --test cordis_extension/tests/runtime.test.mjs          # operaciones channel/team_memory del addon
 python validate_imports_portable.py                          # entrega portable
 PYTHONUTF8=1 python -m unittest tests_frontend_contract      # contratos del panel
+PYTHONUTF8=1 python -m unittest tests_v8_ui_contract qa_v7.test_dsh_preservation_independent  # CSS acotado + preservación DSH
 ```

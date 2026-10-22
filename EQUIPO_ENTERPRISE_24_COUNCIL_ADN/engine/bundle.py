@@ -221,6 +221,7 @@ RUNTIME_ALLOWLIST = (
     'docs/rea/evidence/circle_verify.txt', 'docs/rea/evidence/run_final_201.txt',
     'docs/rea/evidence/run_ports_94.txt', 'docs/rea/evidence/suite_full_classified.txt',
     'docs/rea/evidence/validator.txt',
+    'docs/REVISION_AGILIDAD_V1.md',
     'docs/gap/PRIORIDADES.md', 'docs/gap/engine_map.md', 'docs/gap/gh_candidates.md',
     'docs/gap/ui_cordis_map.md', 'docs/evolution/propuesta-evo-20261021_192901.md',
     'tests_platform_task_graph.py', 'tests_platform_registry_evidence.py',
@@ -235,6 +236,19 @@ RUNTIME_ALLOWLIST = (
     'docs/plataforma/policy.schema.json', 'docs/plataforma/policy.v2.schema.json',
     'docs/plataforma/memory-record.schema.json', 'docs/plataforma/tenant-boundary.schema.json',
     'docs/plataforma/receipt-extension.schema.json',
+
+    # Capa de equipo GenTeam (t22-t26) + aviso de terceros. Lista literal de nombres
+    # exactos, sin globs ni patrones, igual que el resto. La evidencia volatil del
+    # arnes E2E (docs/rea/evidence/chromium/) NO va aqui: es salida de cada corrida y
+    # esta declarada exenta en resella_paquete.py y verifica_manifiesto.py.
+    'engine/team_process.py', 'engine/team_loop.py',
+    'tests_team_process.py', 'tests_team_loop.py', 'tests_team_verbatim_parity.py',
+    'tests_team_followups_panel.py', 'tests_sandbox_panel.py',
+    'qa_v7/chromium_cdp.py', 'qa_v7/chromium_smoke.py', 'qa_v7/chromium_e2e.py',
+    'docs/rea/agile_agents_survey.md', 'docs/rea/agile_vectors.json',
+    'docs/rea/TEAM_API_CONTRACT_v1.md', 'docs/rea/license_audit.md',
+    'docs/rea/PORT_REPORT_AGILIDAD.md', 'docs/rea/PANEL_SEGUIMIENTO_SPEC.md',
+    'THIRD_PARTY_NOTICES.md',
 )
 # First candidate is the packaged portable template on the user's computer.
 WORKBOOK_CANDIDATES = (

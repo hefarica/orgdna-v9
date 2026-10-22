@@ -259,3 +259,103 @@ El paquete no debe presentarse como «Agent OS funcionando en producción» en n
 
 **Recomendación:** tratar el §3 como el hallazgo abierto de la entrega y decidir entre reducirlo, autorizar el ajuste del
 plazo heredado, o declararlo limitación conocida. Mientras no se decida, la formulación correcta es la del párrafo anterior.
+
+---
+
+# Anexo V1-B — Reejecución independiente (`contratos`, `t10`, intento 9) sobre el árbol posterior a `t9`
+
+**Alcance.** Este anexo **no sustituye** las secciones §0–§7: es una **reejecución independiente** sobre el árbol
+**actual**, que ya no es el de 300 entradas que midió el capitán. Se conserva íntegro todo lo anterior.
+
+## B.1 Huella de medición (política O-12)
+
+| Campo | Valor observado |
+|---|---|
+| `timestamp_utc` (reloj del runner) | `2026-10-22T04:40:22Z` |
+| `runner` | Python `3.12.10`, Windows-11 |
+| `PYTHONUTF8` | **no definido** (`None`) |
+| `paralelismo` | 1 (serial); ningún otro proceso de la suite activo durante la corrida |
+| `tree_digest` | `MANIFIESTO_SHA256.txt` = `b3761de9e65321ca0f99989d9e56a0c5d584629ca7ca6907500ff60dbeb253cf` |
+| `manifiesto_filas` | **360** (el informe del capitán midió 300) |
+| `allowlist_entradas` | **297** (el informe del capitán midió 237) |
+| `engine_py` | **70** módulos |
+| `stdout_capture` | `%TEMP%\orgdna_v1b\{val.json, plat.txt}` |
+
+**No comparable con §1.** El árbol cambió entre ambas mediciones (300 → 360 filas; 237 → 297 entradas de allowlist). Por la
+política adoptada en O-12, estas dos mediciones **no se comparan entre sí**; la de este anexo describe únicamente el estado
+medido.
+
+## B.2 Matriz de esta reejecución
+
+| # | Objeto verificado | Resultado | Evidencia ejecutada |
+|---|---|---|---|
+| B-1 | Validación del paquete (`validate_imports_portable.py`) | **FAIL** | `valid=False`, 2114 comprobaciones, `file_count=361`, **exit 1**; 2 errores literales: `SHA-256 no coincide: docs/security/FUSILE_SOURCE_POLICY.md` y `Catálogo documental no coincide con los archivos y sus hashes.` |
+| B-2 | Suite de plataforma (`tests_platform_*.py -v`) | **FAIL (2/400)** | `Ran 400 tests` · `FAILED (failures=2)` · exit 1. Fallos con nombre completo en B.3 |
+| B-3 | Cadena del manifiesto (`verifica_manifiesto.py`, herramienta del capitán) | **FAIL** | 360 entradas, **359 coinciden**, **1 diverge**, 0 faltantes, 141 exentos, **5 sobrantes reales**; `RESULTADO: FALLO` (exit 1) |
+| B-4 | Comportamiento de los flujos de plataforma | **PASS (398/400)** | Las 398 pruebas restantes en verde en la misma corrida; los 2 fallos son aserciones de **integridad del manifiesto**, no de comportamiento |
+| B-5 | Inventario de `t27` en disco | **PARCIAL (8/19)** | Detalle en B.4 |
+| B-6 | Diferencial completo `tests_*.py` en ambos modos | **NOT_RUN** | Razón en B.5 |
+| B-7 | 10 SLO del encargo y 14 falsificadores del recibo | **NOT_RUN en esta reejecución** | Razón en B.5; evidencia vigente = §2–§4 de este mismo informe |
+
+## B.3 Causa raíz única de B-1 y B-2 (misma divergencia, cuatro manifestaciones)
+
+Los dos fallos de la suite tienen nombre completo y la **misma** causa:
+
+```
+FAIL: test_falsifier_14_manifest_remains_intact
+      (tests_platform_approval_receipt.FalsifierTests.test_falsifier_14_manifest_remains_intact)
+      -> ['docs/security/FUSILE_SOURCE_POLICY.md'] != []
+FAIL: test_every_manifest_entry_matches_the_file_bytes
+      (tests_platform_integration.ManifestTests.test_every_manifest_entry_matches_the_file_bytes)
+verifica_manifiesto.py: DIVERGE docs/security/FUSILE_SOURCE_POLICY.md
+      (declarado fa23fd47abd44340 / real cf335bd5ddc7a232)
+```
+
+Es **una sola** causa: `docs/security/FUSILE_SOURCE_POLICY.md` fue editado después del sellado (la enmienda verbatim del
+capitán), de modo que el manifiesto y el catálogo documental quedaron obsoletos. **No hay ninguna aserción de
+comportamiento de los flujos de plataforma en rojo**, y ninguna de las 400 pruebas falla por lógica de los módulos.
+
+## B.4 Checklist exacto de sellado para `t27` (verificado en disco ahora)
+
+**Presentes y pendientes de sellar** (`verifica_manifiesto.py` los reporta como sobrantes reales):
+`docs/rea/agile_agents_survey.md`, `docs/rea/agile_vectors.json`, `docs/rea/PANEL_SEGUIMIENTO_SPEC.md`,
+`docs/rea/TEAM_API_CONTRACT_v1.md`, `qa_v7/chromium_cdp.py`.
+Además, `docs/security/FUSILE_SOURCE_POLICY.md` **existe y diverge**: el resellado lo re-digiere sin más (así lo indicó el capitán).
+
+**Presentes y ya cubiertos** (en la primera pasada no aparecían como sobrantes): `docs/PLATAFORMA_VERIFICACION_V1.md`
+(exento por diseño).
+
+**El conjunto de sobrantes NO es estable (árbol en movimiento).** Dos pasadas de `verifica_manifiesto.py` separadas por
+minutos dieron **5** y luego **6** sobrantes: en la segunda apareció `engine/team_process.py`. Es la prueba de que el
+árbol se está integrando mientras se verifica; `t27` debe medir sobre el árbol final, no sobre una foto intermedia.
+
+**Todavía NO existen en disco — no pueden sellarse aún** (`t27` los añadirá a la allowlist sólo cuando existan):
+`engine/team_loop.py`; `tests_team_process.py`, `tests_team_loop.py`, `tests_team_verbatim_parity.py`,
+`tests_team_followups_panel.py`, `tests_sandbox_panel.py`; `docs/rea/license_audit.md`, `docs/rea/PORT_REPORT_AGILIDAD.md`;
+`qa_v7/chromium_smoke.py`, `qa_v7/chromium_e2e.py`; y el directorio `docs/rea/evidence/chromium/` (no existe todavía).
+
+**No deben entrar (respetado literalmente):** `docs/REVISION_AGILIDAD_V1.md` (lo escribe `t28` después de `t27`; hoy no
+existe) y `docs/PLATAFORMA_VERIFICACION_V1.md` (exento por diseño, ver aviso de cobertura).
+
+## B.5 Lo que esta reejecución NO pudo verificar (declarado, no asumido)
+
+1. **Diferencial completo `tests_*.py` en ambos modos de encoding**: NOT_RUN. El árbol está **a mitad de integración de
+   `t27`** y cambió durante la propia sesión de verificación (300 → 360 filas de manifiesto, 237 → 297 entradas de
+   allowlist); una foto diferencial tomada ahora caduca con el sello y produciría una comparación no admisible bajo O-12.
+   Debe reejecutarse **después** de `t27` (sello) y `t28` (revisión).
+2. **Los 10 SLO y los 14 falsificadores del recibo**: no reejecutados por mí en este intento. La evidencia vigente es la
+   de §2–§4 de este informe (árbol de 300 entradas) y las sondas de los intentos previos; **no la reatribuyo** al árbol actual.
+3. **`qa_v7 dsh_baseline`**: no reejecutado; su precondición (archivos pineados sin cambios) no se cumple en un árbol que
+   está siendo integrado.
+
+## B.6 Veredicto de la reejecución
+
+**FAIL — BLOCKED por integración pendiente.** En el instante medido el paquete **no es válido**:
+`validate_imports_portable.py` devuelve `valid=False` (exit 1) y `verifica_manifiesto.py` devuelve `FALLO` con
+1 divergencia y 5 sobrantes. **No es una regresión de los seis flujos de plataforma** —398 de 400 pruebas en verde, y los
+2 fallos son aserciones de integridad del manifiesto— sino la consecuencia esperada de que `t27` (allowlist + resellado)
+todavía no se ha ejecutado y de la edición del capitán en `FUSILE_SOURCE_POLICY.md`.
+
+**Condición de desbloqueo:** `t27` debe cerrar `0 divergencias / 0 faltantes / 0 sobrantes` y, sobre el árbol final,
+reejecutarse esta verificación (ambos modos de encoding) antes de cualquier entrega o sellado. Hasta entonces **no debe
+presentarse el paquete como válido ni como entregable**.

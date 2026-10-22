@@ -51,6 +51,9 @@ function setBusy(value) {
     $('#refresh-coordination').disabled=false;
     ['#channel-publish-form','#channel-assign-form','#channel-evidence-form','#channel-task-form','#memory-append-form'].forEach(id=>{const button=$(id)?.querySelector('button[type="submit"]');if(button)button.disabled=noDesign;});
     $('#channel-inbox-drain').disabled=noDesign;
+    $('#followups-tick').disabled=noDesign||!state.team_followups?.available;
+    $('#followups-drain').disabled=noDesign||!state.team_followups?.available||!$('#followups-drain-member').value;
+    if($('#sandbox-request')){const sandbox=state.sandbox||{},sandboxLocked=!state.organization||state.generation_stale===true||!sandbox.available;$('#sandbox-request').disabled=sandboxLocked;['#sandbox-code','#sandbox-agent','#sandbox-timeout','#sandbox-max-output','#sandbox-approver-role'].forEach(id=>{const el=$(id);if(el)el.disabled=sandboxLocked;});}
     $('#save-tool-policy').disabled=noDesign||!selectedAgent||Boolean(toolPolicyIssue());
     $('#apply-tool-recommendation').disabled=noDesign||!currentToolPreset();
     $$('.governance-submit').forEach(el=>el.disabled=noDesign);
@@ -64,6 +67,103 @@ function setBusy(value) {
   }
   updateSkillHubControls();updateCapabilityRecommendationControls();updateCapabilityDeploymentControls();updateGenerationControls(value);updateExtensionControls(value);updateDshLauncherControls();updateEvaluationControls();updateHarnessControls();updateResourceControls();
 }
+// GenTeam P3: seguimiento de compromisos (panel "Compromisos" de #council). Todo el codigo
+// de este bloque es NUEVO: no se modifica ninguna funcion ni ninguna linea de handler
+// pineada por qa_v7/dsh_baseline.json (dsh/harness/cordis). El avance es un tick EXPLICITO:
+// aqui no hay setInterval, setTimeout ni temporizadores de ningun tipo.
+let followupsTick=null,followupsDrained=null;
+function followupsView(){return (state&&state.team_followups)||{available:false,reason:'Genera un diseno para abrir el seguimiento del equipo.'};}
+function followupsMemberLabel(id){const members=channelMembers(),member=members.find(m=>m.member_id===id);return member?member.name+' ('+member.member_id+')':String(id||'');}
+function followupsStateLabel(value){return ({chasing:'en persecucion',escalated:'escalado a supervision',reported:'reportado y archivado'})[value]||String(value||'');}
+function followupsRow(task,limits,archived){
+  const row=node('article',undefined,'record'),max=Number(limits.max_reminders||0);
+  row.dataset.followupTask=String(task.id||'');row.dataset.followupState=String(task.state||'');
+  row.append(node('strong',String(task.id||'')+' | '+followupsStateLabel(task.state)+' | '+followupsMemberLabel(task.owner_member_id)+(archived?'':' | recordatorios '+String(task.reminders_sent||0)+'/'+String(max))));
+  row.append(node('p','Compromiso del mensaje '+String(task.message_id||'')+': "'+String(task.snippet||'')+'"','helper'));
+  if(!archived&&task.next_reminder_at)row.append(node('p','Proximo recordatorio: '+localDate(new Date(Number(task.next_reminder_at)*1000).toISOString()),'helper'));
+  if(task.state==='escalated')row.append(node('span','escalado','tag amber'));
+  row.append(node('p','Emite: '+(followupsView().authority?.role_label||'Coordinacion local (motor de seguimiento)')+' (no es un mensaje de un miembro)','helper'));
+  row.append(node('p','Dirigido a: '+followupsMemberLabel(task.owner_member_id),'helper'));
+  return row;
+}
+function renderFollowups(){
+  if(!$('#followups-panel'))return;
+  const view=followupsView(),stats=view.stats||{},authority=view.authority||{};
+  const select=$('#followups-drain-member'),previous=select.value;select.replaceChildren();
+  channelMembers().forEach(member=>select.append(option(member.member_id,member.name+(member.role?' | '+member.role:''))));
+  if(channelMembers().some(member=>member.member_id===previous))select.value=previous;
+  $('#followups-authority').textContent=String(authority.note||'Recordatorios y escalaciones los emite la coordinacion local (motor engine.followups); ningun miembro del roster es su autor.')+' Reloj: '+(view.clock_source==='injected'?'inyectado por el arnes (tiempo simulado).':'del sistema.')+' identity_verified=false.';
+  const tasks=$('#followups-task-list'),archive=$('#followups-archive-list');
+  tasks.replaceChildren();archive.replaceChildren();
+  if(!view.available){
+    $('#followups-count').textContent='Sin diseno';
+    ['active','chasing','escalated','reported'].forEach(key=>{const cell=$('#followups-stat-'+key);if(cell)cell.textContent='0';});
+    $('#followups-status').textContent=String(view.reason||'Genera un diseno para abrir el seguimiento del equipo.');
+    $('#followups-empty-tasks').hidden=false;$('#followups-empty-archive').hidden=false;
+    $('#followups-events').textContent='';$('#followups-engine-summary').textContent='';
+    updateFollowupsControls();return;
+  }
+  $('#followups-count').textContent=String(stats.active||0)+' activos | '+String(stats.archived||0)+' archivados';
+  ['active','chasing','escalated','reported'].forEach(key=>{const cell=$('#followups-stat-'+key);if(cell)cell.textContent=String(stats[key]||0);});
+  (view.tasks||[]).forEach(task=>tasks.append(followupsRow(task,view,false)));
+  (view.archive||[]).forEach(task=>archive.append(followupsRow(task,view,true)));
+  $('#followups-empty-tasks').hidden=Boolean((view.tasks||[]).length);
+  $('#followups-empty-archive').hidden=Boolean((view.archive||[]).length);
+  const events=(view.events||[]).slice(-20);
+  const summary=followupsTick?('Ultimo tick: '+String(followupsTick.events)+' evento(s), '+String(followupsTick.reminders)+' recordatorio(s), '+String(followupsTick.escalations)+' escalacion(es).'):'Sin tick en esta sesion del panel.';
+  $('#followups-events').textContent=[summary].concat(events.map(row=>String(row.at||'')+' | '+String(row.event||'')+(row.task_id?' | '+String(row.task_id):'')+(row.owner_member_id?' | '+followupsMemberLabel(row.owner_member_id):''))).join('\n');
+  $('#followups-status').textContent=followupsTick?('Tick ejecutado: '+String(followupsTick.events)+' evento(s), '+String(followupsTick.reminders)+' recordatorio(s), '+String(followupsTick.escalations)+' escalacion(es).'):'Seguimiento del equipo: tick explicito, sin temporizadores.';
+  $('#followups-engine-summary').textContent='schema_version='+String(view.schema_version||'')+' | provenance='+String(view.provenance||'')+' | identidad de coordinacion='+String(view.agent_member_id||'')+' | supervision='+String(view.supervisor_member_id||'')+' | intervalo='+String(view.reminder_interval_secs)+' s | maximo='+String(view.max_reminders)+' recordatorio(s) | bucle='+(view.loop&&view.loop.available?'disponible':'no cableado');
+  updateFollowupsControls();
+}
+function updateFollowupsControls(){
+  const available=Boolean(state&&state.team_followups&&state.team_followups.available);
+  const stale=Boolean(state&&(state.generation_stale===true||!state.organization));
+  const drain=$('#followups-drain'),member=$('#followups-drain-member'),tick=$('#followups-tick');
+  if(tick)tick.disabled=!available||stale;
+  if(drain)drain.disabled=!available||stale||!(member&&member.value);
+}
+async function followupsRun(title,work,good){
+  if(busy||generationOperation||generationActive())return false;
+  setBusy(true);message(title,'busy');
+  const box=$('#followups-error');if(box){box.hidden=true;box.textContent='';}
+  try{await work();render();message(good);return true;}
+  catch(error){
+    if(box){box.textContent=String((error&&error.message)||'La accion de seguimiento no termino.');box.hidden=false;}
+    try{const fresh=await fetch('/api/state',{credentials:'same-origin'});if(fresh.ok){state=await fresh.json();render();}}catch(_){}
+    message((error&&error.message)||'La accion de seguimiento no termino.','error');return false;
+  }finally{setBusy(false);}
+}
+async function tickFollowups(){
+  const version=(state&&state.organization&&state.organization.state_version)||1;
+  return followupsRun('Ejecutando un tick explicito de seguimiento...',async()=>{
+    const payload=await request('followups-tick',{expected_state_version:version});
+    followupsTick=(payload&&payload.followups_tick)||null;
+  },'Tick de seguimiento ejecutado.');
+}
+async function drainFollowups(){
+  const version=(state&&state.organization&&state.organization.state_version)||1;
+  const member=$('#followups-drain-member').value,max=Number($('#followups-drain-max').value);
+  return followupsRun('Drenando el inbox de seguimiento del miembro...',async()=>{
+    const payload=await request('followups-drain',{expected_state_version:version,member:member,max_count:max});
+    followupsDrained=(payload&&payload.followups_drained)||null;
+    const counts=(followupsDrained&&followupsDrained.counts)||{delivered:0,reminders:0,other:0};
+    $('#followups-drained-status').textContent='Drenados '+String(counts.delivered)+' mensaje(s): '+String(counts.reminders)+' recordatorio(s) de seguimiento y '+String(counts.other)+' de otros topicos.';
+    const box=$('#followups-drained');box.replaceChildren();
+    (followupsDrained&&followupsDrained.reminders||[]).forEach(row=>{const article=node('article',undefined,'record');
+      article.append(node('strong','Recordatorio | dirigido a '+followupsMemberLabel(row.to)),node('p',String(row.text||''),'helper'),
+        node('p','Emite: '+String((row.authority&&row.authority.role_label)||'Coordinacion local (motor de seguimiento)')+' (no es un mensaje de un miembro)','helper'));
+      box.append(article);});
+    (followupsDrained&&followupsDrained.other||[]).forEach(row=>{const article=node('article',undefined,'record');
+      article.append(node('strong','Mensaje de otro topico | '+String(row.topic||'')+' | autor '+channelLabel(row.actor)),node('p',String(row.text||''),'helper'));
+      box.append(article);});
+    if(!counts.delivered)box.append(node('p','Drenados 0 mensaje(s): el buzon del miembro no tenia mensajes.','empty'));
+  },'Inbox de seguimiento drenado (lectura destructiva).');
+}
+$('#followups-tick').onclick=()=>tickFollowups();
+$('#followups-drain').onclick=()=>drainFollowups();
+$('#followups-drain-member').onchange=()=>updateFollowupsControls();
+
 async function request(name,data={}) {
   const dshRevision=dshEpoch;const response=await fetch('/api/'+name,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},credentials:'same-origin',body:JSON.stringify(data)});
   const payload=await response.json();if(!response.ok)throw new Error(payload.error||'No se pudo completar la acción.');
@@ -114,7 +214,7 @@ function render() {
   const project=state.project||{};$('#project-status').textContent=project.name?(project.name+(project.dirty?' · sin guardar':' · guardado')):'Sin proyecto guardado';
   $('#project-dirty').textContent=project.dirty?'Cambios sin guardar':project.id?'Versión guardada':'Sin guardar';
   if(document.activeElement!==$('#project-name'))$('#project-name').value=project.name||c.repo_name||'';
-  renderGraph();renderProfiles();renderCouncil();renderSkills();renderModels();renderAnalysis();renderReceipts();renderSubteams();renderGovernance();renderCoordination();renderTeamChannel();renderTeamMemory();renderGeneration();renderDesignRecovery();renderGenerationIntegrity();renderOrchestrationChoice();renderAutonomy();renderCordis();renderPluginShop();renderDshConnection();renderDshLauncher();renderEvaluations();renderSkillHub();renderCapabilityRecommendations();renderCapabilityDeployment();renderHarness();renderResourceWorkflows();setBusy(busy);
+  renderGraph();renderProfiles();renderCouncil();renderSkills();renderModels();renderAnalysis();renderReceipts();renderSubteams();renderGovernance();renderCoordination();renderTeamChannel();renderTeamMemory();renderFollowups();renderSandbox();renderGeneration();renderDesignRecovery();renderGenerationIntegrity();renderOrchestrationChoice();renderAutonomy();renderCordis();renderPluginShop();renderDshConnection();renderDshLauncher();renderEvaluations();renderSkillHub();renderCapabilityRecommendations();renderCapabilityDeployment();renderHarness();renderResourceWorkflows();setBusy(busy);
 }
 function matches(agent,query) {return !query||[agent.display_name,agent.title,agent.role,agent.department,agent.mission,...(agent.skills||[]).map(s=>s.name)].join(' ').toLocaleLowerCase('es').includes(query.toLocaleLowerCase('es'));}
 function directCount(id) {return agents().filter(a=>a.reports_to===id).length;}
@@ -1123,6 +1223,87 @@ $('#resource-cancel').onclick=()=>{resourceEpoch++;return action('resource-workf
 $('#resource-assignment-action').onchange=()=>{resourcePlanIdentity=null;renderResourceWorkflows();};
 $('#resource-preview').onclick=async()=>{if(busy)return;const identity=resourceReviewIdentity();if(await action('resource-workflow-preview',{job_id:resourceState().job.job_id,expected_state_version:state.organization.state_version||1,expected_revision:capState().status.revision,workflow_agent_ids:[...resourceSelected],action:$('#resource-assignment-action').value},'Impacto preparado con el workflow específico de cada perfil. Revisa antes de aplicar.')){if(identity===resourceReviewIdentity())resourcePlanIdentity=identity;renderResourceWorkflows();}};
 $('#resource-apply').onclick=async()=>{if(busy||resourcePlanIdentity!==resourceReviewIdentity())return;const r=resourceState(),plan=r.preview;if(!plan)return;if(await action('resource-workflow-apply',{job_id:r.job.job_id,expected_state_version:state.organization.state_version||1,preview_hash:plan.preview_hash,idempotency_key:capIdempotency(),confirmed:true},'Workflows actualizados en el ADN local. La ejecución del recurso continúa pendiente de requisitos y autorización.')){resourcePlanIdentity=null;renderResourceWorkflows();}};
+
+// GenTeam P1/M4 — sandbox con aprobacion en DOS pasos (solicitar -> aprobar -> ejecutar).
+// Se declaran con `const` (no con `function`) para no alterar el contrato de funciones
+// pineadas de qa_v7/dsh_baseline.json: el ejecutor del panel nunca decide, solo propone y
+// muestra la decision del motor. La politica manda y la aprobacion es de un solo uso.
+const sandboxView=()=>(state?.sandbox)||{available:false,reason:'Genera un diseno para abrir el sandbox del panel.',requests:[],executions:[],counts:{},policy:null,flow:{}};
+const sandboxMemberLabel=id=>{const member=channelMembers().find(row=>row.member_id===id);return member?member.name+' ('+member.member_id+')':String(id||'');};
+const sandboxBlockedLabel=value=>({human_approval_required:'requiere aprobacion humana',approval_consumed:'aprobacion consumida',approval_expired:'aprobacion caducada',policy_denied:'denegado por la politica',ready:'listo para ejecutar'})[value]||String(value||'');
+const sandboxStatusLabel=value=>({completed:'completada',failed:'fallida',timeout:'agotada por timeout'})[value]||String(value||'');
+const sandboxRequestRow=row=>{
+  const card=node('article',undefined,'record sandbox-request');card.dataset.requestId=String(row.request_id||'');card.dataset.blocked=String(row.blocked_reason||'');
+  card.append(node('strong','Solicitud '+String(row.request_id||'').slice(0,8)+' | '+sandboxMemberLabel(row.agent_id)+' | '+String(row.code_bytes||0)+' B | '+String(row.policy?.decision||'')));
+  card.append(node('p','Puerta: '+String(row.policy?.gate||'(ninguna)')+' | estado: '+sandboxBlockedLabel(row.blocked_reason)+' | aprobada: '+(row.approved?'si ('+String(row.approver_role||'')+', '+localDate(row.approved_at)+')':'no')+' | consumida: '+(row.consumed_at?localDate(row.consumed_at):'no'),'helper'));
+  card.append(node('p','scope_hash '+String(row.scope_hash||''),'helper'));
+  card.append(node('p','Motivo de la politica: '+String(row.policy?.reason||''),'helper'));
+  const code=node('pre',String(row.code_view||'')+(row.code_truncated?'\n… (vista truncada)':''),'sandbox-code');card.append(code);
+  const actions=node('div',undefined,'actions');
+  if(!row.approved&&row.executable){const approve=node('button','2 · Aprobar esta solicitud','secondary');approve.type='button';approve.onclick=()=>approveSandbox(row.request_id,row.scope_hash);actions.append(approve);}
+  if(row.approved&&!row.consumed_at){const exec=node('button','3 · Ejecutar','primary');exec.type='button';exec.onclick=()=>execSandbox(row.request_id);actions.append(exec);}
+  if(!row.executable)actions.append(node('span','La politica la deniega: no hay aprobacion posible','tag amber'));
+  if(row.consumed_at)actions.append(node('span','Aprobacion consumida: crea una solicitud nueva','tag'));
+  card.append(actions);return card;
+};
+const sandboxRunRow=run=>{
+  const card=node('article',undefined,'record sandbox-run');
+  card.append(node('strong','Ejecucion '+String(run.run_id||'').slice(0,8)+' | '+sandboxMemberLabel(run.agent_id)+' | '+sandboxStatusLabel(run.status)+' | exit '+String(run.exit_code)));
+  card.append(node('p','Aprobacion: puerta '+String(run.policy?.gate||'')+' | '+String(run.policy?.decision||'')+' | approved='+String(run.policy?.approved)+' | scope_hash '+String(run.policy?.scope_hash||''),'helper'));
+  card.append(node('p',run.artifact?('Artefacto firmado '+String(run.artifact.path||'')+' | sha256 '+String(run.artifact.sha256||'')):('Sin artefacto firmado: '+String(run.artifact_error||'')),'helper'));
+  card.append(node('p','Evidencia '+(run.evidence_id?String(run.evidence_id):'(ninguna)')+' | entregado a '+sandboxMemberLabel(run.delivered_to)+' | timeout='+String(run.timed_out)+' | salida='+String(run.stdout_bytes)+' B','helper'));
+  if(run.stdout)card.append(node('pre',String(run.stdout),'sandbox-output'));
+  if(run.error)card.append(node('p',String(run.error),'helper'));
+  return card;
+};
+const renderSandbox=()=>{
+  if(!$('#sandbox-panel'))return;
+  const view=sandboxView(),policy=view.policy||{},flow=view.flow||{},counts=view.counts||{};
+  const select=$('#sandbox-agent'),previous=select.value;select.replaceChildren();
+  channelMembers().forEach(member=>select.append(option(member.member_id,member.name+(member.role?' | '+member.role:''))));
+  if(channelMembers().some(member=>member.member_id===previous))select.value=previous;
+  $('#sandbox-count').textContent=String(counts.requests||0)+' solicitudes | '+String(counts.executed||0)+' ejecuciones';
+  $('#sandbox-gates').textContent=view.available&&policy.gates?('Puertas de la politica '+String(policy.policy_id||'')+'@'+String(policy.policy_revision||'')+': '+policy.gates.map(row=>row.gate+'='+row.default_outcome).join(' · ')+' | red='+String(policy.network_allowed)+' | escritura='+String(policy.write_allowed)+' | autonomia='+String(policy.autonomy_ceiling)):String(view.reason||'Sin politica disponible: el sandbox no ejecuta nada.');
+  $('#sandbox-policy-summary').textContent=view.available?('hash '+String(policy.policy_hash||'')+' | puertas='+String(policy.gates_total||0)+' | flujo='+String((flow.steps||[]).join(' → '))+' | aprobacion de un solo uso='+String(flow.single_use_approval)+' | caduca en '+String(flow.approval_ttl_seconds||0)+' s | deny by default='+String(flow.deny_by_default)):String(view.reason||'');
+  $('#sandbox-isolation').textContent='Aislamiento del sistema operativo: '+String(view.os_isolation||'no declarado')+' (no es un sandbox del SO).';
+  const requests=$('#sandbox-request-list'),runs=$('#sandbox-run-list');
+  requests.replaceChildren();runs.replaceChildren();
+  (view.requests||[]).forEach(row=>requests.append(sandboxRequestRow(row)));
+  (view.executions||[]).forEach(run=>runs.append(sandboxRunRow(run)));
+  $('#sandbox-empty-requests').hidden=Boolean((view.requests||[]).length);
+  $('#sandbox-empty-runs').hidden=Boolean((view.executions||[]).length);
+  const envelope=state?.sandbox_execution?state.sandbox_execution:(state?.sandbox_approval?state.sandbox_approval:state?.sandbox_request);
+  const verdict=$('#sandbox-verdict');
+  if(envelope){verdict.hidden=false;verdict.textContent=state?.sandbox_execution?('Ejecucion '+String(state.sandbox_execution.run_id||'').slice(0,8)+': '+sandboxStatusLabel(state.sandbox_execution.status)+', exit '+String(state.sandbox_execution.exit_code)+'. Artefacto '+(state.sandbox_execution.artifact?String(state.sandbox_execution.artifact.sha256||''):'(sin firma)')+', evidencia '+String(state.sandbox_execution.evidence_id||'(ninguna)')+'.'):(state?.sandbox_approval?('Aprobacion registrada para '+String(state.sandbox_approval.request_id||'').slice(0,8)+' ('+String(state.sandbox_approval.approver_role||'')+'); todavia no se ejecuto nada. La politica ya se consulto y la aprobacion es de un solo uso.'):('Solicitud '+String(state.sandbox_request.request_id||'').slice(0,8)+' preparada SIN ejecutar: decision '+String(state.sandbox_request.policy?.decision||'')+', puerta '+String(state.sandbox_request.policy?.gate||'(ninguna)')+', estado '+sandboxBlockedLabel(state.sandbox_request.blocked_reason)+'.'));}
+  $('#sandbox-status').textContent=view.available?'Sandbox inerte hasta que solicites, apruebes y ejecutes. La politica se consulta en la solicitud y otra vez antes de ejecutar; la aprobacion se consume en el intento.':String(view.reason||'Sandbox no disponible.');
+  updateSandboxControls();
+};
+const updateSandboxControls=()=>{
+  if(!$('#sandbox-request'))return;
+  const view=sandboxView(),noDesign=!state?.organization||state?.generation_stale===true,locked=busy||generationOperation||generationActive();
+  $('#sandbox-request').disabled=locked||noDesign||!view.available;
+  ['#sandbox-timeout','#sandbox-max-output','#sandbox-code','#sandbox-agent','#sandbox-approver-role'].forEach(id=>{const el=$(id);if(el)el.disabled=locked||noDesign;});
+};
+const sandboxRun=async(title,fn,good)=>{
+  if(busy||generationOperation||generationActive())return false;
+  const box=$('#sandbox-error');if(box){box.hidden=true;box.textContent='';}
+  setBusy(true);message(title,'busy');
+  try{await fn();render();message(good||'Solicitud registrada. Nada se ejecuto todavia.');return true;}
+  catch(error){if(box){box.hidden=false;box.textContent=error.message;}try{const fresh=await fetch('/api/state',{credentials:'same-origin'});if(fresh.ok){state=await fresh.json();render();}}catch(_){}message(error.message,'error');return false;}
+  finally{setBusy(false);}
+};
+const requestSandbox=()=>{
+  const code=$('#sandbox-code').value;
+  if(!code.trim()){message('Escribe el codigo explicito que quieres solicitar; el panel no interpreta mensajes.','error');return Promise.resolve(false);}
+  return sandboxRun('Preparando solicitud de sandbox (sin ejecutar)…',()=>request('sandbox-request',{expected_state_version:state.organization.state_version||1,agent_id:$('#sandbox-agent').value,code,timeout_seconds:Number($('#sandbox-timeout').value),max_output_bytes:Number($('#sandbox-max-output').value)}),'Solicitud preparada SIN ejecutar. Revisa la puerta y apruebala explicitamente.');
+};
+const approveSandbox=(requestId,scopeHash)=>sandboxRun('Registrando aprobacion de un solo uso…',()=>request('sandbox-approve',{expected_state_version:state.organization.state_version||1,request_id:requestId,scope_hash:scopeHash,approver_role:$('#sandbox-approver-role').value.trim()||'operador-panel'}),'Aprobacion registrada: un solo uso, ligada al scope_hash. Todavia no se ejecuto nada.');
+const execSandbox=requestId=>{
+  if(!confirm('Ejecutar el codigo aprobado en el espacio aislado de ese miembro? La aprobacion se consumira pase lo que pase y el resultado se entregara al canal con su SHA-256.'))return Promise.resolve(false);
+  return sandboxRun('Ejecutando en el sandbox (una sola vez)…',()=>request('sandbox-exec',{expected_state_version:state.organization.state_version||1,request_id:requestId}),'Ejecucion terminada: revisa estado, artefacto y evidencia. La aprobacion quedo consumida.');
+};
+$('#sandbox-request').onclick=()=>requestSandbox();
+$('#sandbox-agent').onchange=()=>updateSandboxControls();
 
 // The harness observes each boundary separately. A listener is never runtime proof.
 let harnessPlanHash=null,harnessDirty=false,harnessTimer=null,harnessPolling=false,harnessEpoch=0;
