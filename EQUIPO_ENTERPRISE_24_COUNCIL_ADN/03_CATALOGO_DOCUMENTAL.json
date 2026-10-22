@@ -312,7 +312,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 66605,
-      "sha256": "d230d0b1ec52a64454a7b9a933b4c089d499c3a49253226c46f59f5fc894001c"
+      "sha256": "681ff0593b0d3b2ebed2ac5e086d09e5c4711d8a65ace6dd6bdc59dab9bc3cd6"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -385,9 +385,34 @@
       "sha256": "83c49580d4e69ba99ba8e9786dc1f3977ca96dfb72ac19a961f021d9e26d22f7"
     },
     {
+      "path": "docs/evolution/propuesta-evo-20261021_192901.md",
+      "bytes": 4472,
+      "sha256": "f0f29fa46cccd58bc75bdbcc2ef367c9cf5288e5da43a1a8294657feae721d02"
+    },
+    {
       "path": "docs/export_artifacts.md",
       "bytes": 7060,
       "sha256": "f1996902081ad24897bbb4efcdb4a99153a7e9a6f757339447da45e6ae4d425d"
+    },
+    {
+      "path": "docs/gap/PRIORIDADES.md",
+      "bytes": 28880,
+      "sha256": "f2f79ceda7a3c807ea5662ba1b1630e912efa982943724809156f82d999c19ae"
+    },
+    {
+      "path": "docs/gap/engine_map.md",
+      "bytes": 30370,
+      "sha256": "e7a3fa7fb2236bb2a65182fc630ebf77475d897a0e4338cabd139f86f5920361"
+    },
+    {
+      "path": "docs/gap/gh_candidates.md",
+      "bytes": 24720,
+      "sha256": "c542e55f8b7c00b7df65556b0de954389f24e47bdf15fe17053f27f756666895"
+    },
+    {
+      "path": "docs/gap/ui_cordis_map.md",
+      "bytes": 20085,
+      "sha256": "de41fcfb83efa0300f5ae174dec52d741eb005116a9a291849db4cca21c71f4c"
     },
     {
       "path": "docs/integration_runtime.md",
@@ -463,6 +488,61 @@
       "path": "docs/qa_recuperacion_v7.md",
       "bytes": 7445,
       "sha256": "1d857210606675ff5e9a5e1048ffc1324ff2af468c1ee047c21f2074342d9772"
+    },
+    {
+      "path": "docs/rea/PORT_REPORT.md",
+      "bytes": 5644,
+      "sha256": "221267c920ffcc14afb1b015095e4848d1e40bef95fb8627a31e36a514b594d1"
+    },
+    {
+      "path": "docs/rea/agentscope_notebook.md",
+      "bytes": 29514,
+      "sha256": "4d77c1ea02a4c2ac4b61f1e1ac3ff888f3d1febf7430bbe392bd21cd9b3d9967"
+    },
+    {
+      "path": "docs/rea/agentscope_vectors.json",
+      "bytes": 27802,
+      "sha256": "3badd146736b5807f6b13b6f81becdf450c4ddd537ea257b272c122ac0114ddb"
+    },
+    {
+      "path": "docs/rea/chatdev_notebook.md",
+      "bytes": 22873,
+      "sha256": "222d66c4564498f7a17116847cc8746829a108b393b6b71b09c979a1779109e1"
+    },
+    {
+      "path": "docs/rea/chatdev_vectors.json",
+      "bytes": 27377,
+      "sha256": "c940aa6c37101375cf667f1b812668f070a9b5839494fa9f59dff67acf349734"
+    },
+    {
+      "path": "docs/rea/evidence/circle_verify.txt",
+      "bytes": 83,
+      "sha256": "d55e7e82b9d52a47b7d127398350b0decb4cf2dddb9f103a6a3bcf3c70594ebe"
+    },
+    {
+      "path": "docs/rea/evidence/run_final_201.txt",
+      "bytes": 307,
+      "sha256": "07d71d9ec8e5c0bbc60949f4d5017b8e13876e329d4e8bd919dcc0d3d4a1581f"
+    },
+    {
+      "path": "docs/rea/evidence/run_ports_94.txt",
+      "bytes": 12481,
+      "sha256": "d67ab47b09b5ec5a5a67235ffe357f310c6dd9867fc1a3dbd4eef5d1eb3d63a0"
+    },
+    {
+      "path": "docs/rea/evidence/suite_full_classified.txt",
+      "bytes": 997,
+      "sha256": "fc41d2e712f6c344534c27dee6dda4bedbd9d31f745987456b5f2f9d9e748e9d"
+    },
+    {
+      "path": "docs/rea/evidence/validator.txt",
+      "bytes": 708,
+      "sha256": "94b8d819da37b5e5026f196873daf41f312d137f45c77e614b41fb7148dbe6db"
+    },
+    {
+      "path": "docs/security/FUSILE_SOURCE_POLICY.md",
+      "bytes": 3408,
+      "sha256": "fa23fd47abd4434082994e380f0c6656e8defae548891276190fcb683051b419"
     },
     {
       "path": "docs/tool_catalog_validation.json",
@@ -1450,6 +1530,11 @@
       "sha256": "91b7b9f79299c33f98188b713c4dfb71345463fb4a3e2b09681bf1c32a109776"
     },
     {
+      "path": "tests_followups.py",
+      "bytes": 16993,
+      "sha256": "6d1523ae47751fd48b554c96d09d8e051630346bb5d5b3d354a61225169f899a"
+    },
+    {
       "path": "tests_frontend_contract.py",
       "bytes": 6624,
       "sha256": "fe7ee689c2edcd604e5075b51747c9cbea0c0c901c9b0fe23905407a7948d4c1"
@@ -1633,6 +1718,11 @@
       "path": "tests_resource_workflows_adapter.py",
       "bytes": 7545,
       "sha256": "a46e800613226ce89d8983a13d47816e527be6e358ea6c094520106beff83003"
+    },
+    {
+      "path": "tests_sandbox_executor.py",
+      "bytes": 21575,
+      "sha256": "b74a7e4c0aec0193da81f291f45ad1ff03096bbfd6c0228ef186c63ffa70ae2f"
     },
     {
       "path": "tests_scheduler.py",
