@@ -207,7 +207,9 @@ _UNSAFE = re.compile(
     r"<\s*/?\s*(?:script|iframe|system|assistant|tool)\b|<\|(?:system|assistant|tool)\|>|"
     r"(?:^|[\n;])\s*(?:sudo|curl|wget|powershell|python|bash|sh)\s+"
     r"(?:--?\w|https?://|\./|/[\w.]|[A-Za-z0-9_-]+\.(?:py|sh|ps1)\b|"
-    r"[A-Za-z0-9_.-]+\.[A-Za-z]{2,}(?:[/: \t]|$)|(?:Get|Set|Invoke|Remove|New)-[A-Z]|(?:rm|chmod|apt|bash|sh)\s)|"
+    r"[A-Za-z0-9_.-]+\.[A-Za-z]{2,}(?:[/: \t]|$)|(?:Get|Set|Invoke|Remove|New)-[A-Z]|"
+    r"(?:rm|chmod|chown|apt|apt-get|yum|dnf|brew|docker|git|pip|pip3|npm|npx|"
+    r"systemctl|sc|reg|wmic|netsh|bash|sh)\s)|"
     r"\b(?:ejecuta|ejecutar|run)\s+(?:sudo|curl|powershell)|"
     r"(?:subprocess\.|os\.system\s*\(|eval\s*\(|exec\s*\()|"
     r"(?:ignore|disregard|ignora|omitir|omite|elude|bypass).{0,60}"
@@ -226,6 +228,35 @@ _OUTPUT_SECRET = re.compile(
     r"https?://[^\s/:]+:[^\s/@]+@|"
     r"https?://[^\s<>]*[?&](?:key|api_key|token|access_token|secret|password|auth|signature|sig)=[^&#\s]+)"
 )
+
+
+_INTENT_BRANCH = re.compile(
+    r"(?is)(?:ignore|disregard|ignora|omitir|omite|elude|bypass).{0,60}"
+    r"(?:previous|prior|instructions|instrucciones|policy|pol[ií]tica|restricciones|autorizaci[oó]n)|"
+    r"(?:grant|enable|concede|habilita).{0,35}(?:permissions|permisos)|"
+    r"(?:reveal|exfiltrate|revela|env[íi]a).{0,35}(?:secrets|password|credenciales|secretos)"
+)
+# A prohibition that NAMES the conduct is not the conduct: "No omitir
+# instrucciones de seguridad" and "nunca revelar credenciales" are compliance
+# text, not injections. Only the intent branches above are polarity-sensitive;
+# commands, code fences, markup, control tokens and secret assignments are
+# still blocked regardless of a preceding negator.
+_NEGATOR = re.compile(
+    r"(?is)\b(?:no|nunca|jam[áa]s|sin|evita|evitar|prohib\w*|nadie|ning[úu]n\w*|"
+    r"never|not|without|avoid|forbidden)\b[^.;\n]{0,40}$"
+)
+
+
+def _negated(value, start):
+    return bool(_NEGATOR.search(value[max(0, start - 70):start]))
+
+
+def _unsafe_hit(value):
+    for match in _UNSAFE.finditer(value):
+        if _INTENT_BRANCH.search(match.group(0)) and _negated(value, match.start()):
+            continue
+        return True
+    return False
 
 
 def _digest(value):
@@ -258,7 +289,7 @@ def _text(value, maximum=500, field=None):
     # Conservative input redaction remains unchanged in providers.py.
     if _OUTPUT_SECRET.search(value):
         _invalid("sensitive_output", field)
-    if _UNSAFE.search(value):
+    if _unsafe_hit(value):
         _invalid("unsafe_instructions", field)
     return value
 
