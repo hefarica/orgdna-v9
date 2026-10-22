@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Verificador independiente del sello SHA-256 del paquete OrgDNA V9.
 
-Recalcula los hashes de las 301 entradas de MANIFIESTO_SHA256.txt sobre los
+Recalcula los hashes de TODAS las entradas de MANIFIESTO_SHA256.txt sobre los
 bytes reales en disco y reporta cualquier discrepancia. No depende de ningún
 módulo del producto: solo stdlib, para poder ejecutarlo en un clon limpio y
 demostrar que el sello sobrevive al transporte por Git.
@@ -10,7 +10,7 @@ demostrar que el sello sobrevive al transporte por Git.
 Uso:
     python verifica_manifiesto.py [ruta_al_paquete]
 
-Salida: código 0 si las 301 entradas coinciden; 1 si hay discrepancia,
+Salida: código 0 si todas las entradas coinciden; 1 si hay discrepancia,
 faltantes o sobrantes.
 """
 import hashlib

@@ -73,11 +73,43 @@ def current_manifest_names():
     return {line.split('  ', 1)[1] for line in text.splitlines() if line.strip()}
 
 
+def _sync_declared_counts(acta_path, manifest_count, catalog_count, allowlist_count):
+    """Reescribe los conteos que el acta DECLARA, para que no puedan quedar mintiendo.
+
+    El sello ya obligaba a recomputar la huella enmascarada; los conteos en prosa y
+    la linea maquina-legible `MANIFIESTO_FILE_COUNT` se actualizaban a mano y por eso
+    quedaron en 342 cuando el manifiesto tenia 360. Cada patron debe aparecer
+    exactamente una vez: si el acta cambia de forma, esto falla en vez de callarse.
+    """
+    acta = io.open(acta_path, encoding='utf-8').read()
+    reemplazos = (
+        (r'MANIFIESTO_FILE_COUNT \d+', 'MANIFIESTO_FILE_COUNT %d' % manifest_count),
+        (r'\|\s*Manifiesto\s*\|\s*\d+ entradas', '| Manifiesto | %d entradas' % manifest_count),
+        (r'\|\s*Entradas del manifiesto\s*\|\s*`\d+`\s*\|',
+         '| Entradas del manifiesto | `%d` |' % manifest_count),
+        (r'\|\s*Allowlist\s*\|\s*`\d+` entradas\s*\|',
+         '| Allowlist | `%d` entradas |' % allowlist_count),
+        (r'De las \d+ entradas', 'De las %d entradas' % manifest_count),
+        (r'`03_CATALOGO_DOCUMENTAL\.json` \(\d+ entradas\)',
+         '`03_CATALOGO_DOCUMENTAL.json` (%d entradas)' % catalog_count),
+    )
+    for pattern, replacement in reemplazos:
+        matches = re.findall(pattern, acta)
+        if len(matches) != 1:
+            print('FALLO: el patron %r aparece %d veces en el acta (se esperaba 1)'
+                  % (pattern, len(matches)))
+            return False
+        acta = re.sub(pattern, replacement, acta, count=1)
+    io.open(acta_path, 'w', encoding='utf-8', newline='').write(acta)
+    return True
+
+
 def main():
     sys.path.insert(0, PKG)
-    from engine.bundle import _json_bytes
+    from engine.bundle import _json_bytes, RUNTIME_ALLOWLIST
 
     names = discover()
+    others = sorted(n for n in names if n != CATALOG)
     previous = current_manifest_names()
     added, removed = sorted(names - previous), sorted(previous - names)
     print('archivos entregables : %d' % len(names))
@@ -103,8 +135,13 @@ def main():
     acta = pattern.sub('MANIFIESTO_SHA256_SIN_ESPEJO ' + masked_hash, acta, count=1)
     io.open(acta_path, 'w', encoding='utf-8', newline='').write(acta)
 
+    # 2-bis. Conteos declarados en el acta. Va AQUI (antes de digerir el catalogo)
+    # porque el acta se digiere en el paso 3: sincronizarlo despues dejaria su linea
+    # del manifiesto apuntando a los bytes viejos.
+    if not _sync_declared_counts(acta_path, len(names), len(others), len(RUNTIME_ALLOWLIST)):
+        return 1
+
     # 3. Catalogo (excluye al catalogo y al manifiesto; el acta SI va dentro).
-    others = sorted(n for n in names if n != CATALOG)
     digests = {n: sha(read(n)) for n in others}
     catalog = _json_bytes({
         'format': 'orgdna/document-catalog', 'version': 1,

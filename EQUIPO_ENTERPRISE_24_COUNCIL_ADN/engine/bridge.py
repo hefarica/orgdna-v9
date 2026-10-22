@@ -59,7 +59,7 @@ try:
     from .coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
     from .team_channel import TeamChannel, ChannelError
     from .team_memory import TeamMemoryStore
-    from .memory_governance import MemoryGovernanceError
+    from .memory_governance import MemoryGovernanceError, MEMORY_ID_PATTERN
     from .tenants import TenantBoundary, TenantRegistry
     from .governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 except ImportError:
@@ -78,7 +78,7 @@ except ImportError:
     from coordination import CoordinationStore, ACTIONS as COORDINATION_ACTIONS
     from team_channel import TeamChannel, ChannelError
     from team_memory import TeamMemoryStore
-    from memory_governance import MemoryGovernanceError
+    from memory_governance import MemoryGovernanceError, MEMORY_ID_PATTERN
     from tenants import TenantBoundary, TenantRegistry
     from governance import ACTIONS as GOVERNANCE_ACTIONS, ensure_governance, build_scoreboard, apply_governance_action
 
@@ -1008,8 +1008,9 @@ class BridgeState:
             if store is None:
                 raise BridgeError('Genera un diseño actualizado antes de escribir en la memoria de equipo.')
             memory_id = body.get('memory_id')
-            if not isinstance(memory_id, str) or not re.fullmatch(r'[a-z0-9][a-z0-9._-]{1,63}', memory_id):
-                raise BridgeError('memory_id debe tener de 2 a 64 caracteres de [a-z0-9._-].')
+            if not isinstance(memory_id, str) or not re.fullmatch(MEMORY_ID_PATTERN, memory_id):
+                raise BridgeError('memory_id debe tener de 2 a 64 caracteres de [a-z0-9_-] '
+                                  '(patron del contrato v1 que aplica el governor de memoria).')
             author = body.get('author')
             if not isinstance(author, str) or not any(m['member_id'] == author for m in self._team_roster()):
                 raise BridgeError('author debe ser un miembro del roster vigente.')

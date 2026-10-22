@@ -210,6 +210,19 @@ RUNTIME_ALLOWLIST = (
     'engine/team_channel.py', 'engine/team_memory.py',
     'engine/sandbox_executor.py', 'engine/followups.py',
     'tests_team_channel.py', 'tests_team_memory.py',
+    'tests_sandbox_executor.py', 'tests_followups.py',
+    # Evidencia y politica de la mision GenTeam: sin estas rutas el manifiesto sella
+    # entregables que el empaquetador no incluia, y el ZIP omitia la trazabilidad de
+    # las fuentes portadas y sus vectores externos.
+    'docs/security/FUSILE_SOURCE_POLICY.md',
+    'docs/rea/PORT_REPORT.md', 'docs/rea/agentscope_notebook.md',
+    'docs/rea/agentscope_vectors.json', 'docs/rea/chatdev_notebook.md',
+    'docs/rea/chatdev_vectors.json',
+    'docs/rea/evidence/circle_verify.txt', 'docs/rea/evidence/run_final_201.txt',
+    'docs/rea/evidence/run_ports_94.txt', 'docs/rea/evidence/suite_full_classified.txt',
+    'docs/rea/evidence/validator.txt',
+    'docs/gap/PRIORIDADES.md', 'docs/gap/engine_map.md', 'docs/gap/gh_candidates.md',
+    'docs/gap/ui_cordis_map.md', 'docs/evolution/propuesta-evo-20261021_192901.md',
     'tests_platform_task_graph.py', 'tests_platform_registry_evidence.py',
     'tests_platform_policy.py', 'tests_platform_memory_tenants.py',
     'tests_platform_eval_artifacts.py', 'tests_platform_reliability_connectors.py',
@@ -280,7 +293,7 @@ def _export_organization(org):
 def _expected_package_paths(org, export_paths):
     n = len(org['agents'])
     return set(RUNTIME_ALLOWLIST) | set(COMMON_SECTIONS) | set(SIDECAR_PATHS) | set(export_paths.values()) | {
-        'ADN_Organizacional.xlsx',
+        'ADN_Organizacional.xlsx', export_artifacts.MANIFEST_FILENAME,
         f'COLLAB_NOTE_EQUIPO_{n}.txt', f'DIRECTRIZ_COLABORACION_{n}.txt',
         f'EQUIPO_ENTERPRISE_{n}_PROMPTS_COMPLETOS.md', f'PROMPT_MAESTRO_{n}.txt',
         f'RESUMEN_EQUIPO_ENTERPRISE_{n}.txt',

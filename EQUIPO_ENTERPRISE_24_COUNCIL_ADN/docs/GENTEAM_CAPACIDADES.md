@@ -90,8 +90,10 @@ que ahora incluye DOS claves aditivas:
 - `team_memory`: índice `MEMORY.md` del equipo (`TeamMemoryStore` con tenant por
   organización, miembro `equipo`, raíz `data/projects/_team_memory/`). Sección
   **Memoria** en Council: texto del índice, lista de fragmentos por plano y formulario
-  de alta (plano, id 2..64 `[a-z0-9._-]`, contenido, descripción; el plano `execution`
-  exige `task_id` por el contrato de `memory_governance`).
+  de alta (plano, id 2..64 `[a-z0-9_-]` —el patrón lo dicta
+  `memory_governance.MEMORY_ID_PATTERN` y el borde del panel aplica el mismo—,
+  contenido, descripción; el plano `execution` exige `task_id` por el contrato de
+  `memory_governance`).
 
 Las acciones POST son las mismas `/api/<accion>` de siempre, despachadas por
 `BridgeState.execute` con `expected_state_version` (versionado igual que el resto de

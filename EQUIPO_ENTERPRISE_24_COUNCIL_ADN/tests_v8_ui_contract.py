@@ -74,13 +74,31 @@ class V8UIContracts(unittest.TestCase):
         self.assertIn('No demuestra comprensión completa', self.js)
 
     def test_new_css_is_generation_scoped(self):
+        """Todo CSS anadido despues del marcador V8 cuelga de un contenedor de pagina.
+
+        El contrato original exigia el prefijo literal `#configuration ` porque hasta V8
+        el unico bloque nuevo era el estudio de generacion. GenTeam P2 agrega estilos a
+        OTRA pagina (el canal de equipo vive en #council), asi que la regla se enuncia
+        por su intencion: ningun selector nuevo puede ser global; debe estar acotado a
+        un contenedor de pagina declarado en el propio HTML (seccion .page o el estudio
+        de generacion). Un selector global o fuera de esos contenedores sigue fallando.
+        """
         added = self.css.split('/* V8:', 1)[1]
-        selectors = re.findall(r'(?:^|\})\s*([^{}]+)\{', added.split('*/', 1)[1])
+        body = re.sub(r'/\*.*?\*/', '', added.split('*/', 1)[1], flags=re.S)
+        selectors = re.findall(r'(?:^|\})\s*([^{}]+)\{', body)
+        roots = {'#%s' % field for field, (tag, attrs) in self.fields.items()
+                 if tag == 'section' and attrs.get('class') == 'page'}
+        roots.add('#configuration')
+        self.assertGreaterEqual(len(roots), 2, 'debe haber contenedores de pagina declarados')
         for group in selectors:
             if group.strip().startswith('@media'):
                 continue
             for selector in group.split(','):
-                self.assertTrue(selector.strip().startswith('#configuration '), selector)
+                parts = selector.strip().split(' ', 1)
+                self.assertIn(parts[0], roots,
+                              'selector fuera de un contenedor de pagina: %s' % selector)
+                self.assertEqual(len(parts), 2,
+                                 'el selector debe acotarse a un descendiente: %s' % selector)
 
 if __name__ == '__main__':
     unittest.main()

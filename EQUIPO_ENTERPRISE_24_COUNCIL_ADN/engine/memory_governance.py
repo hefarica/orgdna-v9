@@ -104,6 +104,10 @@ MEMORY_ERROR_CODES = ('unsupported_version', 'invalid_record', 'invalid_request'
                       'sensitive_domain_not_materializable')
 
 _MEMORY_ID_RE = re.compile(r'^[a-z0-9][a-z0-9_-]{1,63}$')
+#: Patron publico del identificador de fragmento (contrato v1). Lo consume
+#: engine/bridge.py para rechazar en el borde con el MISMO criterio que el governor,
+#: en vez de repetir una copia que se desincroniza (paso: el borde aceptaba puntos).
+MEMORY_ID_PATTERN = r'[a-z0-9][a-z0-9_-]{1,63}'
 _TENANT_ID_RE = re.compile(r'^[a-z0-9][a-z0-9._-]{2,63}$')
 _INSTANT_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z$')
 _HASH_RE = re.compile(r'^[0-9a-f]{64}$')

@@ -291,8 +291,8 @@
     },
     {
       "path": "docs/GENTEAM_CAPACIDADES.md",
-      "bytes": 8655,
-      "sha256": "bf75f5839b5444b473b6fd2d2aac15366b56641889755edc9ea6e85226413cca"
+      "bytes": 8759,
+      "sha256": "dadf1ac666c95116e3050741781eb8db947b4f2c9b5c9d32430f2965f74d3f86"
     },
     {
       "path": "docs/PLATAFORMA_APROBACION_V1.md",
@@ -312,7 +312,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 66605,
-      "sha256": "681ff0593b0d3b2ebed2ac5e086d09e5c4711d8a65ace6dd6bdc59dab9bc3cd6"
+      "sha256": "4ed8bfe8b5026dd10fe63e8ad7213bd46f98833b0fe3ecd6f034e1bd014f723d"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -631,13 +631,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 135021,
-      "sha256": "b589e71532ca163889ec0f604d42f0fef4932250d33e02fea335134ca4897699"
+      "bytes": 135143,
+      "sha256": "d60733ec7d1887f282bd0a5f82bab6cc10170dff5d60afea1e09acd96af1fc65"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 84500,
-      "sha256": "80a4f4211290cc48662c6f363aa4e808c89c84a98472ba064d03d142a32e3192"
+      "bytes": 85413,
+      "sha256": "812f24f8aeaf1db665a272bf0323ec861bd5725d57803803bf25852d67a37bc2"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -821,8 +821,8 @@
     },
     {
       "path": "engine/memory_governance.py",
-      "bytes": 39860,
-      "sha256": "3ea4b2771ecf01a0dd5cd31304012b9791aafa954562eb0e941add615f41876a"
+      "bytes": 40153,
+      "sha256": "f53816eedcc06ab68424e66dc9e5ed72746f44bb8137a1294011c97372aded11"
     },
     {
       "path": "engine/model_resolver.py",
@@ -1236,8 +1236,8 @@
     },
     {
       "path": "qa_v7/dsh_baseline.json",
-      "bytes": 10227,
-      "sha256": "02570c695c2cbd32dac87ed17591cdb9a96bcf783f9778a77bdb0d8492804232"
+      "bytes": 14615,
+      "sha256": "b5444d7ab4a34c8add812cba257d54cb37f3e9dff19e1bf996ee486401b85ca7"
     },
     {
       "path": "qa_v7/fixtures.py",
@@ -1751,8 +1751,8 @@
     },
     {
       "path": "tests_v8_ui_contract.py",
-      "bytes": 4756,
-      "sha256": "10551af372f905f735994556a0f3d0398a46882a9dbad0013c044e897bd49919"
+      "bytes": 5966,
+      "sha256": "16ea5792427441cdfe683e14f8fd00b73047bccc60528a1c504dab69c9540ad3"
     },
     {
       "path": "tests_v8_ui_dom.js",
@@ -1791,8 +1791,8 @@
     },
     {
       "path": "web/style.css",
-      "bytes": 42708,
-      "sha256": "604c21279a4f99b2f23d05dde533ae090a0a0c0033337d88390882e22314bcbe"
+      "bytes": 42946,
+      "sha256": "9b406e89194a816d668aa51c4282e4dd616b0671195be5ced253aa3be7b57028"
     },
     {
       "path": "workbook/sheet_ranges.json",

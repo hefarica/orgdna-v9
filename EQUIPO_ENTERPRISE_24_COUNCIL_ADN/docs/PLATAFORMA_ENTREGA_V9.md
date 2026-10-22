@@ -25,8 +25,8 @@ Toda la capa se integra por las dos vías que exige el paquete: la lista **liter
 | Pruebas de plataforma (raíz) | 18 (7 preexistentes + `tests_platform_integration.py` + `tests_platform_packaging_cache.py` + `tests_platform_launcher_zip_names.py`) | Las 7 preexistentes **no se tocan**; las dos nuevas son de esta ronda y de la reparación P3‑A |
 | Contratos y actas (`docs/`) | 13 (6 esquemas de R0 + `policy.v2` + 5 documentos + este acta) | Integrados; 2 documentos modificados por esta ronda |
 | Allowlist literal | 272 entradas exactas | 33 entradas nuevas, sin globs ni patrones |
-| Manifiesto | 342 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2), por las reparaciones P3‑A, P3‑B y P3‑C, y por la integración GenTeam P1‑P4 (ronda 9‑quattuordecies) |
-| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (334 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
+| Manifiesto | 360 entradas + el propio manifiesto | Regenerado por diseño (D‑R0‑2), por las reparaciones P3‑A, P3‑B y P3‑C, y por la integración GenTeam P1‑P4 (ronda 9‑quattuordecies) |
+| Índice documental | `03_CATALOGO_DOCUMENTAL.json` (359 entradas) | Regenerado con la misma regla del empaquetador (`engine/bundle.py`), porque el validador exige que enumere **todos** los archivos entregados salvo él mismo y el manifiesto |
 
 Los 11 módulos son `engine/task_graph.py`, `agent_registry.py`, `evidence_graph.py`, `policy_engine.py`,
 `memory_governance.py`, `tenants.py`, `reliability.py`, `connector_gateway.py`, `evaluation_harness.py`,
@@ -51,9 +51,9 @@ El manifiesto cubre todos los archivos de la entrega salvo él mismo (`engine/bu
 
 | Magnitud | Valor |
 | --- | --- |
-| Entradas del manifiesto | `342` |
+| Entradas del manifiesto | `360` |
 | `file_count` que reportará `validate_imports_portable.py` | `343` (incluye el propio manifiesto) |
-| Allowlist | `279` entradas |
+| Allowlist | `297` entradas |
 
 ### 2.1 Por qué el acta no puede publicar la huella del manifiesto que la cubre
 
@@ -63,13 +63,13 @@ huella del manifiesto *tal cual* exigiría un punto fijo de SHA‑256. Es la mis
 se excluye a sí mismo (`engine/bundle.py:766`, `:798`) y el ZIP no incluye su propio hash
 (`docs/export_artifacts.md:27`).
 
-Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 342 entradas, solo los
+Se rompe publicando la huella del manifiesto con **dos líneas enmascaradas**. De las 360 entradas, solo los
 digest de esas dos dependen del valor publicado; las otras **340** no. La huella se calcula, por tanto, antes
 de escribirla, y se verifica después por recomputación:
 
 ```text
-MANIFIESTO_FILE_COUNT 342
-MANIFIESTO_SHA256_SIN_ESPEJO 2f47fa7e9a6cc27d2632e2d1e9a52ad7eb114f319cceca5d904a29fb16bd7e58
+MANIFIESTO_FILE_COUNT 360
+MANIFIESTO_SHA256_SIN_ESPEJO d034f216eebc674554ce18c15f8eb00f9d9072d19eb5687c85c0b34fd724b83e
 MANIFIESTO_MARCADOR PENDIENTE_DE_MANIFIESTO
 MANIFIESTO_LINEAS_ENMASCARADAS 03_CATALOGO_DOCUMENTAL.json docs/PLATAFORMA_ENTREGA_V9.md
 ```
