@@ -45,7 +45,10 @@ class FrontendContracts(unittest.TestCase):
         files=[a['href'].split('/')[-1] for t,a in self.markup.tags if t=='a' and 'download' in a]
         self.assertTrue(set(files)<={'implementation.json','council.json','definitions.json','organization.json','evidence.json','lifecycle.json','package.zip','cordis-addon.zip','cordis-implementation.json','cordis-definitions.json','capability-update.json'})
     def test_provider_calls_need_explicit_user_step(self):
-        self.assertIn("action('discover-models',{confirmed:true})",self.js)
+        # El catálogo automático ya no se auto-autoriza: la confirmación de la UI debe
+        # citar el consentimiento pendiente (discoverConsent) además de confirmed:true.
+        self.assertIn("action('discover-models',Object.assign({confirmed:true},discoverConsent()))",self.js)
+        self.assertIn("function discoverConsent(){",self.js)
         self.assertIn("consent_id:state.pending_consent.approval_id",self.js)
         self.assertIn("payload_sha256:state.pending_consent.payload_sha256",self.js)
         self.assertIn("data_reviewed:true,budget_acknowledged:true",self.js)

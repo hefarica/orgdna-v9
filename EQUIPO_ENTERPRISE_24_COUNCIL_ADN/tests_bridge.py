@@ -60,6 +60,22 @@ def fixture_xlsx(path, agents=24, assignments=None):
         z.writestr('xl/worksheets/sheet2.xml',f'<worksheet xmlns="{ns}"><sheetData>{assignment_xml}</sheetData></worksheet>')
 
 
+def saved_workbook_reader(action, workbook, payload=None):
+    """Doble de excel_call('Read'): lee el .xlsx GUARDADO sin Excel, sin inventar datos.
+
+    En Windows, `BridgeState.download` relee el libro por COM (engine/bridge.py:2519) y el
+    adaptador PowerShell exige que el libro este abierto en una instancia ACTIVA de Excel
+    (engine/excel_bridge.ps1:82): sin Excel ese camino falla por ENTORNO, no por el producto.
+    El sujeto de `test_workbook_stale_blocks_export` es la deteccion de staleness, no COM, y
+    el propio producto ya trae el lector del archivo guardado (`read_xlsx_snapshot`), que
+    devuelve la MISMA forma de snapshot. Se sustituye SOLO la lectura: si el archivo cambia
+    en disco, el snapshot cambia, que es justo lo que el test debe observar.
+    """
+    if action != 'Read' or payload is not None:
+        raise BridgeError('Fixture: el doble solo implementa la lectura del archivo guardado.')
+    return read_xlsx_snapshot(str(workbook))
+
+
 class BridgeStateTests(unittest.TestCase):
     def setUp(self): self.provider=FakeProvider();self.state=BridgeState(credential_store=NullStore(),provider_module=self.provider)
     def test_default_offline_generation_and_export(self):
@@ -159,13 +175,17 @@ class BridgeStateTests(unittest.TestCase):
         self._prepare();self.state.execute('config',{'config':{'repo_url':'https://github.com/other/fixture'}})
         self.assertIsNone(self.state.repo_inventory)
     def test_workbook_stale_blocks_export(self):
-        with tempfile.TemporaryDirectory() as d:
-            path=Path(d)/'fixture.xlsx';fixture_xlsx(path)
-            self.state.execute('import-workbook',{'workbook':str(path)})
-            self.state.execute('generate',{})
-            self.assertTrue(self.state.download('organization.json'))
-            fixture_xlsx(path,agents=7)
-            with self.assertRaises(BridgeError):self.state.download('implementation.json')
+        # Sin Excel: se sustituye SOLO la lectura COM por el lector guardado del producto
+        # (saved_workbook_reader). Un skip habria dejado sin cobertura esta guarda de
+        # exportacion en toda maquina Windows sin Excel; el doble la ejercita de verdad.
+        with patch('engine.bridge.excel_call',side_effect=saved_workbook_reader):
+            with tempfile.TemporaryDirectory() as d:
+                path=Path(d)/'fixture.xlsx';fixture_xlsx(path)
+                self.state.execute('import-workbook',{'workbook':str(path)})
+                self.state.execute('generate',{})
+                self.assertTrue(self.state.download('organization.json'))
+                fixture_xlsx(path,agents=7)
+                with self.assertRaises(BridgeError):self.state.download('implementation.json')
     def test_xlsx_assignments_and_fingerprint(self):
         with tempfile.TemporaryDirectory() as d:
             path=Path(d)/'fixture.xlsx';fixture_xlsx(path,assignments=[('id1','zai','glm-fixture')])

@@ -31,8 +31,17 @@ class MontajeTests(unittest.TestCase):
             for servidor in self.state.gang_servers.values():
                 servidor.stop()
 
-    def test_M1_montar_expone_tres_procesos_reales(self):
+    def montar(self):
+        """Montar es de dos pasos: solicitud visible (no monta) + confirmación exacta."""
         self.state.execute("gang-mount", {})
+        pendiente = self.state.public()["gang_mount_consent"]
+        self.assertIsNotNone(pendiente, "la solicitud de montaje queda pendiente y visible")
+        self.assertEqual(pendiente["gate"], "connectors")
+        self.state.execute("gang-mount", {"confirmed": True, "consent_id": pendiente["approval_id"],
+                                          "payload_sha256": pendiente["payload_sha256"]})
+
+    def test_M1_montar_expone_tres_procesos_reales(self):
+        self.montar()
         gang = self.state.public()["gang"]
         self.assertTrue(gang["montado"])
         self.assertEqual(len(gang["urls"]), 3)
@@ -46,7 +55,7 @@ class MontajeTests(unittest.TestCase):
 
     def test_M2_publicar_con_servicios_montados_es_2pc_real(self):
         self.state.organization = org_real(4)
-        self.state.execute("gang-mount", {})
+        self.montar()
         self.state.execute("gang-publish", {})
         sha = self.state.public()["gang"]["ensamblado"]["sha256"]
         for servidor in self.state.gang_servers.values():
@@ -59,7 +68,7 @@ class MontajeTests(unittest.TestCase):
 
     def test_M3_desmontar_restaura_el_grabador_y_conserva_el_journal(self):
         self.state.organization = org_real(3)
-        self.state.execute("gang-mount", {})
+        self.montar()
         self.state.execute("gang-publish", {})
         antes = len(self.state.public()["gang"]["auditoria"])
         urls = dict(self.state.gang_servers and {sid: s.url() for sid, s in self.state.gang_servers.items()} or {})
@@ -77,7 +86,7 @@ class MontajeTests(unittest.TestCase):
         self.assertEqual(self.state.public()["gang"]["sync"]["code"], "SYNCED")
 
     def test_M4_el_tick_del_supervisor_se_dispara_desde_el_panel(self):
-        self.state.execute("gang-mount", {})
+        self.montar()
         self.state.execute("gang-tick", {})
         # sin pendientes: reporte limpio y sin nodos tocados
         for servidor in self.state.gang_servers.values():
@@ -86,7 +95,7 @@ class MontajeTests(unittest.TestCase):
     def test_M5_fallos_cerrados_honestos(self):
         with self.assertRaises(bridge.BridgeError):
             self.state.execute("gang-tick", {})          # sin montar no hay nada que supervisar
-        self.state.execute("gang-mount", {})
+        self.montar()
         with self.assertRaises(bridge.BridgeError):
             self.state.execute("gang-mount", {})          # ya montados
         self.state.execute("gang-unmount", {})

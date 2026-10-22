@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "b5d8b2356371e85a4e2a1f05ee790f28a53aecd32be6db896832c304c60e7d50"
+      "sha256": "1797bf5a8da2012a160b16a30b272d671ee0716ef6020d11b0794903fa4c344b"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -676,13 +676,13 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 174568,
-      "sha256": "e6d31d3ab57f53551ea023b597ccecf375038cebb8d5c4e9596956a769bbc08c"
+      "bytes": 182721,
+      "sha256": "e0a579709972e9217bfa6fd11aff55cf715398bd7e0de8400909e4bfef35990d"
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 86876,
-      "sha256": "d20cec78f3a9d9512092154d3c55ec96e1f325f652b7d34c673748c07743232a"
+      "bytes": 86988,
+      "sha256": "1aa360a34cbed4a9d0ddbcbf72be4a0498eec8c7a20cd7054488686ed0728447"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1561,8 +1561,8 @@
     },
     {
       "path": "tests_bridge.py",
-      "bytes": 16131,
-      "sha256": "7ad1a59e288c0806140adf59394088cb054ddc1719e4816e0e6616e9b9433543"
+      "bytes": 17481,
+      "sha256": "bf18025f31992259d5c260ccf9a6481b7c59e02f640efc040759e2e25d35b3bb"
     },
     {
       "path": "tests_capability_deployment.py",
@@ -1611,8 +1611,8 @@
     },
     {
       "path": "tests_frontend_contract.py",
-      "bytes": 6624,
-      "sha256": "fe7ee689c2edcd604e5075b51747c9cbea0c0c901c9b0fe23905407a7948d4c1"
+      "bytes": 6897,
+      "sha256": "ed0ed4514c41be60e9ee7c6040efbbcaa54286bcad8dec32ab1848f824a4e0a8"
     },
     {
       "path": "tests_gang_assembly.py",
@@ -1631,8 +1631,8 @@
     },
     {
       "path": "tests_gang_mount.py",
-      "bytes": 4562,
-      "sha256": "ca4c0cff2d7ca9b4ed05524e9026af18f0f16e008de163461743f3406e587d65"
+      "bytes": 5010,
+      "sha256": "bc868f084bf0c9850fded5746068a007196363e75a98516bcd972b8731025316"
     },
     {
       "path": "tests_gang_services.py",
@@ -1815,6 +1815,11 @@
       "sha256": "443b9f39c5c6ca85f3eaac5154aefb4ad7b2afd0d10ba22b95fb7780506e3e3f"
     },
     {
+      "path": "tests_surface_gates.py",
+      "bytes": 12017,
+      "sha256": "dc9bb1350deda0155474c94c3fb2cbb7b4830c7036e617cd1fb09aa317c9914b"
+    },
+    {
       "path": "tests_team_channel.py",
       "bytes": 24258,
       "sha256": "bcecd8408f7ede26d845b47a09723b2dcd534401769471feeb5aa3677bc10bb2"
@@ -1891,8 +1896,8 @@
     },
     {
       "path": "web/app.js",
-      "bytes": 252984,
-      "sha256": "b391552283f335803f5da21ecc61a9021cb22277c11c17987718c5375750673d"
+      "bytes": 254249,
+      "sha256": "030b9a9ecc272714025b765b34753626a9f1c68ca05e323f7d5cb00e0fca2914"
     },
     {
       "path": "web/index.html",

@@ -639,6 +639,10 @@ class BridgeState:
             journal=gang_journal.Journal(self.project_store.root / '_gang_journal.jsonl'))
         self.gang_servers = None      # {id: ServidorGang} cuando el operador los monta
         self.gang_supervisor = None   # Supervisor vivo mientras esten montados
+        # Solicitud de montaje pendiente: montar abre 3 listeners HTTP locales con
+        # endpoints mutantes, asi que exige la puerta 'connectors' en dos pasos
+        # (mismo patron one_shot/scope_hash/TTL que el sandbox).
+        self.gang_mount_consent = None
         self._last_gang_artifact = None
         self._sensitive_values = set()
         self.persisted = False
@@ -960,7 +964,7 @@ class BridgeState:
                 'dsh_launcher': self.dsh_launcher.public(),
                 'dsh_harness': self.dsh_harness.public(), 'resource_workflows': self.resource_workflows.public(),
                 'workbook': self.workbook, 'organization': self.organization,
-                'analysis': self.analysis, 'repo_inventory': self.repo_inventory, 'pending_consent': self.pending_consent, 'model_overrides': self.model_overrides, 'models': self.public_models(), 'receipts': self.receipts,
+                'analysis': self.analysis, 'repo_inventory': self.repo_inventory, 'pending_consent': self.pending_consent, 'gang_mount_consent': self.gang_mount_consent, 'model_overrides': self.model_overrides, 'models': self.public_models(), 'receipts': self.receipts,
                 'credentials_configured': sorted(self.credentials), 'credentials_persisted': self.persisted,
                 'project': self.project, 'records_version': self.records_version,
                 'coordination': self.coordination_store.public(), 'tool_catalog': self.tool_catalog(),
@@ -2144,18 +2148,28 @@ class BridgeState:
                     self.secret_store.save(self.credentials)
                     self.persisted = True
                 self.receipt(action, 'success', 'Clave preparada en memoria.' if not body.get('persist') else 'Claves guardadas con DPAPI para este usuario de Windows.')
-                # Con la clave en memoria, cargar el catálogo del proveedor en el acto.
-                # El operador lo pidió explícitamente: pega la clave y los modelos cargan
-                # solos, sin adivinar IDs. La llamada es de METADATOS (listar modelos),
-                # no de diseño ni de inferencia. Si falla, la clave SIGUE guardada: se
-                # degrada a aviso y el botón manual queda disponible.
+                # Con la clave en memoria se puede cargar el catálogo del proveedor, pero
+                # la app NO se auto-autoriza: el consentimiento de 'discover-models' existe
+                # para que lo firme una persona. Aquí solo se deja PENDIENTE y visible,
+                # con su approval_id y su payload_sha256; no se llama al proveedor.
                 if body.get('auto_discover') is True and load_providers().provider_config(PROVIDER_ROUTES[provider]).get('discovery') is True:
-                    try:
-                        return self.execute('discover-models', {'confirmed': True, 'auto': True})
-                    except BridgeError as exc:
-                        self.receipt('discover-models', 'warning',
-                                     'El catálogo automático no pudo consultarse (%s); la clave sigue preparada: usa el botón de catálogo.' % str(exc)[:160])
-                        return self.public()
+                    approval_id = secrets.token_urlsafe(24)
+                    requested_epoch = self.sandbox_clock()
+                    self.pending_consent = {
+                        'kind': 'discover_models', 'provider': provider, 'auto': True,
+                        'approval_id': approval_id, 'one_shot': True,
+                        'payload_sha256': self._design_digest({'kind': 'discover_models', 'provider': provider,
+                                                               'route': PROVIDER_ROUTES[provider]}),
+                        'requested_at': self._sandbox_instant(), 'requested_epoch': requested_epoch,
+                        'expires_epoch': requested_epoch + SANDBOX_APPROVAL_TTL_SECONDS,
+                        'approval_ttl_seconds': SANDBOX_APPROVAL_TTL_SECONDS,
+                        'note': 'Consulta de catálogo solicitada al guardar la clave. Requiere tu confirmación '
+                                'explícita en discover-models con consent_id y payload_sha256; no se envió nada.'}
+                    self.receipt('discover-models', 'pending',
+                                 'Catálogo automático PENDIENTE de tu confirmación: no se llamó al proveedor. '
+                                 'Al confirmarlo se enviará la clave solo al endpoint autorizado de ese proveedor.',
+                                 provider=provider, payload_sha256=self.pending_consent['payload_sha256'])
+                    return self.public()
             elif action == 'gang-publish':
                 if self.organization is None:
                     raise BridgeError('Genera primero un diseño del gang para ensamblar y publicar.')
@@ -2167,11 +2181,68 @@ class BridgeState:
                              % (sha[:12], resultado['objetivos'],
                                 ' — idempotente: ya estaba registrado, no se tocó nada' if resultado.get('idempotente') else ''))
             elif action == 'gang-mount':
-                # El operador monta los 3 servicios DESDE LA APLICACION: procesos
-                # HTTP reales en puertos locales. El registro pasa de grabador a
-                # coordinador 2PC REAL contra ellos; el journal no se toca.
+                # Montar abre 3 listeners HTTP reales en 127.0.0.1 con endpoints
+                # mutantes (prepare/commit/abort/compensate/rollback): es abrir un
+                # conector local, no una lectura. Por eso pasa por la puerta
+                # 'connectors' del contrato (action_kind 'open_connector') y exige
+                # aprobacion en dos pasos con el mismo patron que el sandbox:
+                # un solo uso, atada por scope_hash y con TTL.
                 if self.gang_servers:
                     raise BridgeError('Los servicios ya están montados.')
+                policy = self._sandbox_policy()
+                target = 'loopback://gang/%s' % (self.project.get('id') or 'local')
+                base_action = {'action_kind': 'open_connector', 'target': target}
+                scope_hash = policy.scope_hash(base_action)
+                gated_action = dict(base_action, scope_hash=scope_hash)
+                decision = platform_policy.evaluate(policy, gated_action, now=self._sandbox_instant())
+                if decision['decision'] == platform_policy.DECISION_DENY:
+                    raise BridgeError('deny: la politica deniega montar los servicios (%s): %s'
+                                      % (decision['gate'] or 'connectors', decision['reason']))
+                if body.get('confirmed') is not True:
+                    # Paso 1: no se monta nada. Se deja la solicitud visible con su
+                    # alcance y su digest para que el operador la revise y confirme.
+                    approval_id = secrets.token_urlsafe(24)
+                    requested_epoch = self.sandbox_clock()
+                    payload_sha256 = self._design_digest(
+                        {'kind': 'gang_mount', 'action': gated_action, 'service_ids': sorted(_gang_registry_module.TARGETS)})
+                    self.gang_mount_consent = {
+                        'kind': 'gang_mount', 'approval_id': approval_id, 'payload_sha256': payload_sha256,
+                        'scope_hash': scope_hash, 'action': gated_action, 'gate': decision['gate'] or 'connectors',
+                        'policy_decision': decision['decision'], 'policy_reason': decision['reason'],
+                        'service_ids': sorted(_gang_registry_module.TARGETS), 'one_shot': True,
+                        'requested_at': self._sandbox_instant(), 'requested_epoch': requested_epoch,
+                        'expires_epoch': requested_epoch + SANDBOX_APPROVAL_TTL_SECONDS,
+                        'approval_ttl_seconds': SANDBOX_APPROVAL_TTL_SECONDS}
+                    self.receipt(action, 'pending',
+                                 "Montaje solicitado y NO ejecutado: la puerta '%s' exige aprobacion humana "
+                                 '(%s). Se abriran 3 servicios HTTP locales con endpoints mutantes; confirma el '
+                                 'alcance %s con consent_id y payload_sha256.'
+                                 % (decision['gate'] or 'connectors', decision['decision'], scope_hash[:16]),
+                                 scope_hash=scope_hash, gate=decision['gate'] or 'connectors',
+                                 policy_decision=decision['decision'])
+                    return self.public()
+                pending = self.gang_mount_consent
+                if not isinstance(pending, dict) or pending.get('kind') != 'gang_mount':
+                    raise BridgeError('No hay un consentimiento de montaje pendiente. Solicita el montaje '
+                                      '(gang-mount sin confirmar) y revisa su alcance antes de confirmar; '
+                                      'no se monto nada.')
+                if body.get('consent_id') != pending.get('approval_id') \
+                        or body.get('payload_sha256') != pending.get('payload_sha256'):
+                    raise BridgeError('scope_mismatch: la confirmacion no corresponde a la solicitud de '
+                                      'montaje pendiente (consent_id/payload_sha256); no se monto nada.')
+                if self.sandbox_clock() - (pending.get('requested_epoch') or 0) > SANDBOX_APPROVAL_TTL_SECONDS:
+                    raise BridgeError('approval_expired: la solicitud de montaje supero su vigencia de %d s; '
+                                      'solicita y confirma de nuevo.' % SANDBOX_APPROVAL_TTL_SECONDS)
+                approval = {'gate': pending['gate'], 'approver_role': SANDBOX_APPROVER_ROLE,
+                            'approved_at': self._sandbox_instant(), 'scope_hash': scope_hash, 'one_shot': True}
+                confirmed_decision = platform_policy.evaluate(policy, gated_action, approval=approval,
+                                                              now=self._sandbox_instant())
+                if confirmed_decision['decision'] != platform_policy.DECISION_ALLOW:
+                    raise BridgeError("gate '%s': la politica no autoriza el montaje (%s): %s. No se monto nada."
+                                      % (pending['gate'], confirmed_decision['decision'],
+                                         confirmed_decision['reason']))
+                # La aprobacion se consume ANTES de montar: pase lo que pase, no se reutiliza.
+                self.gang_mount_consent = None
                 nodos = {sid: gang_services.ServicioGang(sid) for sid in _gang_registry_module.TARGETS}
                 self.gang_servers = {sid: gang_services.ServidorGang(nodo) for sid, nodo in nodos.items()}
                 urls = {sid: servidor.url() for sid, servidor in self.gang_servers.items()}
@@ -2217,6 +2288,13 @@ class BridgeState:
                 if not workbook:
                     raise BridgeError('Indica la ruta local completa del libro .xlsx.')
                 if action == 'read-excel':
+                    # Mismo contrato que apply-excel: leer por COM lanza PowerShell y
+                    # abre el libro en Excel, asi que exige confirmacion explicita. Sin
+                    # ella no se ejecuta nada (import-workbook solo lee el .xlsx guardado
+                    # y no necesita esta puerta).
+                    if body.get('confirmed') is not True:
+                        raise BridgeError('Confirma que se abrirá Excel por COM para leer la configuración del libro. '
+                                          'La lectura lanza PowerShell y abre el archivo: no se ejecutó nada.')
                     result = excel_call('Read', workbook)
                     snapshot = clean_snapshot(result)
                     config = snapshot['config']
@@ -2285,6 +2363,21 @@ class BridgeState:
                 if body.get('confirmed') is not True:
                     raise BridgeError('Confirma que deseas consultar el catálogo del proveedor.')
                 auto = body.get('auto') is True
+                pending = self.pending_consent
+                if isinstance(pending, dict) and pending.get('kind') == 'discover_models':
+                    # El consentimiento nace de auto_discover: la app no se lo firma sola.
+                    # Solo lo consume una confirmación humana que cite el approval_id y el
+                    # payload_sha256 exactos de ese pendiente.
+                    if body.get('consent_id') != pending.get('approval_id') \
+                            or body.get('payload_sha256') != pending.get('payload_sha256'):
+                        raise BridgeError('scope_mismatch: hay un catálogo automático pendiente y la '
+                                          'confirmación no cita su consent_id/payload_sha256; no se llamó '
+                                          'al proveedor. Revisa el consentimiento pendiente y confírmalo.')
+                    if self.sandbox_clock() - (pending.get('requested_epoch') or 0) > SANDBOX_APPROVAL_TTL_SECONDS:
+                        raise BridgeError('approval_expired: el consentimiento de catálogo superó su vigencia '
+                                          'de %d s; guarda la clave de nuevo para solicitar otro.'
+                                          % SANDBOX_APPROVAL_TTL_SECONDS)
+                    self.pending_consent = None  # Consumido antes de la I/O, pase lo que pase.
                 provider = self.config['provider']
                 if PROVIDER_ROUTES[provider] != 'zai' and not self.credentials.get(provider):
                     raise BridgeError('Introduce primero la clave de este proveedor para consultar su catálogo real.')

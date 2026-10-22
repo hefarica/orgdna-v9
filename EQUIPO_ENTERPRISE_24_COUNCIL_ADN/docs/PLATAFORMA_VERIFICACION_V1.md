@@ -359,3 +359,28 @@ todavía no se ha ejecutado y de la edición del capitán en `FUSILE_SOURCE_POLI
 **Condición de desbloqueo:** `t27` debe cerrar `0 divergencias / 0 faltantes / 0 sobrantes` y, sobre el árbol final,
 reejecutarse esta verificación (ambos modos de encoding) antes de cualquier entrega o sellado. Hasta entonces **no debe
 presentarse el paquete como válido ni como entregable**.
+
+## Anexo N9 — Artefactos de ejecución y política de re-sellado
+
+**Regla de artefactos de ejecución (no entran al sello).** `__pycache__/` —con sus `.pyc`— y `data/` **NUNCA** forman
+parte del sello: no son entregables, son artefactos que el producto escribe al ejecutarse (los `.pyc` del intérprete; en
+`data/` las versiones de proyecto y el estado de sesión). `verifica_manifiesto.py` los excluye por diseño (`skip_dirs`
+para `__pycache__`, `EXENTOS` para `data/`), así que **un `.pyc` presente no es una divergencia** del sello ni indica que
+esté roto; solo ensucia la entrega y **debe limpiarse antes de empaquetar**. No se implementa con globs nuevos ni
+ampliando allowlists: la regla ya vive en las dos herramientas de sello.
+
+**Política de re-sellado (obligatoria: dos trampas ya pagadas en esta sesión).**
+
+1. **Nunca re-sellar sobre un árbol en movimiento.** `resella_paquete.py` deriva el conjunto de archivos **del disco**: si
+   otro escritor sigue integrando, el sello certifica trabajo a medias. Pasó el 2026-10-22 (un re-sellado absorbió **19
+   archivos sin trackear** dentro del paquete) y volvió a pasar durante `t14`: el sello de las 14:55 declaraba
+   `engine/bridge.py` = `e6d31d3a…`; a las 16:59 el archivo real era `e0a57970…`; y `web/app.js` pasó de `b8cfdef6…` a
+   `a30bcb63…` entre dos mediciones separadas por un minuto, sin que nadie re-sellara.
+2. **Un sello coherente NO es código correcto.** Un re-sellado de esta sesión certificó una versión que **contenía el
+   defecto del guardián**: `0 divergencias` solo afirma «los bytes son los que el manifiesto declara». El sello prueba
+   **transporte e integridad del árbol**, jamás comportamiento.
+3. **Regla:** re-sellar **solo** con el árbol quieto y commiteado, y **un sello OK no sustituye a los tests**: el
+   checklist de desbloqueo de §B.6 sigue vigente después de sellar. `t14` verificó además que los `.pyc` no mueven el
+   veredicto del sello: con 44 `.pyc` en `engine/__pycache__` la pasada dio `sobrantes reales: 0` (el único sobrante
+   observado después, `tests_surface_gates.py`, no es un `.pyc` sino un archivo nuevo de otro escritor).
+
