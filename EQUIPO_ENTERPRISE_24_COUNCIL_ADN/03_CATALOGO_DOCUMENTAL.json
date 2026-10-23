@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "d1c827a641a7eba58c8f38fa4637906ac84dfc129fb00955d8b34f4b83db4c12"
+      "sha256": "a03d38328e44652e91f419fd27fcd3236fb859d087a84570272f6019d0fb5445"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -696,8 +696,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87878,
-      "sha256": "4c0bac53c2513a0eba3d8ba522954bdf38bc05707ff8550bf9229592da8a9460"
+      "bytes": 88066,
+      "sha256": "4150520ce67eac175f1fc6238ed91b6bf3cc5093466d3ee7be917186f3d251c9"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -801,8 +801,8 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 9946,
-      "sha256": "adf0c8329f06e0c5beb0a845d5f74e49e52b3a81bde5159709b42adbe27eef45"
+      "bytes": 10300,
+      "sha256": "54d81abd87a30529da5416e1ed2cdf78b38662a2197a0064cbe76cfe193b65df"
     },
     {
       "path": "engine/followups.py",
@@ -930,6 +930,11 @@
       "sha256": "bca83c5b93df8853b0009471ac9de36fc47fc19d47369aae629e59b5295e63f4"
     },
     {
+      "path": "engine/parity_gate.py",
+      "bytes": 3269,
+      "sha256": "018b1b69926f08825bb9b2347065d0a395c4a5f15afc331be1ffa66abaab3cd4"
+    },
+    {
       "path": "engine/playbooks.py",
       "bytes": 3538,
       "sha256": "60898243f3e90c483817b14588b0277f02a8783687e9905e1f53ebf7b8d9d460"
@@ -1011,8 +1016,13 @@
     },
     {
       "path": "engine/seeds_reconciled.py",
-      "bytes": 10435,
-      "sha256": "414761b813cf5938e1a883e1fdee5e2dacf8fa824b61d279dccd717a66aeeb55"
+      "bytes": 10624,
+      "sha256": "084fb4e4a9e18315cb5af9a92d6e2795566458fa5029e12b285f33c79cb37a75"
+    },
+    {
+      "path": "engine/site_rea.py",
+      "bytes": 7050,
+      "sha256": "5cbd84c9244addeb90811ec44e87a32a645d5d9c042340ab7797a998ce75869d"
     },
     {
       "path": "engine/task_graph.py",
@@ -1023,6 +1033,11 @@
       "path": "engine/team_channel.py",
       "bytes": 30386,
       "sha256": "714fe19b65ab95f6b99388598c821589f93d9d7913a9bb9be23eb222b7d956f3"
+    },
+    {
+      "path": "engine/team_for_spec.py",
+      "bytes": 6409,
+      "sha256": "d28916bfbd56b8a6fbf15dc97d59c9fba8081fc3105964d90909349f89ddab42"
     },
     {
       "path": "engine/team_loop.py",
@@ -1091,8 +1106,8 @@
     },
     {
       "path": "generate_seeds_reconciled.py",
-      "bytes": 2904,
-      "sha256": "a14c6f50bd7f134859e51a7fc57613427305f2cf264c28069f8f61a07fe3a46d"
+      "bytes": 2900,
+      "sha256": "8e8003c510825e4a43a488ec3ad8bd95449e424e9de0e2ff92050a8b4e22b1f3"
     },
     {
       "path": "launch.cmd",
@@ -1898,6 +1913,11 @@
       "path": "tests_scheduler.py",
       "bytes": 15423,
       "sha256": "443b9f39c5c6ca85f3eaac5154aefb4ad7b2afd0d10ba22b95fb7780506e3e3f"
+    },
+    {
+      "path": "tests_site_rea.py",
+      "bytes": 4503,
+      "sha256": "4d2acc1e64bddd6ff28e978250d193bc9f47ee6b43079af1e4a802031906bd3b"
     },
     {
       "path": "tests_surface_gates.py",

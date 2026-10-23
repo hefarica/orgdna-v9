@@ -199,6 +199,17 @@ def assert_coverage(extensions_present: Iterable[str]) -> CoverageReport:
     return rep
 
 
+def owner_of(extension: str):
+    """Dueno por defecto de una extension (primera opcion si es ambigua).
+
+    Vive aqui, no en el censo: es la consulta basica del mapa y la usan el
+    reconciliador, el equipo por spec y la paridad.
+    """
+    if extension in AMBIGUOUS:
+        return AMBIGUOUS[extension][0]
+    return EXTENSION_OWNER.get(extension)
+
+
 def assert_map_sane() -> None:
     if len(EXTENSION_OWNER) < MAX_FAMILIES:
         raise CoverageError("mapa corto: %d < %d" % (len(EXTENSION_OWNER), MAX_FAMILIES))

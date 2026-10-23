@@ -63,6 +63,11 @@ RUNTIME_ALLOWLIST = (
     'engine/seeds_reconciled.py',
     'generate_seeds_reconciled.py',
     'tests_reconciliation.py',
+    # 2026-10-22 · T5: REA del objetivo, equipo por spec, Gate 4 de paridad
+    'engine/site_rea.py',
+    'engine/team_for_spec.py',
+    'engine/parity_gate.py',
+    'tests_site_rea.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',

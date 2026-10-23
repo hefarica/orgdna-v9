@@ -42,7 +42,7 @@ for s in ROLE_SEEDS:
     owners = infer_owners(seed_text(s))
     dest = destino_para(owners)
     bundle = (owners[0] + "_pack") if owners else "docs_pack"
-    acc = ("destino_declarado",) + tuple("cubre:" + o for o in owners[:2])
+    acc = ("destino_declarado",) + tuple("cubre:" + o for o in owners)
     goal = (mission or area or role).replace('"', "'")[:160]
     lineas.append("    Seed(%r, %r, %r," % (name, role[:80], goal))
     lineas.append("         %r, %r, %r)," % (dest, bundle, acc))
