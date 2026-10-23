@@ -68,7 +68,11 @@ def to_summary(surface, *, max_files: int = 100) -> Mapping:
             "source_kind": "github_repository",
             "repository": {"url": surface.source_id, "sha": sha, "private": False},
             "files": [{"path": r, "snippet": ""} for r in rutas],
-            "tree": [{"path": r} for r in (bruto.get("paths") or [])[:int(max_files) * 2]],
+            # DEFECTO PROPIO CORREGIDO: el tree exponia 2x las rutas de files, asi
+            # que el modelo podia citar una ruta con contenido NO enviado y el
+            # validador lo rechazaba con razon ("cita evidencia no incluida").
+            # El tree debe ser exactamente lo que se puede citar.
+            "tree": [{"path": r} for r in rutas],
             "coverage": {"inventory_complete": True, "files": len(bruto.get("paths") or [])},
         }
     else:
