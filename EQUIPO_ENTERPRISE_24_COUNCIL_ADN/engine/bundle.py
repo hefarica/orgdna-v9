@@ -58,6 +58,11 @@ RUNTIME_ALLOWLIST = (
     'reconcile_vocabularies.py',
     # 2026-10-22 · censo remoto del repo objetivo
     'census_remote.py',
+    # 2026-10-22 · P4-A: roster reconciliado 42, frontera movida
+    'engine/seeds_gaps.py',
+    'engine/seeds_reconciled.py',
+    'generate_seeds_reconciled.py',
+    'tests_reconciliation.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',

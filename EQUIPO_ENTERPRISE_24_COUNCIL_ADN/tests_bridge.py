@@ -204,7 +204,7 @@ class BridgeStateTests(unittest.TestCase):
         self.assertIn('if ($cell.HasFormula)',script)
         self.assertNotIn('ExecutionPolicy Bypass',script)
     def test_invalid_config_rejected(self):
-        for raw in ({'agent_count':41},{'max_direct_reports':0},{'api_key':'secret'},{'repo_url':'https://127.0.0.1/x/y'},{'repo_url':'https://github.com/a/b?token=x'},{'implementation_concurrency':4}):
+        for raw in ({'agent_count':43},{'max_direct_reports':0},{'api_key':'secret'},{'repo_url':'https://127.0.0.1/x/y'},{'repo_url':'https://github.com/a/b?token=x'},{'implementation_concurrency':4}):
             with self.subTest(raw=raw),self.assertRaises(BridgeError):normalize_config(raw)
     def test_local_verification_requires_separate_consent(self):
         self.state.credentials['deepseek-official']='fixture-key'

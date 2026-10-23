@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "6580240e6a5d4826dde2d39aa6790f2b73938c8d80ab2f47ada6ee2b31345b57"
+      "sha256": "d1c827a641a7eba58c8f38fa4637906ac84dfc129fb00955d8b34f4b83db4c12"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -696,8 +696,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87683,
-      "sha256": "a71c47d9f4fede7fb51f2ecb4590f2bb6f1b3b614972efcfbc301693c937b753"
+      "bytes": 87878,
+      "sha256": "4c0bac53c2513a0eba3d8ba522954bdf38bc05707ff8550bf9229592da8a9460"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -891,8 +891,8 @@
     },
     {
       "path": "engine/limits.py",
-      "bytes": 615,
-      "sha256": "d367e947b04ecb9cf20e8b47750a165873de1689cef32702c674b085e34186c4"
+      "bytes": 846,
+      "sha256": "a276d129bbde152b53295c3fd984852e825825477d20179f153bae21c3957be7"
     },
     {
       "path": "engine/local_records.py",
@@ -1005,6 +1005,16 @@
       "sha256": "6b43463b079836ae6619fa7fb2cc4f7e4961d3fc16c28771093f993b7678239f"
     },
     {
+      "path": "engine/seeds_gaps.py",
+      "bytes": 2853,
+      "sha256": "a9175794aef0ffff5da0d78705ba081a0464c163a6da968721a0fe14e98f262c"
+    },
+    {
+      "path": "engine/seeds_reconciled.py",
+      "bytes": 10435,
+      "sha256": "414761b813cf5938e1a883e1fdee5e2dacf8fa824b61d279dccd717a66aeeb55"
+    },
+    {
       "path": "engine/task_graph.py",
       "bytes": 42597,
       "sha256": "369a734f3b10e449e76d4e4ca78d2784a04b6ab73b5dfb43512bdbf4a9ff8424"
@@ -1078,6 +1088,11 @@
       "path": "final_schema_validation_public.json",
       "bytes": 4283,
       "sha256": "1585adda6c0171d497ef5304a3e9988ad701c930ee101d9bdc2e531a5621894f"
+    },
+    {
+      "path": "generate_seeds_reconciled.py",
+      "bytes": 2904,
+      "sha256": "a14c6f50bd7f134859e51a7fc57613427305f2cf264c28069f8f61a07fe3a46d"
     },
     {
       "path": "launch.cmd",
@@ -1612,7 +1627,7 @@
     {
       "path": "tests_bridge.py",
       "bytes": 17481,
-      "sha256": "bf18025f31992259d5c260ccf9a6481b7c59e02f640efc040759e2e25d35b3bb"
+      "sha256": "4563e0483cdd2fa81ad1b47221c110808f73a96185ade37363bbcf2d7024d8bd"
     },
     {
       "path": "tests_capability_deployment.py",
@@ -1776,8 +1791,8 @@
     },
     {
       "path": "tests_org_design.py",
-      "bytes": 23874,
-      "sha256": "90e2e4178c96c6ff7434cc2065b9ed0ef636b21c6aacb91b333b51b78e0f4fa3"
+      "bytes": 23954,
+      "sha256": "04410eba823e8bbec076672e5b39686d527bb301d37d37bc3b78716b7f6c16dc"
     },
     {
       "path": "tests_org_design_repair.py",
@@ -1853,6 +1868,11 @@
       "path": "tests_rea_contract.py",
       "bytes": 3619,
       "sha256": "f9bb25b12b57b4008df9284d94e89ef04b105f55457251fe55da2cac4ec694d3"
+    },
+    {
+      "path": "tests_reconciliation.py",
+      "bytes": 2313,
+      "sha256": "84753330c6d92702ecb07c9fa03e3251631b980d433ab931fee213ee359a41b1"
     },
     {
       "path": "tests_repository_inventory.py",

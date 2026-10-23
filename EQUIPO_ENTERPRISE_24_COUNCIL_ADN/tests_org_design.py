@@ -179,7 +179,8 @@ class DesignTests(unittest.TestCase):
         self.assertIsNotNone(consent["limits_warning"])
 
     def test_invalid_n_and_budgets_are_not_coerced(self):
-        for value in (0, 41, True, "24", 1.5):
+        # P4-A: MAX_AGENTS 40 -> 42; el primer entero invalido pasa de 41 a 43.
+        for value in (0, 43, True, "24", 1.5):
             with self.subTest(value=value), self.assertRaises(p.ProviderError):
                 self.prepare(value)
         for value in (True, "16384", 1024, 131073):
