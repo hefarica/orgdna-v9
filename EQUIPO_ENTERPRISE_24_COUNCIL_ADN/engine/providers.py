@@ -1192,7 +1192,12 @@ def prepare_llm_consent(summary, provider, model, max_output_tokens=4096):
     One request only; no retry, recursive agent, tool call or automatic fallback.
     Byte-based token estimate is approximate, not a tokenizer or dollar budget.
     """
-    max_output_tokens = _bounded_int(max_output_tokens, 256, 16384, "max_output_tokens")
+        # P6: el techo de salida era 16384 mientras el modelo verificado soporta
+    # 393216. El propio analisis del producto exige mas de 16384 (se trunco con
+    # 8192 y con 16384), asi que la app se bloqueaba a si misma. Se sube a
+    # 65536: 6x por debajo del maximo verificado, suficiente para el analisis
+    # y sin abrir un blast radius desproporcionado.
+    max_output_tokens = _bounded_int(max_output_tokens, 256, 65536, "max_output_tokens")
     config = provider_config(provider)
     data, payload = _llm_payload(summary, config, model, max_output_tokens)
     raw = _dump(payload).encode("utf-8")

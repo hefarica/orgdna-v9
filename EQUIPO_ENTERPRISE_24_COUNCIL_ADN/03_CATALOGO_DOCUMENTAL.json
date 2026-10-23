@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "618599aa29ccf16e5bf97c8cf50e8ef837c1fc0792db5de8b13625586bfaa9b3"
+      "sha256": "33a224854da05e34b476557b9a39487f13b086fcacf28ce46dc1df4d6e06e7b0"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -966,8 +966,8 @@
     },
     {
       "path": "engine/providers.py",
-      "bytes": 83605,
-      "sha256": "2fadce82319dbe63e5c5584c28a4f05b4c004a53db1ffb6f56d711841c19e5d7"
+      "bytes": 83971,
+      "sha256": "d5a23713a4e36adbd96d5edccb34c5371cfdd1fb05daa9e32c7ce5866fa11509"
     },
     {
       "path": "engine/rea_miner.py",
