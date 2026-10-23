@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "1797bf5a8da2012a160b16a30b272d671ee0716ef6020d11b0794903fa4c344b"
+      "sha256": "b1642c133cd9098668d403bc66ac74efd94de4de6a41f6da81d429f172f7b3f8"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -680,9 +680,14 @@
       "sha256": "e0a579709972e9217bfa6fd11aff55cf715398bd7e0de8400909e4bfef35990d"
     },
     {
+      "path": "engine/budget_governor.py",
+      "bytes": 2432,
+      "sha256": "a4db41cb0532baaf4aff7bb0f77f343296a38a8247a1e3d031ee6fdf79c45608"
+    },
+    {
       "path": "engine/bundle.py",
-      "bytes": 86988,
-      "sha256": "1aa360a34cbed4a9d0ddbcbf72be4a0498eec8c7a20cd7054488686ed0728447"
+      "bytes": 87207,
+      "sha256": "f4330cd6506f3df2e4a2a7b83dc0465e07101b4eef006e8acedecdbca3cbd317"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -770,6 +775,11 @@
       "sha256": "470d51a0a46a7d59be1037c25a07a55c58f7376b278623d8c751267513a2435a"
     },
     {
+      "path": "engine/evidence_harness.py",
+      "bytes": 3096,
+      "sha256": "5e1564b0019eb7b180631796839d9c8be024f8daf658288fb0887b4319077798"
+    },
+    {
       "path": "engine/excel_bridge.ps1",
       "bytes": 14566,
       "sha256": "fc054e52e57069e09d3ca1e585b0e97fd02f8807dcf9f3aa509bb2fb3c5aae25"
@@ -778,6 +788,11 @@
       "path": "engine/export_artifacts.py",
       "bytes": 18270,
       "sha256": "cd67dbb2650844cd484d7908d80f160372a9834e2a1b6e33ce1301461fc000a0"
+    },
+    {
+      "path": "engine/extension_owners.py",
+      "bytes": 6775,
+      "sha256": "982d808f144b08beac055ea1eab93c62868fcebf386b059cf1e1929b3746013e"
     },
     {
       "path": "engine/followups.py",
@@ -908,6 +923,11 @@
       "path": "engine/policy_engine.py",
       "bytes": 47766,
       "sha256": "cc2c8c1270840db632d28b14dadad0be68c0b8edf7266c56c4eab5dcac6d2d17"
+    },
+    {
+      "path": "engine/policy_pack.py",
+      "bytes": 3170,
+      "sha256": "21998a964c54996e19d40f9e5216962eec9288f23729ef85bc363fcda274159f"
     },
     {
       "path": "engine/profiles.py",
@@ -1588,6 +1608,11 @@
       "path": "tests_context_compiler.py",
       "bytes": 7087,
       "sha256": "676f114416cc07715bfd7db1a5ff1d53c941003a6abeb8cdb603357b2cd64784"
+    },
+    {
+      "path": "tests_cover_gates.py",
+      "bytes": 4032,
+      "sha256": "d287b84b710cbc7abc69db03a8f8da5ae01a509fecd4bcb1ee2afd9aa3d59e38"
     },
     {
       "path": "tests_dsh_launcher.py",

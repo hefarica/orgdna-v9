@@ -41,6 +41,12 @@ RUNTIME_ALLOWLIST = (
     'tests_verification_limits.py',
     # 2026-10-22 · puertas de superficie (read-excel, gang-mount, auto_discover)
     'tests_surface_gates.py',
+    # 2026-10-22 · gates de cobertura, politica y evidencia
+    'engine/extension_owners.py',
+    'engine/budget_governor.py',
+    'engine/policy_pack.py',
+    'engine/evidence_harness.py',
+    'tests_cover_gates.py',
 
     'LEEME_V8.txt',
     'docs/ALCANCE_V8_Y_PROPUESTA_POSTERIOR.md',
