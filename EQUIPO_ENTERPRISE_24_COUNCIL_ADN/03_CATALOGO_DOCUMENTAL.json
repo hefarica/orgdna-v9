@@ -136,8 +136,13 @@
     },
     {
       "path": "census_extensions.py",
-      "bytes": 3280,
-      "sha256": "43d6a8ca2fe724f711fb0a5451235f768f325c4f325237bbf084342f3da1fabd"
+      "bytes": 3265,
+      "sha256": "9975dbbab0e4aa11f5b512d4cc55e63790942f677599b214034f724933f15ca7"
+    },
+    {
+      "path": "census_remote.py",
+      "bytes": 5421,
+      "sha256": "37dc03d9632d8cdad04e871f8e5c3cd07422c2171819c9e294902c129e4d99ec"
     },
     {
       "path": "cordis_extension/README_ES.md",
@@ -322,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "8f5ef0330c9a7b1dc76267a58d01bc7bc3e043c2b937526b26c4809ab6e026d3"
+      "sha256": "6580240e6a5d4826dde2d39aa6790f2b73938c8d80ab2f47ada6ee2b31345b57"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -691,8 +696,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87608,
-      "sha256": "359fa103d1ce1e5645330bc2c0235ac066b6c4c2c59aba0c8e4d70539c290a5d"
+      "bytes": 87683,
+      "sha256": "a71c47d9f4fede7fb51f2ecb4590f2bb6f1b3b614972efcfbc301693c937b753"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -796,8 +801,8 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 8278,
-      "sha256": "60d3bfae3d76ad8401a2e51faf95be8b6d3f66d48d62887624d3653781db50de"
+      "bytes": 9946,
+      "sha256": "adf0c8329f06e0c5beb0a845d5f74e49e52b3a81bde5159709b42adbe27eef45"
     },
     {
       "path": "engine/followups.py",

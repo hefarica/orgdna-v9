@@ -56,6 +56,8 @@ RUNTIME_ALLOWLIST = (
     'census_extensions.py',
     # 2026-10-22 · paso 3.5/t4: reconciliacion de vocabularios
     'reconcile_vocabularies.py',
+    # 2026-10-22 · censo remoto del repo objetivo
+    'census_remote.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',

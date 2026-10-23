@@ -37,7 +37,7 @@ def census(root, roster_names):
         if name in FILENAME_OWNER:
             exts["<filename>" + name] = exts.get("<filename>" + name, 0) + 1
             continue
-        ext = ("." + name.rsplit(".", 1)[1].lower()) if "." in name else "(sin extension)"
+        ext = ("." + name.rsplit(".", 1)[1].lower()) if "." in name else ""
         exts[ext] += 1
 
     real_exts = [e for e in exts if not e.startswith("<filename>")]

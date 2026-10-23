@@ -80,6 +80,35 @@ _MEDIDAS_EN_EL_REPO_OBJETIVO: Dict[str, str] = {
 }
 EXTENSION_OWNER.update(_MEDIDAS_EN_EL_REPO_OBJETIVO)
 
+
+# --- MEDIDO en el censo del repo objetivo (10915 entradas, sha af331ce7) ---
+# Estas extensiones NO son codigo fuente: son artefactos, metadatos y estado
+# versionado. Un gate que falla sobre ellos es un falso positivo del gate, no
+# del repo. Se mapean al dueno de configuracion y se declara el criterio.
+_ARTEFACTOS_MEDIDOS: Dict[str, str] = {
+    ".base": "config_engineer",
+    ".bak": "config_engineer", ".backup": "config_engineer",
+    ".patch": "config_engineer", ".diff": "config_engineer",
+    ".conf": "config_engineer", ".example": "config_engineer",
+    ".template": "config_engineer", ".tpl": "config_engineer",
+    ".stat": "config_engineer", ".service": "config_engineer",
+    ".timer": "config_engineer", ".node": "config_engineer",
+    ".nvmrc": "config_engineer", ".gitattributes": "config_engineer",
+    ".gitkeep": "config_engineer", ".gitmodules": "config_engineer",
+    ".dockerignore": "config_engineer", ".cursorrules": "config_engineer",
+    ".gitleaksignore": "config_engineer", ".webmanifest": "config_engineer",
+    ".mdc": "config_engineer", ".crucible": "config_engineer",
+    ".edge": "config_engineer", ".omega-base-sha": "config_engineer",
+    ".id": "config_engineer", ".in": "config_engineer",
+    ".network-response": "config_engineer", ".hex": "config_engineer",
+    ".zip": "config_engineer", ".log": "data_engineer",
+    ".mmd": "diagram_engineer", ".bas": "windows_automation",
+    # marcas de tiempo en el nombre (algo.20260517T144000Z): artefacto, no fuente
+    ".20260517t144000z": "config_engineer",
+    "": "config_engineer",   # fichero sin extension: metadato versionado
+}
+EXTENSION_OWNER.update(_ARTEFACTOS_MEDIDOS)
+
 FILENAME_OWNER: Dict[str, str] = {
     "Dockerfile": "docker_engineer", "Makefile": "makefile_engineer",
     "CMakeLists.txt": "makefile_engineer", "justfile": "makefile_engineer",
