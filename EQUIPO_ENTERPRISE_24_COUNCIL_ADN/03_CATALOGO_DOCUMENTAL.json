@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "a03d38328e44652e91f419fd27fcd3236fb859d087a84570272f6019d0fb5445"
+      "sha256": "6b7e857655e17a709b50e3dab2099af2a741069f412396dbec8df8936a9728fe"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -696,8 +696,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 88066,
-      "sha256": "4150520ce67eac175f1fc6238ed91b6bf3cc5093466d3ee7be917186f3d251c9"
+      "bytes": 88383,
+      "sha256": "0f83cb52eb59dab0202bd0168e346efe2ac33a3b8041c7a4f822df55e73b5181"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1025,6 +1025,31 @@
       "sha256": "5cbd84c9244addeb90811ec44e87a32a645d5d9c042340ab7797a998ce75869d"
     },
     {
+      "path": "engine/sources/__init__.py",
+      "bytes": 470,
+      "sha256": "2f30b3d8f0a5cbe9b7bf21856fff76b8a3b551958a1e0c3b6bc02de61cbad0c7"
+    },
+    {
+      "path": "engine/sources/blockchain_driver.py",
+      "bytes": 1751,
+      "sha256": "8210bcef44981d1b2bbbe73185afefbddf3b6a8439c3e00ee98a46005627f604"
+    },
+    {
+      "path": "engine/sources/git_driver.py",
+      "bytes": 5324,
+      "sha256": "c107f847bad490d994d75cd538264122dca3339dc70ff571ef678e8f0c4f530f"
+    },
+    {
+      "path": "engine/sources/universal_base.py",
+      "bytes": 3538,
+      "sha256": "0d3cc2a21520a7d1d5afea8df9c423da75167eeabfce8c355d551a9245abee7d"
+    },
+    {
+      "path": "engine/sources/web_driver.py",
+      "bytes": 3627,
+      "sha256": "4077fb840569f92526b7e13774ec6ad5878d8c72114455f143dccad62c98d274"
+    },
+    {
       "path": "engine/task_graph.py",
       "bytes": 42597,
       "sha256": "369a734f3b10e449e76d4e4ca78d2784a04b6ab73b5dfb43512bdbf4a9ff8424"
@@ -1088,6 +1113,11 @@
       "path": "engine/tool_permissions.py",
       "bytes": 15470,
       "sha256": "8f854eae5fb9c7e76cbec600182db892154ae627613ea5a7d5f7e33ccbe9273c"
+    },
+    {
+      "path": "engine/universal_pipeline.py",
+      "bytes": 6045,
+      "sha256": "677da0e601fa3fbe405f13c4755adeaecce43c2064558cf273901386c2e06d42"
     },
     {
       "path": "engine/web_sources.py",
@@ -1953,6 +1983,11 @@
       "path": "tests_team_verbatim_parity.py",
       "bytes": 30148,
       "sha256": "3c091fc8ad1259cdb0c93da202cf60a623d82b3dcbea0b71919fc4eab4c4f7f8"
+    },
+    {
+      "path": "tests_universal.py",
+      "bytes": 4286,
+      "sha256": "87423755c2ed53a0ed7b743ef2a13774f26971ac608d58da9303cc0e36d0d80d"
     },
     {
       "path": "tests_v8_evidence.py",

@@ -68,6 +68,14 @@ RUNTIME_ALLOWLIST = (
     'engine/team_for_spec.py',
     'engine/parity_gate.py',
     'tests_site_rea.py',
+    # 2026-10-22 · T5.5: contrato universal de fuentes y drivers
+    'engine/sources/__init__.py',
+    'engine/sources/universal_base.py',
+    'engine/sources/git_driver.py',
+    'engine/sources/web_driver.py',
+    'engine/sources/blockchain_driver.py',
+    'engine/universal_pipeline.py',
+    'tests_universal.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',
