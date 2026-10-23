@@ -135,6 +135,11 @@
       "sha256": "1e527fa4d371af032864f2aac6b577ea7a9063d7e26ba8794d498f866284a986"
     },
     {
+      "path": "census_extensions.py",
+      "bytes": 3280,
+      "sha256": "43d6a8ca2fe724f711fb0a5451235f768f325c4f325237bbf084342f3da1fabd"
+    },
+    {
       "path": "cordis_extension/README_ES.md",
       "bytes": 22964,
       "sha256": "a9f1d93e85caebf9ff3fdefe6d92e9c757e0218ced96b6d189fc320255c4f17e"
@@ -317,7 +322,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "55e9d8a6fcb02c2cb4b93a41fb25773c77961c43f939db9548ba609c85d099fa"
+      "sha256": "319b5860d020a7adb743b2d6ea427df769ce7bcb0d84f21215a2fddc9e850465"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -686,8 +691,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87334,
-      "sha256": "8103a358cc47ae538286e4b7953dee37dbb1e3b09505694cc39d58e1850b8dfd"
+      "bytes": 87511,
+      "sha256": "427cc550ee41152e9b750aef89f385e052c0fe0f60d06cfc5ffc9d0bff6df8c8"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -776,8 +781,8 @@
     },
     {
       "path": "engine/evidence_harness.py",
-      "bytes": 3096,
-      "sha256": "5e1564b0019eb7b180631796839d9c8be024f8daf658288fb0887b4319077798"
+      "bytes": 4057,
+      "sha256": "50d1e703cbb27c52738a1a44f0a7636b81b7398e53dea824d0fe1d8e2397b045"
     },
     {
       "path": "engine/excel_bridge.ps1",
@@ -791,13 +796,23 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 7992,
-      "sha256": "8ecfb7369d12097ae4f54d4f7584aa7441e34a7ff63e122bac58179e60bb322f"
+      "bytes": 8277,
+      "sha256": "c83824bae7d2bbc97f8e43788a278b916c3a9daaacfc37d2a3fad1fe337948f9"
     },
     {
       "path": "engine/followups.py",
       "bytes": 18741,
       "sha256": "c519b1b4f9c1a048eb654b3eaf606e0aff8d9ff4aec18c359b540967118e92d1"
+    },
+    {
+      "path": "engine/forge_dispatch.py",
+      "bytes": 3308,
+      "sha256": "c708f80fb377ecca1c50076ee47b3b4e3abfdb54f40b9d8ebb50d0253904b338"
+    },
+    {
+      "path": "engine/forge_loop.py",
+      "bytes": 5402,
+      "sha256": "6bd2f81164aecd2cab68e95c88bb69f2b1974325cb006598f5fa3093fb1982ae"
     },
     {
       "path": "engine/gang_assembly.py",
@@ -1638,6 +1653,11 @@
       "path": "tests_followups.py",
       "bytes": 16993,
       "sha256": "6d1523ae47751fd48b554c96d09d8e051630346bb5d5b3d354a61225169f899a"
+    },
+    {
+      "path": "tests_forge_loop.py",
+      "bytes": 3523,
+      "sha256": "cbac7a680b4c528e0540d34d06ec39dcc260dc2d7fa36fb16a9c5f9fb105f5ef"
     },
     {
       "path": "tests_frontend_contract.py",

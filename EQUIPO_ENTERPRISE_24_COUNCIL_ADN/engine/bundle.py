@@ -50,6 +50,11 @@ RUNTIME_ALLOWLIST = (
     # 2026-10-22 · tranche 2: minero SPDX al SHA y contrato anti-clon
     'engine/rea_miner.py',
     'tests_rea_contract.py',
+    # 2026-10-22 · tranche 3: el eje (forge_loop) y su censo
+    'engine/forge_loop.py',
+    'engine/forge_dispatch.py',
+    'census_extensions.py',
+    'tests_forge_loop.py',
 
     'LEEME_V8.txt',
     'docs/ALCANCE_V8_Y_PROPUESTA_POSTERIOR.md',

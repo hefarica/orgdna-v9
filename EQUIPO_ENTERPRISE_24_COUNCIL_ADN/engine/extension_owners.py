@@ -64,6 +64,10 @@ _MEDIDAS_EN_EL_REPO_OBJETIVO: Dict[str, str] = {
     ".xml": "config_engineer", ".cfg": "config_engineer",
     ".properties": "config_engineer", ".lock": "config_engineer",
     ".map": "config_engineer", ".editorconfig": "config_engineer",
+    ".jsonl": "data_engineer", ".sqlite3": "data_engineer",
+    ".exe": "windows_automation", ".dll": "windows_automation",
+    ".manifest": "config_engineer", ".sha256": "config_engineer",
+    ".md5": "config_engineer", ".sig": "config_engineer",
     ".html": "design_systems", ".htm": "design_systems",
     ".xhtml": "design_systems",
     ".svg": "design_systems", ".png": "design_systems",
@@ -79,6 +83,7 @@ EXTENSION_OWNER.update(_MEDIDAS_EN_EL_REPO_OBJETIVO)
 FILENAME_OWNER: Dict[str, str] = {
     "Dockerfile": "docker_engineer", "Makefile": "makefile_engineer",
     "CMakeLists.txt": "makefile_engineer", "justfile": "makefile_engineer",
+    ".gitignore": "config_engineer",
     "LICENSE": "docs_engineer",
 }
 

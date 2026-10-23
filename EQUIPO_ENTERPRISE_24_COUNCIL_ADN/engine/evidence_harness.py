@@ -93,3 +93,28 @@ if __name__ == "__main__":
     except HarnessError:
         pass
     print("OK evidence_harness: agentica=1 evidencia=2 falsificador=1")
+
+def for_agent(profile: Mapping[str, Any]) -> Mapping[str, Tuple[Check, ...]]:
+    """Checks derivados de la DEFINICION del perfil, no inventados.
+
+    El falsificador usa estado propio: al romperlo, la comprobacion DEBE caer.
+    Si alguien implementa un falsificador que no cae, falsify() lo rechaza.
+    """
+    dest = list(profile.get("destination") or [])
+    acc = list(profile.get("acceptance") or [])
+    state = {"ok": bool(dest) and bool(acc)}
+
+    def fn() -> bool:
+        return state["ok"]
+
+    def brake() -> None:
+        state["ok"] = False
+
+    return {
+        "agentic": (Check("arranca_con_politica", "agentic",
+                          lambda: bool(profile.get("policy_pack"))),),
+        "evidence": (Check("destino_no_vacio", "evidence", lambda: bool(dest)),
+                     Check("acceptance_no_vacia", "evidence", lambda: bool(acc))),
+        "falsifier": (Check("destino_y_acceptance_falsable", "falsifier", fn, brake),),
+    }
+
