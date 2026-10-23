@@ -47,6 +47,9 @@ RUNTIME_ALLOWLIST = (
     'engine/policy_pack.py',
     'engine/evidence_harness.py',
     'tests_cover_gates.py',
+    # 2026-10-22 · tranche 2: minero SPDX al SHA y contrato anti-clon
+    'engine/rea_miner.py',
+    'tests_rea_contract.py',
 
     'LEEME_V8.txt',
     'docs/ALCANCE_V8_Y_PROPUESTA_POSTERIOR.md',

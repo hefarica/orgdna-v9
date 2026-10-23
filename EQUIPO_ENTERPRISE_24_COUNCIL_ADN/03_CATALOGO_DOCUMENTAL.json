@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "b1642c133cd9098668d403bc66ac74efd94de4de6a41f6da81d429f172f7b3f8"
+      "sha256": "5ef9345d3063771791a3ad250b9857988fad6da47cdf1691654359be22570fc1"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -686,8 +686,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87207,
-      "sha256": "f4330cd6506f3df2e4a2a7b83dc0465e07101b4eef006e8acedecdbca3cbd317"
+      "bytes": 87334,
+      "sha256": "8103a358cc47ae538286e4b7953dee37dbb1e3b09505694cc39d58e1850b8dfd"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -791,8 +791,8 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 6775,
-      "sha256": "982d808f144b08beac055ea1eab93c62868fcebf386b059cf1e1929b3746013e"
+      "bytes": 7903,
+      "sha256": "93ffe158aea4a52469ae12e7c175be2d334936fb7bf600054f91121ba0677d91"
     },
     {
       "path": "engine/followups.py",
@@ -851,8 +851,8 @@
     },
     {
       "path": "engine/instruction_contract.py",
-      "bytes": 11312,
-      "sha256": "05297090122180d6f273daa4cb84cd35bab8815ab3afab559e60fb4147625848"
+      "bytes": 3877,
+      "sha256": "8b6f995026d45b4303db22e0f1edf3b57957e07b0c298f440bb793b9adfe7439"
     },
     {
       "path": "engine/integration_recommendations.py",
@@ -943,6 +943,11 @@
       "path": "engine/providers.py",
       "bytes": 82318,
       "sha256": "0a2355ef5cbe621a747bece7b54f0ccca74706c99ba865401cb137e7012984a2"
+    },
+    {
+      "path": "engine/rea_miner.py",
+      "bytes": 5089,
+      "sha256": "5d581062935b5134a746d84b35de68d50c58570212d24e357b09eed82bc6e343"
     },
     {
       "path": "engine/readiness_gate.py",
@@ -1813,6 +1818,11 @@
       "path": "tests_providers.py",
       "bytes": 31969,
       "sha256": "db2adf18673a94a8835f76d415dece5a12639bf4c3d6665b41ff10b0e0da8c51"
+    },
+    {
+      "path": "tests_rea_contract.py",
+      "bytes": 3619,
+      "sha256": "f9bb25b12b57b4008df9284d94e89ef04b105f55457251fe55da2cac4ec694d3"
     },
     {
       "path": "tests_repository_inventory.py",

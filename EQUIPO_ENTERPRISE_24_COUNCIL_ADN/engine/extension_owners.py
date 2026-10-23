@@ -53,6 +53,27 @@ EXTENSION_OWNER: Dict[str, str] = {
     ".mermaid": "diagram_engineer", ".puml": "diagram_engineer",
 }
 
+# --- Extensiones que el repo objetivo TIENE y el mapa inicial no cubria ---
+# Medidas en el censo de T1 sobre hefarica/arbitragex-v2: .rhai 1341, .txt 199,
+# .csv 97, .sh 110, y activos binarios (png/svg/woff2). Sin esto el Gate 1
+# fallaba cerrado sobre archivos legitimos, que es un falso positivo del gate.
+_MEDIDAS_EN_EL_REPO_OBJETIVO: Dict[str, str] = {
+    ".rhai": "cartridge_engineer",
+    ".txt": "docs_engineer", ".pdf": "docs_engineer",
+    ".csv": "data_engineer", ".tsv": "data_engineer", ".xlsx": "data_engineer",
+    ".xml": "config_engineer", ".cfg": "config_engineer",
+    ".properties": "config_engineer", ".lock": "config_engineer",
+    ".map": "config_engineer", ".editorconfig": "config_engineer",
+    ".svg": "design_systems", ".png": "design_systems",
+    ".jpg": "design_systems", ".jpeg": "design_systems",
+    ".webp": "design_systems", ".ico": "design_systems",
+    ".woff": "design_systems", ".woff2": "design_systems",
+    ".ttf": "design_systems",
+    ".drawio": "diagram_engineer",
+    ".wat": "native_engineer", ".wasm": "native_engineer",
+}
+EXTENSION_OWNER.update(_MEDIDAS_EN_EL_REPO_OBJETIVO)
+
 FILENAME_OWNER: Dict[str, str] = {
     "Dockerfile": "docker_engineer", "Makefile": "makefile_engineer",
     "CMakeLists.txt": "makefile_engineer", "justfile": "makefile_engineer",
