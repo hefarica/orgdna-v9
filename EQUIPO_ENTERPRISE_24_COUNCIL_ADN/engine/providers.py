@@ -290,6 +290,19 @@ def _https_transport(method, url, headers, body, timeout, max_bytes):
         conn.close()
 
 
+def _llm_timeout(max_output_tokens):
+    """Tiempo de espera proporcional a lo que se pide generar.
+
+    DEFECTO QUE ESTO CORRIGE: _request usa timeout=45 fijo y convierte cualquier
+    OSError en "Fallo de red/TLS". Generar 16384 tokens tarda mas de 45 s, asi que
+    subir el tope de salida hacia fallar con un error de red que nunca ocurrio. El
+    probe de 32 tokens tarda ~1 s: por eso pasaba y el analisis no.
+    _request acota el valor a 1..600.
+    """
+    tokens = _bounded_int(max_output_tokens, 1, 1_000_000, "max_output_tokens")
+    return min(600, 60 + tokens // 20)
+
+
 def _request(method, url, api_key=None, payload=None, transport=None, max_bytes=MAX_HTTP_BYTES, timeout=45, response_format="json"):
     _url(url)
     timeout = _bounded_int(timeout, 1, 600, "timeout")
@@ -1295,7 +1308,7 @@ def analyze_with_llm(summary, provider, model, api_key, consent, max_output_toke
     config = provider_config(provider)
     data, payload = _llm_payload(summary, config, model, max_output_tokens)
     consent["_consumed"] = True  # Consume before I/O: failures may still have been billed.
-    response = _request("POST", expected["endpoint"], api_key, payload=payload, transport=transport, max_bytes=600_000)
+    response = _request("POST", expected["endpoint"], api_key, payload=payload, transport=transport, max_bytes=600_000, timeout=_llm_timeout(max_output_tokens))
     choices = response.get("choices")
     if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
         raise ProviderError("Respuesta del proveedor sin una elección válida.")
@@ -1372,7 +1385,7 @@ def verify_model(provider, model, api_key, consent, max_output_tokens=32, transp
               "max_output_tokens": max_output_tokens,
               "warning": "Resultado puntual de una prueba mínima. No demuestra calidad ni todas las capacidades; no se reintenta automáticamente."}
     try:
-        response = _request("POST", expected["endpoint"], api_key, payload=payload, transport=transport, max_bytes=60_000)
+        response = _request("POST", expected["endpoint"], api_key, payload=payload, transport=transport, max_bytes=60_000, timeout=_llm_timeout(max_output_tokens))
     except HTTPFailure as exc:
         category = {400: "request_or_model_schema", 401: "authentication", 403: "account_permission",
                     404: "model_or_endpoint_not_found", 422: "request_or_model_schema",
