@@ -76,6 +76,9 @@ RUNTIME_ALLOWLIST = (
     'engine/sources/blockchain_driver.py',
     'engine/universal_pipeline.py',
     'tests_universal.py',
+    # 2026-10-22 · T6: superficie -> summary que el proveedor valida
+    'engine/surface_summary.py',
+    'tests_surface_summary.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',

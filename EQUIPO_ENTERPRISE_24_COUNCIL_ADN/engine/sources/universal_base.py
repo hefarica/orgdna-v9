@@ -44,6 +44,10 @@ class AppSurface:
     unknowns: Tuple[str, ...] = ()
     evidence: Tuple[str, ...] = ()
     confidence: float = 0.0
+    # evidencia cruda que el driver SI reunio, para construir el summary que el
+    # proveedor valida (sha256 del cuerpo, fecha, estado). Vacio = no hay summary
+    # posible: no se inventa.
+    raw: Mapping[str, Any] = field(default_factory=dict)
 
     @property
     def structure_fingerprint(self) -> str:

@@ -103,7 +103,8 @@ class GitDriver(UniversalDriver):
             SourceType.GIT, target, tuple(puntos), caps,
             contracts=(), assets={p.path for p in puntos if p.type == "asset"},
             evidence=("ref %s" % ref, "%d rutas en el arbol" % len(paths)),
-            confidence=0.95)
+            confidence=0.95,
+            raw={"ref": ref, "paths": list(paths)})
 
     def detect_frameworks(self, surface: AppSurface) -> Set[str]:
         ext = set(surface.extensions())

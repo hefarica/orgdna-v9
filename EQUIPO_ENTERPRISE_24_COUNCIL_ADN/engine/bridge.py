@@ -2039,6 +2039,36 @@ class BridgeState:
                 self.project = {'id': metadata['project_id'], 'name': metadata['name'], 'version_id': metadata['version_id'], 'dirty': False}
                 self.receipt(action, 'success', 'Nueva versión guardada localmente. Las versiones anteriores se conservan y no se han guardado claves.')
                 return self.public()
+            elif action == 'surface-load':
+                # T6: cualquier superficie observable -> el summary que el proveedor
+                # YA valida. No se inventa un source_kind: si la fuente no tiene uno
+                # allowlisted, to_summary levanta y aqui se reporta.
+                objetivo = body.get('target')
+                if not isinstance(objetivo, str) or not objetivo.strip():
+                    raise BridgeError('Falta el objetivo a observar (target).')
+                if __package__:
+                    from .sources.git_driver import GitDriver
+                    from .sources.web_driver import WebDriver
+                    from .surface_summary import UnsuitableSurface, to_summary
+                else:
+                    from sources.git_driver import GitDriver
+                    from sources.web_driver import WebDriver
+                    from surface_summary import UnsuitableSurface, to_summary
+                texto = objetivo.strip()
+                es_git = texto.startswith('git@') or texto.endswith('.git') or 'github.com' in texto or 'gitlab.com' in texto
+                driver = GitDriver() if es_git else WebDriver()
+                try:
+                    superficie = driver.scan_surface(texto)
+                    resumen = to_summary(superficie)
+                except UnsuitableSurface as exc:
+                    raise BridgeError('Superficie no expresable para el proveedor: %s' % exc)
+                except Exception as exc:
+                    raise BridgeError('No se pudo reunir evidencia de %s: %s' % (texto, exc))
+                self.repo_inventory = resumen
+                self.receipt(action, 'success',
+                             'Superficie observada: %d puntos, %d extensiones.'
+                             % (len(superficie.points), len(superficie.extensions())),
+                             source=superficie.source_type.value)
             elif action == 'project-load':
                 self.load_project(body)
                 return self.public()

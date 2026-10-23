@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "6b7e857655e17a709b50e3dab2099af2a741069f412396dbec8df8936a9728fe"
+      "sha256": "59ed0dd3b3c5d6760cffdc074c85e6535eb9fcce0a86e7988ebe8f2e393f6e43"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -686,8 +686,8 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 182721,
-      "sha256": "e0a579709972e9217bfa6fd11aff55cf715398bd7e0de8400909e4bfef35990d"
+      "bytes": 184630,
+      "sha256": "026ac726aa3f391f6d4ad490f986c990bb855963225451e5caa50d7d053205d7"
     },
     {
       "path": "engine/budget_governor.py",
@@ -696,8 +696,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 88383,
-      "sha256": "0f83cb52eb59dab0202bd0168e346efe2ac33a3b8041c7a4f822df55e73b5181"
+      "bytes": 88518,
+      "sha256": "43f08124c21a72f6e5315afed0d5f4972987f768f4728973bf55ae07e3943d5b"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1036,18 +1036,23 @@
     },
     {
       "path": "engine/sources/git_driver.py",
-      "bytes": 5324,
-      "sha256": "c107f847bad490d994d75cd538264122dca3339dc70ff571ef678e8f0c4f530f"
+      "bytes": 5375,
+      "sha256": "879eb8591172d97fcf30af30cc0f95003533e6271462b6a311444efd86df8ccf"
     },
     {
       "path": "engine/sources/universal_base.py",
-      "bytes": 3538,
-      "sha256": "0d3cc2a21520a7d1d5afea8df9c423da75167eeabfce8c355d551a9245abee7d"
+      "bytes": 3787,
+      "sha256": "966efaf2c858acc133fefcc0b57278450e85564bed35438fc38d618547853483"
     },
     {
       "path": "engine/sources/web_driver.py",
-      "bytes": 3627,
-      "sha256": "4077fb840569f92526b7e13774ec6ad5878d8c72114455f143dccad62c98d274"
+      "bytes": 5632,
+      "sha256": "0f89d36dc4f5fa02a0b2210ddcb8cf9fbbd4bb50ec8b389870af6e0f16892df6"
+    },
+    {
+      "path": "engine/surface_summary.py",
+      "bytes": 4422,
+      "sha256": "259f9125adc688f522de9951ab027ee7c5a9ce74dbc636679f3e5a50f2fb9944"
     },
     {
       "path": "engine/task_graph.py",
@@ -1953,6 +1958,11 @@
       "path": "tests_surface_gates.py",
       "bytes": 12017,
       "sha256": "dc9bb1350deda0155474c94c3fb2cbb7b4830c7036e617cd1fb09aa317c9914b"
+    },
+    {
+      "path": "tests_surface_summary.py",
+      "bytes": 3147,
+      "sha256": "0bcc0ed10cc39587cd7d0dff343d4ddd8ef9c27c0abd46c0581db26b7ebd919d"
     },
     {
       "path": "tests_team_channel.py",
