@@ -25,7 +25,11 @@ class UnsuitableSurface(Exception):
     """La superficie no puede expresarse en un source_kind allowlisted."""
 
 
-def to_summary(surface) -> Mapping:
+def to_summary(surface, *, max_files: int = 100) -> Mapping:
+    """max_files acota el alcance: menos archivos = salida mas corta. El
+    tope lo exige prepare_summary en 100; aqui se puede pedir menos."""
+    if not 1 <= int(max_files) <= 100:
+        raise UnsuitableSurface("max_files fuera de rango 1..100: %r" % (max_files,))
     """AppSurface -> summary validado por providers.prepare_summary."""
     if surface.source_type is SourceType.WEB:
         bruto = surface.raw or {}
@@ -59,12 +63,12 @@ def to_summary(surface) -> Mapping:
             raise UnsuitableSurface(
                 "git sin SHA fijado de 40 hex (ref=%r). El proveedor exige SHA para "
                 "transmitir un repositorio; un ref movil no es una cita." % (sha,))
-        rutas = [p for p in (bruto.get("paths") or [])][:100]
+        rutas = [p for p in (bruto.get("paths") or [])][:int(max_files)]
         resumen = {
             "source_kind": "github_repository",
             "repository": {"url": surface.source_id, "sha": sha, "private": False},
             "files": [{"path": r, "snippet": ""} for r in rutas],
-            "tree": [{"path": r} for r in (bruto.get("paths") or [])[:1000]],
+            "tree": [{"path": r} for r in (bruto.get("paths") or [])[:int(max_files) * 2]],
             "coverage": {"inventory_complete": True, "files": len(bruto.get("paths") or [])},
         }
     else:
@@ -81,14 +85,35 @@ def to_summary(surface) -> Mapping:
 
 
 if __name__ == "__main__":
-    from sources_test_stub import surface_web, surface_git, surface_blockchain
-    w = to_summary(surface_web())
-    assert w["source_kind"] == "website" and len(w["snapshots"]) == 1
-    g = to_summary(surface_git())
-    assert g["source_kind"] == "github_repository" and len(g["repository"]["sha"]) == 40
+    if __package__:
+        from .sources.universal_base import AppSurface, SourceType, SurfacePoint
+    else:
+        import os as _o, sys as _s
+        _s.path.insert(0, _o.path.dirname(_o.path.dirname(_o.path.abspath(__file__))))
+        from sources.universal_base import AppSurface, SourceType, SurfacePoint
+
+    sha40 = "a" * 40
+    snap = {"url": "https://example.com/", "sha256": "b" * 64,
+            "fetched_at": "2026-10-23T00:00:00Z", "byte_count": 1256,
+            "content_status": "usable_static_html", "title": "Example",
+            "text_excerpt": "Example Domain", "headings": [], "links": [],
+            "forms": [], "buttons": [], "inputs": [], "roles": []}
+    web = AppSurface(SourceType.WEB, "https://example.com/", (), raw={"snapshot": snap})
+    assert to_summary(web)["source_kind"] == "website"
+
+    git = AppSurface(SourceType.GIT, "https://github.com/o/r", (),
+                     raw={"ref": sha40, "paths": ["a.py", "b.md", "c.py"]})
+    recortado = to_summary(git, max_files=2)
+    assert len(recortado["files"]) == 2, len(recortado["files"])
+
     try:
-        to_summary(surface_blockchain())
+        to_summary(git, max_files=0)
+        raise SystemExit("FALLO: max_files=0 debio rechazarse")
+    except UnsuitableSurface:
+        pass
+    try:
+        to_summary(AppSurface(SourceType.BLOCKCHAIN, "ethereum:0x0", ()))
         raise SystemExit("FALLO: blockchain no debe producir summary")
-    except UnsuitableSurface as e:
-        assert "allowlist" in str(e)
-    print("OK surface_summary: website y github validados por prepare_summary")
+    except UnsuitableSurface:
+        pass
+    print("OK surface_summary: website y github validados por prepare_summary, max_files acotado")

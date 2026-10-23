@@ -2059,7 +2059,10 @@ class BridgeState:
                 driver = GitDriver() if es_git else WebDriver()
                 try:
                     superficie = driver.scan_surface(texto)
-                    resumen = to_summary(superficie)
+                    max_archivos = body.get('max_files', 50)
+                    if type(max_archivos) is not int or not 1 <= max_archivos <= 100:
+                        raise BridgeError('max_files debe ser un entero 1..100.')
+                    resumen = to_summary(superficie, max_files=max_archivos)
                 except UnsuitableSurface as exc:
                     raise BridgeError('Superficie no expresable para el proveedor: %s' % exc)
                 except Exception as exc:
