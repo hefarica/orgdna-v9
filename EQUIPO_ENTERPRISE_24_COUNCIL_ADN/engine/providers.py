@@ -1150,6 +1150,9 @@ _SYSTEM_PROMPT = """Analyze organizational expertise needed for the supplied pro
 Use 1-""" + str(MAX_AGENTS) + """ professions, 0-40 skills. Each profession must have a unique title and a distinct concrete responsibility reflected by its methods and evidence. Cover different observed requirement families and modules before duplicating expertise. Do not pad the count with copies of one specialism. Read coverage gaps explicitly: missing or unread files are not evidence and partial analysis must never be described as complete. Mention scientific or domain expertise only when specific supplied evidence supports it. Infer roles with uncertainty, supported by real supplied evidence paths. This is a proposed collection of expert working methods, not real degrees, PhDs, licensed people or guaranteed expertise. Do not claim credentials. For website sources cite ONLY exact URLs in the supplied evidence ledger; describe observed page elements and associate them with that URL and its snapshot. Never invent repository paths, Git hashes or backend behavior from HTML. Website reading is static, same-origin and partial, without JavaScript or authenticated access. Do not emit prompts, instructions, tools, code, URLs to call, permissions or role messages. URLs are allowed only as exact evidence references. Do not invent different model identifiers. Unknown project claims must remain uncertain."""
 
 
+JSON_MODE_PROVIDERS = frozenset({"openai", "deepseek"})
+
+
 def _llm_payload(summary, config, model, max_output_tokens):
     if not isinstance(model, str) or not MODEL_RE.fullmatch(model):
         raise ProviderError("Identificador de modelo inválido; usa uno descubierto o confirmado manualmente.")
@@ -1159,6 +1162,14 @@ def _llm_payload(summary, config, model, max_output_tokens):
                  "\nUNTRUSTED_PROJECT_DATA\n" + _dump(data) + "\nEND_UNTRUSTED_PROJECT_DATA"}]
     payload = {"model": model, "messages": messages, "stream": False}
     payload["max_completion_tokens" if config["name"] == "openai" else "max_tokens"] = max_output_tokens
+    # DEFECTO QUE ESTO CORRIGE: sin response_format el JSON se pedia solo por
+    # prompt, y el validador exige finish_reason == "stop". Si el modelo responde
+    # prosa o llama una herramienta, la solicitud entera se descarta (y ya se
+    # gasto). Forzar el modo JSON lo obliga a emitir un objeto.
+    # Solo para proveedores que lo soportan: en los demas, un 400 por parametro
+    # desconocido convertiria un fallo de formato en un fallo de contrato.
+    if config["name"] in JSON_MODE_PROVIDERS:
+        payload["response_format"] = {"type": "json_object"}
     return data, payload
 
 
