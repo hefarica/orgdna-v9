@@ -66,7 +66,7 @@ _MEDIDAS_EN_EL_REPO_OBJETIVO: Dict[str, str] = {
     ".map": "config_engineer", ".editorconfig": "config_engineer",
     ".jsonl": "data_engineer", ".sqlite3": "data_engineer",
     ".exe": "windows_automation", ".dll": "windows_automation",
-    ".manifest": "config_engineer", ".sha256": "config_engineer",
+    ".manifest": "config_engineer", ".sha256": "security_auditor",
     ".md5": "config_engineer", ".sig": "config_engineer",
     ".html": "design_systems", ".htm": "design_systems",
     ".xhtml": "design_systems",

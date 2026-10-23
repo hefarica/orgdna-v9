@@ -322,7 +322,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "319b5860d020a7adb743b2d6ea427df769ce7bcb0d84f21215a2fddc9e850465"
+      "sha256": "8f5ef0330c9a7b1dc76267a58d01bc7bc3e043c2b937526b26c4809ab6e026d3"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -691,8 +691,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 87511,
-      "sha256": "427cc550ee41152e9b750aef89f385e052c0fe0f60d06cfc5ffc9d0bff6df8c8"
+      "bytes": 87608,
+      "sha256": "359fa103d1ce1e5645330bc2c0235ac066b6c4c2c59aba0c8e4d70539c290a5d"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -796,8 +796,8 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 8277,
-      "sha256": "c83824bae7d2bbc97f8e43788a278b916c3a9daaacfc37d2a3fad1fe337948f9"
+      "bytes": 8278,
+      "sha256": "60d3bfae3d76ad8401a2e51faf95be8b6d3f66d48d62887624d3653781db50de"
     },
     {
       "path": "engine/followups.py",
@@ -1378,6 +1378,11 @@
       "path": "qa_v7/test_generation_failures_independent.py",
       "bytes": 18965,
       "sha256": "31d1e9dd0d1f76caa343f656044afb1f0a5e9a139435d58b158ebd6eaea78f6e"
+    },
+    {
+      "path": "reconcile_vocabularies.py",
+      "bytes": 6817,
+      "sha256": "8d041b83d6de055bb13b2fce572c5a54b5102eb5ee5be7eb48cb055411e6146d"
     },
     {
       "path": "relanzador_dsh/DSH_REINICIAR.exe",

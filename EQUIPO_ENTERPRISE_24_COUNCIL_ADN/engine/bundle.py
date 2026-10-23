@@ -54,6 +54,8 @@ RUNTIME_ALLOWLIST = (
     'engine/forge_loop.py',
     'engine/forge_dispatch.py',
     'census_extensions.py',
+    # 2026-10-22 · paso 3.5/t4: reconciliacion de vocabularios
+    'reconcile_vocabularies.py',
     'tests_forge_loop.py',
 
     'LEEME_V8.txt',
