@@ -317,7 +317,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "5ef9345d3063771791a3ad250b9857988fad6da47cdf1691654359be22570fc1"
+      "sha256": "55e9d8a6fcb02c2cb4b93a41fb25773c77961c43f939db9548ba609c85d099fa"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -791,8 +791,8 @@
     },
     {
       "path": "engine/extension_owners.py",
-      "bytes": 7903,
-      "sha256": "93ffe158aea4a52469ae12e7c175be2d334936fb7bf600054f91121ba0677d91"
+      "bytes": 7992,
+      "sha256": "8ecfb7369d12097ae4f54d4f7584aa7441e34a7ff63e122bac58179e60bb322f"
     },
     {
       "path": "engine/followups.py",

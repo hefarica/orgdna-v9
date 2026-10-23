@@ -64,6 +64,8 @@ _MEDIDAS_EN_EL_REPO_OBJETIVO: Dict[str, str] = {
     ".xml": "config_engineer", ".cfg": "config_engineer",
     ".properties": "config_engineer", ".lock": "config_engineer",
     ".map": "config_engineer", ".editorconfig": "config_engineer",
+    ".html": "design_systems", ".htm": "design_systems",
+    ".xhtml": "design_systems",
     ".svg": "design_systems", ".png": "design_systems",
     ".jpg": "design_systems", ".jpeg": "design_systems",
     ".webp": "design_systems", ".ico": "design_systems",
