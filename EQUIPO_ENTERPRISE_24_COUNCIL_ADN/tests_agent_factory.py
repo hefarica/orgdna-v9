@@ -29,12 +29,14 @@ class RegistroTests(unittest.TestCase):
     def test_catorce_declaradas(self):
         self.assertEqual(len(CAPABILITIES), 14)
 
-    def test_cinco_implementadas(self):
+    def test_ocho_implementadas(self):
         self.assertEqual(set(available()),
-                         {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE"})
+                         {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE",
+                          "PPT", "WORD", "OBSIDIAN"})
 
-    def test_seis_ausentes_con_bloqueo(self):
-        self.assertEqual(len(absent()), 6)
+    def test_dos_ausentes_con_bloqueo(self):
+        self.assertEqual(set(absent()), {"OCR", "WHATSAPP"})
+        self.assertEqual(len(absent()), 2)
         for n in absent():
             self.assertTrue(CAPABILITIES[n]["blocker"], n)
 
@@ -44,7 +46,7 @@ class RegistroTests(unittest.TestCase):
         self.assertIn("SIN llamador", CAPABILITIES["SCHEDULE"]["blocker"])
 
     def test_email_y_web_login_exigen_credencial(self):
-        self.assertEqual(set(needs_credentials()), {"EMAIL", "WEB_LOGIN"})
+        self.assertEqual(set(needs_credentials()), {"EMAIL", "WEB_LOGIN", "TELEGRAM"})
         for n in needs_credentials():
             self.assertTrue(CAPABILITIES[n]["module"].startswith("engine.cap_"))
 
@@ -52,9 +54,15 @@ class RegistroTests(unittest.TestCase):
         self.assertEqual(CAPABILITIES["OCR"]["status"], "declared_absent")
         self.assertIn("OCR", CAPABILITIES["OCR"]["blocker"])
 
-    def test_excel_parcial_por_com_no_ejercitado(self):
+    def test_excel_parcial_con_hechos_medidos(self):
+        # MEDIDO 2026-10-23: el COM esta disponible y la lectura de archivo guardado
+        # funciona; lo NO ejercitado es la escritura en vivo sobre un libro real.
         self.assertEqual(CAPABILITIES["EXCEL"]["status"], "partial")
-        self.assertIn("NO ejercitado", CAPABILITIES["EXCEL"]["blocker"])
+        b = CAPABILITIES["EXCEL"]["blocker"]
+        self.assertIn("MEDIDO", b)
+        self.assertIn("COM disponible", b)
+        self.assertIn("ABIERTO", b)
+        self.assertIn("no se ejercito", b)
 
     def test_no_hay_metricas_inventadas_en_el_registro(self):
         blob = json.dumps(CAPABILITIES, ensure_ascii=False)

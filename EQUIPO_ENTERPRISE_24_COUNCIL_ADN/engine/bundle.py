@@ -95,6 +95,11 @@ RUNTIME_ALLOWLIST = (
     'engine/cap_email.py',
     'engine/cap_web_login.py',
     'tests_capabilities_real.py',
+    # 2026-10-23 · OOXML, vault y Telegram, todos stdlib
+    'engine/cap_ooxml.py',
+    'engine/cap_obsidian.py',
+    'engine/cap_telegram.py',
+    'tests_capabilities_extra.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',

@@ -42,8 +42,12 @@ CAPABILITIES: Dict[str, Mapping[str, str]] = {
     "FUSILAR":     {"status": "implemented", "module": "engine.rea_miner + docs/security/FUSILE_SOURCE_POLICY.md"},
     "SCRAPE":      {"status": "implemented", "module": "engine.sources.web_driver (estatico, robots.txt)"},
     "MICROSERVICE":{"status": "implemented", "module": "engine.bridge (HTTP loopback, CSRF)"},
-    "EXCEL":       {"status": "partial", "module": "engine.bridge excel_call",
-                    "blocker": "adaptador COM real NO ejercitado; solo doble de prueba"},
+    "EXCEL":       {"status": "partial", "module": "engine.bridge excel_call + read_xlsx_snapshot",
+                    "blocker": "MEDIDO 2026-10-23: Excel.Application COM disponible; "
+                               "excel_call('Read') exige el libro ABIERTO en una instancia "
+                               "activa (precondicion, no defecto) y read_xlsx_snapshot (stdlib) "
+                               "abre y valida el archivo guardado. La escritura en vivo no se "
+                               "ejercito: requiere un libro real del operador"},
     "WEB_LOGIN":   {"status": "implemented_requires_credentials",
                     "module": "engine.cap_web_login (stdlib urllib + cookies)",
                     "blocker": "requiere login_url, username_field, password_field; "
@@ -55,14 +59,18 @@ CAPABILITIES: Dict[str, Mapping[str, str]] = {
                     "blocker": "requiere imap_server, username, password; no envia correo"},
     "WHATSAPP":    {"status": "declared_absent", "module": "-",
                     "blocker": "requiere WhatsApp Business API y token"},
-    "TELEGRAM":    {"status": "declared_absent", "module": "-",
-                    "blocker": "requiere bot token"},
-    "PPT":         {"status": "declared_absent", "module": "-",
-                    "blocker": "sin libreria de presentaciones"},
-    "WORD":        {"status": "declared_absent", "module": "-",
-                    "blocker": "sin libreria de documentos"},
-    "OBSIDIAN":    {"status": "declared_absent", "module": "-",
-                    "blocker": "no hay ruta de vault configurada"},
+    "TELEGRAM":    {"status": "implemented_requires_credentials",
+                    "module": "engine.cap_telegram (stdlib urllib, getMe/sendMessage)",
+                    "blocker": "requiere token de bot; sendMessage exige confirmed=True"},
+    "PPT":         {"status": "implemented",
+                    "module": "engine.cap_ooxml (zipfile + xml, OOXML minimo)",
+                    "blocker": "sin estilos, tablas ni imagenes; OOXML valido, no disenado"},
+    "WORD":        {"status": "implemented",
+                    "module": "engine.cap_ooxml (zipfile + xml, OOXML minimo)",
+                    "blocker": "sin estilos, tablas ni imagenes; OOXML valido, no disenado"},
+    "OBSIDIAN":    {"status": "implemented",
+                    "module": "engine.cap_obsidian (pathlib, wikilinks, sin escapes)",
+                    "blocker": "requiere ruta de vault existente; escribe solo dentro de el"},
     "SCHEDULE":    {"status": "implemented",
                     "module": "engine.cap_schedule (stdlib threading + JSON)",
                     "blocker": "expone tick(now); SIN llamador en produccion, no corre solo"},
@@ -237,9 +245,10 @@ def build(params: OperatorParams, llm: Callable[[str], str],
 
 if __name__ == "__main__":
     assert len(CAPABILITIES) == 14
-    assert set(available()) == {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE"}
-    assert set(needs_credentials()) == {"EMAIL", "WEB_LOGIN"}
-    assert "OCR" in absent()
+    assert set(available()) == {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE",
+                                "PPT", "WORD", "OBSIDIAN"}
+    assert set(needs_credentials()) == {"EMAIL", "WEB_LOGIN", "TELEGRAM"}
+    assert set(absent()) == {"OCR", "WHATSAPP"}
     assert CAPABILITIES["EXCEL"]["status"] == "partial"
 
     p = plan(OperatorParams(domains=("https://github.com/hefarica/arbitragex-v2",), max_agents=12))
@@ -255,4 +264,4 @@ if __name__ == "__main__":
         raise SystemExit("FALLO: blockchain debio declararse no soportado")
     except FactoryError as e:
         assert "allowlist" in str(e)
-    print("OK agent_factory: 5 implementadas / 2 con credencial / 1 parcial / 6 ausentes")
+    print("OK agent_factory: 8 implementadas / 3 con credencial / 1 parcial / 2 ausentes")

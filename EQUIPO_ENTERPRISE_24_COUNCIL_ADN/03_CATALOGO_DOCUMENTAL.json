@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "5fa1b0ad427f520d5a022c689afe5de23c90d04edde0760e28bcc33d89688219"
+      "sha256": "b5cb8aa7adf57c3c2791d9eabf5110234b2db94a72e64de4a54400370b7dc8b6"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 89311,
-      "sha256": "2de090cdba1d988c5e88ad9ae444b685f735acadae9557c65f5179af10df33f2"
+      "bytes": 89491,
+      "sha256": "429633bdb98ead3a94e802847fb267e7532ecab82574c35caa97602642fffbbd"
     },
     {
       "path": "engine/cap_email.py",
@@ -715,9 +715,24 @@
       "sha256": "5a103e68b59009ab1eef54c4704cf65fa0160fb58a0eae7e85c86323de226c8f"
     },
     {
+      "path": "engine/cap_obsidian.py",
+      "bytes": 3585,
+      "sha256": "ed557a902d729ac135e8a363333822af9ef73ebf6a60b275e8c135082ec49a12"
+    },
+    {
+      "path": "engine/cap_ooxml.py",
+      "bytes": 8098,
+      "sha256": "d4fd550e943c79bdafe1b0249e7d15ca7a7968d50e2ccacc94addd7757f53e58"
+    },
+    {
       "path": "engine/cap_schedule.py",
       "bytes": 5322,
       "sha256": "bd5153d805e1ead194eda346b0ab6f2d75424ccad2a90adc97035e1185758769"
+    },
+    {
+      "path": "engine/cap_telegram.py",
+      "bytes": 3417,
+      "sha256": "50ad564dbf2a1c8d9c555c274b96a615cb413bb029b21aed42b779b70556c47d"
     },
     {
       "path": "engine/cap_web_login.py",
@@ -1711,8 +1726,8 @@
     },
     {
       "path": "tests_agent_factory.py",
-      "bytes": 5940,
-      "sha256": "e97aeb1e009d774824875b6e45193c6af42d3ebfca1c0a0ddeacbd6299151d80"
+      "bytes": 6357,
+      "sha256": "dc490573ab51d12996c6b16351ff32d7d128b4280715f3eb642ef7933782e21f"
     },
     {
       "path": "tests_agent_layer_contracts.py",
@@ -1728,6 +1743,11 @@
       "path": "tests_bridge.py",
       "bytes": 17481,
       "sha256": "4563e0483cdd2fa81ad1b47221c110808f73a96185ade37363bbcf2d7024d8bd"
+    },
+    {
+      "path": "tests_capabilities_extra.py",
+      "bytes": 3606,
+      "sha256": "bcaa2d5e42522e3d9682fb504af6354a1a4ccce8e502071ef41ee515089994b2"
     },
     {
       "path": "tests_capabilities_real.py",
@@ -2091,8 +2111,8 @@
     },
     {
       "path": "universal_agent_factory.py",
-      "bytes": 11451,
-      "sha256": "105c1d80f748ab5ded3dbc998de4fb76f372f15e6c3125da701baecad63be0c5"
+      "bytes": 12331,
+      "sha256": "90262e30f0a221295232ae6781810cfd902c426fb94da7f07ea92262b9865ce2"
     },
     {
       "path": "validaciones/ESTADO_DEL_LIBRO.json",
