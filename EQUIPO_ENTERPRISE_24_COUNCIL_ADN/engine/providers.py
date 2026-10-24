@@ -1153,6 +1153,58 @@ Use 1-""" + str(MAX_AGENTS) + """ professions, 0-40 skills. Each profession must
 JSON_MODE_PROVIDERS = frozenset({"openai", "deepseek"})
 
 
+def _isolate_json_object(texto):
+    """Aisla el UNICO objeto {...} de nivel superior, byte a byte igual.
+
+    NO repara el JSON: no quita comas finales, no cierra llaves, no cambia comillas.
+    Solo SELECCIONA el tramo cuando el modelo lo rodeo de prosa o de una cerca.
+    Cero o dos objetos de nivel superior => None (elegir uno seria adivinar).
+    """
+    if not isinstance(texto, str):
+        return None
+    inicio = texto.find("{")
+    if inicio < 0:
+        return None
+    profundidad = 0
+    en_cadena = False
+    escape = False
+    for i in range(inicio, len(texto)):
+        ch = texto[i]
+        if en_cadena:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                en_cadena = False
+            continue
+        if ch == '"':
+            en_cadena = True
+        elif ch == "{":
+            profundidad += 1
+        elif ch == "}":
+            profundidad -= 1
+            if profundidad == 0:
+                if "{" in texto[i + 1:]:
+                    return None
+                return texto[inicio:i + 1]
+    return None
+
+
+def _loads_isolated(content):
+    """_loads estricto; si falla por sintaxis, reintenta sobre el objeto aislado."""
+    try:
+        return _loads(content)
+    except ProviderError as first:
+        aislado = _isolate_json_object(content)
+        if aislado is None or aislado == content:
+            raise
+        try:
+            return _loads(aislado)
+        except ProviderError:
+            raise first from None
+
+
 def _llm_payload(summary, config, model, max_output_tokens):
     if not isinstance(model, str) or not MODEL_RE.fullmatch(model):
         raise ProviderError("Identificador de modelo inválido; usa uno descubierto o confirmado manualmente.")
@@ -1337,7 +1389,10 @@ def analyze_with_llm(summary, provider, model, api_key, consent, max_output_toke
     content = message.get("content")
     if not isinstance(content, str) or len(content.encode("utf-8")) > 200_000:
         raise ProviderError("Contenido del análisis ausente o demasiado grande.")
-    result = validate_analysis(_loads(content), data, config["name"], model)
+    # DEFECTO MEDIDO 2026-10-23: el analisis murio con "Respuesta JSON invalida"
+    # porque el modelo rodeo el objeto de prosa. Se aisla el objeto y se
+    # vuelve a cargar ESTRICTO: si el JSON esta roto, sigue fallando.
+    result = validate_analysis(_loads_isolated(content), data, config["name"], model)
     result["audit"] = {"endpoint": expected["endpoint"], "model": model,
                        "payload_sha256": expected["payload_sha256"], "requests": 1, "analyzed_at": _now()}
     usage = response.get("usage", {})
