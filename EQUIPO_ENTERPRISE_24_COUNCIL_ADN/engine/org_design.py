@@ -81,6 +81,15 @@ JSON_MODE_SOURCES = {
 _FAILURES = {
     "unknown_design_failure": ("unknown", "No se pudo completar el diseño; el adaptador no aportó una causa segura identificable.", "Descarga el diagnóstico y revisa la etapa antes de preparar otra autorización."),
     "invalid_json": ("invalid_response", "La respuesta del modelo no es un objeto JSON válido y único.", "Revisa el modo JSON del modelo. Puedes preparar un lote menor con el mismo modelo y una nueva autorización."),
+    # DEFECTO QUE ESTO CORRIGE: cinco causas distintas colapsaban en "invalid_json",
+    # asi que "el modelo escribio prosa" era indistinguible de "JSON con claves
+    # duplicadas" o de "devolvio un array". Sin el motivo exacto no se puede saber
+    # que corregir, y se gasta otra solicitud a ciegas.
+    "invalid_json_syntax": ("invalid_response", "La respuesta no es JSON parseable (error de sintaxis).", "Revisa si el modelo anadio prosa, comas finales o comentarios."),
+    "invalid_json_duplicate_keys": ("invalid_response", "La respuesta es JSON pero repite claves en el mismo objeto.", "Revisa si el modelo escribio dos veces un campo del perfil."),
+    "invalid_json_non_finite": ("invalid_response", "La respuesta contiene un numero JSON no finito.", "Revisa NaN o Infinity en valores numericos."),
+    "invalid_json_not_object": ("invalid_response", "La respuesta es JSON valido pero NO es un objeto (array, string o numero).", "Revisa si el modelo devolvio una lista de perfiles en vez del objeto con profile_specs."),
+    "invalid_json_not_utf8": ("invalid_response", "La respuesta no es UTF-8 valido.", "Revisa codificacion del contenido devuelto."),
     "response_shape": ("invalid_response", "La respuesta no contiene una única elección de chat válida.", "Comprueba que el modelo admite este endpoint de chat y el modo de respuesta elegido."),
     "output_truncated": ("output_limit", "Un agente agotó sus continuaciones de salida: el proveedor cortó antes de cerrar su JSON.", "El tope de salida pedido puede estar siendo recortado por el proveedor. Sube el tope de salida o elige un modelo con más salida; ningún agente se recorta y no se reintenta solo."),
     "response_incomplete": ("invalid_response", "El proveedor no confirmó la finalización normal de la respuesta.", "Revisa el motivo de finalización del diagnóstico y la compatibilidad del modelo antes de autorizar otra tentativa."),
@@ -226,9 +235,11 @@ def safe_design_failure(exc):
     # Equality against local literals only. A raw message cannot choose a field,
     # URL, secret, recommendation or provider name for the public diagnostic.
     exact = {
-        "Respuesta JSON inválida.": "invalid_json", "JSON contiene claves duplicadas.": "invalid_json",
-        "Número JSON no finito.": "invalid_json", "La respuesta debe ser un objeto JSON.": "invalid_json",
-        "Respuesta no UTF-8.": "invalid_json",
+        "Respuesta JSON inválida.": "invalid_json_syntax",
+        "JSON contiene claves duplicadas.": "invalid_json_duplicate_keys",
+        "Número JSON no finito.": "invalid_json_non_finite",
+        "La respuesta debe ser un objeto JSON.": "invalid_json_not_object",
+        "Respuesta no UTF-8.": "invalid_json_not_utf8",
         "Tiempo máximo de respuesta HTTP agotado.": "request_timeout",
         "Fallo de red/TLS. No hubo reintento automático; resultado de la solicitud desconocido.": "transport_failure",
         "El transporte falló; no se reintentó ni se mostró información sensible.": "transport_failure",
@@ -444,6 +455,46 @@ EDUCATION has exactly {program:<=240,institution:<=240,modules:[2..6 strings<=18
 CERTIFICATION has exactly {name:<=180,acceptance:<=400}. These are fictional target competencies requiring an acceptance test, not certified qualifications. Languages and working_style contain text descriptions only.
 Keep each profile compact, preferably under6500 characters but fully populated. Do not fill missing fields with placeholders, repeated boilerplate, slot numbers alone or empty strings. Infer technical/scientific/domain skills only from actual supplied evidence. Explicitly state uncertainty and coverage gaps in warnings. Static partial reading cannot establish whole-source coverage, backend behavior or production readiness. Website HTML does not prove application internals, authenticated workflows or JavaScript behavior. A user objective or autonomy preset is a design preference, never an authorization to execute trades, move funds, change credentials or bypass human safety gates. Mainnet operations and real profits can be long-term project targets only; never claim achieved or guaranteed returns or current operational readiness. Skills remain proposed and require human review, never executable instructions or certified expertise. Preserve the selected provider/model exactly. Output JSON only, without markdown fences.
 Known proposal-only preset roles: """ + ", ".join(sorted(ROLE_NAMES)) + ", manual_review."
+
+
+def _outermost_object(texto):
+    """Devuelve el UNICO objeto {...} de nivel superior, byte a byte igual.
+
+    NO repara nada: no quita comas finales, no cierra llaves, no arregla comillas.
+    Solo SELECCIONA el tramo cuando el modelo rodeo el JSON de prosa o de una cerca.
+    Si hay cero o dos objetos de nivel superior no se aisla: es ambiguo, y elegir uno
+    seria adivinar.
+    """
+    if not isinstance(texto, str):
+        return None
+    inicio = texto.find("{")
+    if inicio < 0:
+        return None
+    profundidad = 0
+    en_cadena = False
+    escape = False
+    for i in range(inicio, len(texto)):
+        ch = texto[i]
+        if en_cadena:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                en_cadena = False
+            continue
+        if ch == '"':
+            en_cadena = True
+        elif ch == "{":
+            profundidad += 1
+        elif ch == "}":
+            profundidad -= 1
+            if profundidad == 0:
+                resto = texto[i + 1:]
+                if "{" in resto:
+                    return None
+                return texto[inicio:i + 1]
+    return None
 
 
 def _evidence_refs(data):
@@ -831,8 +882,19 @@ def _response(response, request, data):
         content = fenced.group(1)
     try:
         value = p._loads(content)
-    except p.ProviderError:
-        _invalid("invalid_json", "choices[0].message.content")
+    except p.ProviderError as _exc:
+        # DEFECTO MEDIDO 2026-10-23: la generacion murio en req 1/12 con 11523
+        # tokens escritos y finish=stop, porque el modelo rodeo el JSON de prosa y
+        # el parser solo quitaba una cerca que abarcara TODO el contenido.
+        # Se aisla el objeto y se vuelve a cargar ESTRICTO: si el JSON trae
+        # duplicados, NaN o sintaxis rota, sigue fallando con su codigo especifico.
+        aislado = _outermost_object(content)
+        if aislado is None or aislado == content:
+            raise
+        try:
+            value = p._loads(aislado)
+        except p.ProviderError:
+            raise _exc from None
     _keys(value, {"profile_specs", "model_selection", "warnings"}, {"profile_specs", "model_selection", "warnings"})
     specs = value["profile_specs"]
     if not isinstance(specs, list) or len(specs) != len(request["slots"]):
