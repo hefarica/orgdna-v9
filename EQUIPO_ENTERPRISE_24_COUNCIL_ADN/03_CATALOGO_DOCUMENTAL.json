@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "712fab3bb09f23e4ab184094e23f6ec5b60f38fed63f6ee5680c10f6e85d3238"
+      "sha256": "61a2a6b0548d27f08ff8e6bdc8e8babade3775ef94d0414fade817e46d5d3bad"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -1191,8 +1191,8 @@
     },
     {
       "path": "engine/web_sources.py",
-      "bytes": 63059,
-      "sha256": "5450243d9e91e0bf342e3672164d1c27ede69b7afa9955a75250aa2fac79e6ae"
+      "bytes": 63388,
+      "sha256": "df8f56e3466b4f973703dd5eea87ea4ef30d1b0cc4f503585f6db36804f42799"
     },
     {
       "path": "extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json",

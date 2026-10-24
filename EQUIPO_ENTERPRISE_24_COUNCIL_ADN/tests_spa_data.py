@@ -169,7 +169,7 @@ class CanalNextRscTests(Base):
 
 
 class DerivadosTests(Base):
-    BUNDLE = (b'const a="https://raw-api.other.example/ondo/status";'
+    BUNDLE = (b'const a="https://datos.spa.example/ondo/status";'
               b'const b="/api/local-status.json";const c="/_next/static/chunks/b.js";' + b'x' * 1200)
 
     def _fixture(self):
@@ -191,25 +191,27 @@ class DerivadosTests(Base):
         self.assertEqual(fixture.pedidos_a('/_next/static/chunks/b.js'), [])
 
     def test_cross_origin_nace_cerrado_y_se_registra(self):
+        # La firma esta activa por defecto (commit 0878b06), asi que el camino
+        # cerrado se prueba pidiendolo EXPLICITAMENTE: sin firma no se pide nada.
         fixture = self._fixture()
-        r = self.analizar(fixture)
-        self.assertEqual(fixture.pedidos_a('raw-api.other.example'), [])
-        self.assertEqual([c['host'] for c in r['spa_data']['cross_origin_candidates']], ['raw-api.other.example'])
+        r = self.analizar(fixture, allow_derived_cross_origin=False)
+        self.assertEqual(fixture.pedidos_a('datos.spa.example'), [])
+        self.assertEqual([c['host'] for c in r['spa_data']['cross_origin_candidates']], ['datos.spa.example'])
         motivos = [(a['reason'], a.get('host')) for a in r['spa_data']['attempts']]
-        self.assertIn(('cross_origin_sin_firma', 'raw-api.other.example'), motivos)
+        self.assertIn(('cross_origin_sin_firma', 'datos.spa.example'), motivos)
 
     def test_cross_origin_con_firma_pide_robots_del_host_antes(self):
         fixture = self._fixture()
-        fixture.rutas['https://raw-api.other.example/robots.txt'] = (200, {'Content-Type': 'text/plain'}, ROBOTS)
-        fixture.rutas['https://raw-api.other.example/ondo/status'] = (200, {'Content-Type': 'application/json'},
+        fixture.rutas['https://datos.spa.example/robots.txt'] = (200, {'Content-Type': 'text/plain'}, ROBOTS)
+        fixture.rutas['https://datos.spa.example/ondo/status'] = (200, {'Content-Type': 'application/json'},
                                                                      nuxt_payload('d'))
         r = self.analizar(fixture, allow_derived_cross_origin=True)
         urls = fixture.urls()
-        self.assertIn('https://raw-api.other.example/robots.txt', urls)
-        self.assertIn('https://raw-api.other.example/ondo/status', urls)
-        self.assertLess(urls.index('https://raw-api.other.example/robots.txt'),
-                        urls.index('https://raw-api.other.example/ondo/status'))
-        self.assertTrue(any(p['url'] == 'https://raw-api.other.example/ondo/status'
+        self.assertIn('https://datos.spa.example/robots.txt', urls)
+        self.assertIn('https://datos.spa.example/ondo/status', urls)
+        self.assertLess(urls.index('https://datos.spa.example/robots.txt'),
+                        urls.index('https://datos.spa.example/ondo/status'))
+        self.assertTrue(any(p['url'] == 'https://datos.spa.example/ondo/status'
                             for p in r['spa_data']['payloads']))
         self.assertTrue(r['spa_data']['allow_derived_cross_origin'])
 
@@ -297,5 +299,86 @@ class ResumenTests(Base):
             w.prepare_website_summary(r)
 
 
+class FalsosPositivosTests(Base):
+    """t20: los candidatos de comentarios/cabeceras y las URLs rotas no gastan nada."""
+
+    def _fixture(self, bundle):
+        return Fixture({BASE + '/': (200, {'Content-Type': 'text/html'}, NEXT_MARKS),
+                        BASE + '/_next/static/chunks/a.js': (200, {'Content-Type': 'text/javascript'}, bundle)})
+
+    def test_host_de_documentacion_no_gasta_peticiones(self):
+        bundle = (b'// vendored from https://github.com/zloirock/core-js/blob/v3.38.1/LICENSE\n'
+                  b'// see https://nextjs.org/docs/messages/client-side-exception-occurred and https://w3.org/TR/x\n'
+                  + b'x' * 1200)
+        fixture = self._fixture(bundle)
+        r = self.analizar(fixture)
+        urls = fixture.urls()
+        self.assertEqual([u for u in urls if 'github.com' in u], [])
+        self.assertEqual([u for u in urls if 'nextjs.org' in u], [])
+        self.assertEqual([u for u in urls if 'w3.org' in u], [])
+        rechazos = r['spa_data']['candidates_rejected']
+        self.assertGreaterEqual(rechazos.get('host_documentacion', 0), 3)
+        self.assertEqual(r['spa_data']['payloads'], [])
+
+    def test_url_malformada_no_llega_a_robots_ni_a_fetch(self):
+        # host de un caracter, localhost e IP: el extractor ni siquiera los produce
+        # (el patron exige >=2 etiquetas y TLD alfabetico) y el filtro los rechaza.
+        bundle = (b'const a="https://a/robots.txt";const b="https://localhost/x.json";'
+                  b'const c="https://192.168.1.1/datos.json";' + b'x' * 1200)
+        fixture = self._fixture(bundle)
+        r = self.analizar(fixture)
+        urls = fixture.urls()
+        self.assertEqual([u for u in urls if '/robots.txt' in u and 'spa.example' not in u], [])
+        self.assertEqual([u for u in urls if 'localhost' in u or '192.168' in u or u.startswith('https://a/')], [])
+        self.assertEqual(r['spa_data']['payloads'], [])
+        for valor in ('https://a/robots.txt', 'https://localhost/x.json',
+                      'https://192.168.1.1/datos.json', 'https://spa.example/',
+                      'https://spa.example', 'https://spa.example/a.json#frag'):
+            familia, normalizado, motivo = w._spa_candidato_ok(valor, 'spa.example')
+            self.assertIsNone(familia, valor)
+            self.assertIsNone(normalizado, valor)
+            self.assertEqual(motivo, 'url_malformada', valor)
+
+    def test_prioridad_json_y_subdominio_antes_que_el_resto(self):
+        bundle = (b'const a="https://cdn.tercero.example/lib.js.map";'
+                  b'const b="https://phantom.app/dapp";'
+                  b'const c="https://raw-api.spa.example/ondo/status";'
+                  b'const d="https://tokens.spa.example/pancakeswap-extended.json";' + b'x' * 1200)
+        fixture = self._fixture(bundle)
+        fixture.rutas['https://tokens.spa.example/pancakeswap-extended.json'] = (
+            200, {'Content-Type': 'application/json'}, nuxt_payload('e'))
+        fixture.rutas['https://raw-api.spa.example/ondo/status'] = (
+            200, {'Content-Type': 'application/json'}, nuxt_payload('f'))
+        fixture.rutas['https://tokens.spa.example/robots.txt'] = (200, {'Content-Type': 'text/plain'}, ROBOTS)
+        fixture.rutas['https://raw-api.spa.example/robots.txt'] = (200, {'Content-Type': 'text/plain'}, ROBOTS)
+        r = self.analizar(fixture)
+        urls = fixture.urls()
+        # el host ajeno ni se toca
+        self.assertEqual([u for u in urls if 'phantom.app' in u or 'tercero.example' in u], [])
+        # el .json del subdominio se pide ANTES que el endpoint sin .json
+        self.assertLess(urls.index('https://tokens.spa.example/pancakeswap-extended.json'),
+                        urls.index('https://raw-api.spa.example/ondo/status'))
+        self.assertEqual(r['spa_data']['payloads'][0]['url'],
+                         'https://tokens.spa.example/pancakeswap-extended.json')
+        self.assertGreaterEqual(r['spa_data']['candidates_rejected'].get('host_ajeno', 0), 1)
+
+    def test_prepare_normaliza_los_rechazos_y_rechaza_motivos_inventados(self):
+        # Con evidencia real (payload Nuxt): el canal 3 no corre si ya hay canal,
+        # asi que aqui se comprueba la FORMA normalizada del contador de rechazos.
+        fixture = Fixture({BASE + '/': (200, {'Content-Type': 'text/html'}, NUXT_MARKS),
+                           BASE + '/_payload.json': (200, {'Content-Type': 'application/json'},
+                                                     nuxt_payload('g'))})
+        r = self.analizar(fixture)
+        self.assertTrue(r['evidence'])
+        self.assertEqual(r['spa_data']['candidates_rejected'], {})
+        seguro = w.prepare_website_summary(r)
+        self.assertIn('candidates_rejected', seguro['spa_data'])
+        self.assertEqual(seguro, w.prepare_website_summary(seguro))
+        r['spa_data']['candidates_rejected']['inventado'] = 1
+        with self.assertRaises(providers.ProviderError):
+            w.prepare_website_summary(r)
+
+
 if __name__ == '__main__':
     unittest.main()
+

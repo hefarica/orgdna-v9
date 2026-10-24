@@ -140,8 +140,13 @@ def _embedded_text(html):
 # Si no hay navegador, NO se finge: se devuelve el motivo y se mantiene el camino
 # estatico anterior.
 RENDER_JS = os.environ.get("ORGDNA_RENDER_JS", "1").strip() != "0"
-RENDER_TIMEOUT = 90
-RENDER_BUDGET_MS = 8000
+# RENDER_RESERVA: defecto medido por t20. El render headless de la RAIZ se
+# comia el deadline entero (90 s de 120) y la fase de datos SPA ya no corria:
+# 0 payloads con render ON frente a 8 con render OFF. Se acota el render para
+# que quede franja para los canales de datos, que son mas baratos y dan
+# payloads deterministas.
+RENDER_TIMEOUT = 45
+RENDER_BUDGET_MS = 6000
 RENDER_MAX_BYTES = 4_000_000
 _NAVEGADORES = (
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
@@ -257,10 +262,31 @@ SPA_NUXT_MARKS = (b'__NUXT_DATA__', b'window.__NUXT__', b'/_payload.json', b'/_n
 SPA_NEXT_MARKS = (b'__NEXT_DATA__', b'self.__next_f', b'/_next/static/')
 SPA_ASSET_SUFFIXES = ('.js', '.mjs', '.css', '.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp',
                       '.woff', '.woff2', '.ttf', '.ico', '.map', '.wasm', '.avif', '.mp4', '.json.license')
-_SPA_ABS_URL = re.compile(r'https://([A-Za-z0-9](?:[A-Za-z0-9.-]{0,61}[A-Za-z0-9])?)/[A-Za-z0-9._~%\-/]{1,200}')
+# Hosts de documentacion/licencia: aparecen en comentarios y cabeceras de los
+# bundles y NUNCA son fuente de datos del sitio. Defecto medido (t20): el bundle
+# citaba https://github.com/zloirock/core-js dentro de un comentario y el lector
+# gastaba una peticion (y su robots) persiguiendolo.
+SPA_DOC_HOSTS = (
+    'github.com', 'githubusercontent.com', 'githubassets.com', 'gitlab.com', 'bitbucket.org',
+    'npmjs.com', 'npmjs.org', 'yarnpkg.com', 'unpkg.com', 'jsdelivr.net', 'cdnjs.com',
+    'w3.org', 'w3schools.com', 'schema.org', 'mozilla.org', 'mozillademos.org',
+    'opensource.org', 'apache.org', 'gnu.org', 'creativecommons.org', 'spdx.org',
+    'typescriptlang.org', 'nodejs.org', 'caniuse.com', 'stackoverflow.com',
+    'reactjs.org', 'react.dev', 'nextjs.org', 'nuxt.com', 'vercel.com', 'vuejs.org',
+    'example.com', 'example.org', 'example.net', 'localhost', 'invalid',
+)
+# Etiquetas de subdominio que solo sirven documentacion/legal, nunca datos.
+SPA_DOC_LABELS = ('docs', 'doc', 'documentation', 'developers', 'developer', 'devdocs',
+                  'license', 'licenses', 'legal', 'terms', 'privacy', 'support', 'help',
+                  'blog', 'news', 'forum', 'community', 'careers', 'jobs', 'status')
+# Host con al menos dos etiquetas y TLD alfabetico: descarta de raiz "https://a/..."
+# (host de un solo caracter), IPs y localhost antes de tocar robots o fetch.
+_SPA_ABS_URL = re.compile(r'https://((?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24})/[A-Za-z0-9._~%\-/]{1,200}')
 _SPA_REL_JSON = re.compile(r'["\'(](/(?:[A-Za-z0-9._~%\-]+/)*[A-Za-z0-9._~%\-]+\.json)["\')]')
 _SPA_SCRIPT_SRC = re.compile(rb'<script[^>]+src=["\']([^"\']{1,500})["\']', re.I)
 _SPA_FLIGHT_LINE = re.compile(rb'^[0-9a-fA-F]{1,8}:')
+_SPA_HOST_LABEL = re.compile(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?')
+_SPA_TLD = re.compile(r'[a-z]{2,24}')
 
 
 def _spa_shell_body(data):
@@ -346,6 +372,77 @@ def _spa_derived_candidates(text):
     return origin_less
 
 
+def _spa_marca(host):
+    """Etiqueta de marca del host: 'pancakeswap' en tokens.pancakeswap.finance."""
+    etiquetas = [parte for parte in host.split('.') if parte]
+    if len(etiquetas) >= 3:
+        return etiquetas[-3]
+    if len(etiquetas) == 2:
+        return etiquetas[0]
+    return ''
+
+
+def _spa_host_pertenece(host, sitio):
+    """Clasifica un host candidato: propio / subdominio / marca / None (ajeno).
+
+    La frontera no la elige el lector: solo entra lo que pertenece al sitio (mismo
+    host o subdominio suyo) o a su misma marca con otro sufijo (`proofs.pancakeswap.com`
+    cuando el sitio es `pancakeswap.finance`, medido en t16). Todo lo demas es ajeno.
+    """
+    if host == sitio:
+        return 'propio'
+    if host.endswith('.' + sitio):
+        primera = host.split('.', 1)[0]
+        return 'subdominio' if primera not in SPA_DOC_LABELS else 'documentacion'
+    marca = _spa_marca(sitio)
+    if len(marca) >= 4 and marca in host.split('.'):
+        etiquetas_host = host.split('.')
+        if any(etiqueta in SPA_DOC_LABELS for etiqueta in etiquetas_host[:-2]):
+            return 'documentacion'
+        return 'marca'
+    return None
+
+
+def _spa_candidato_ok(url, sitio):
+    """Filtro previo al presupuesto: forma valida + host del sitio. (familia, url, motivo)."""
+    if not isinstance(url, str) or not url or len(url) > 2048:
+        return None, None, 'url_malformada'
+    try:
+        parsed = urlsplit(url)
+        puerto = parsed.port
+    except (ValueError, TypeError):
+        return None, None, 'url_malformada'
+    host = (parsed.hostname or '').lower()
+    if (parsed.scheme != 'https' or not host or puerto not in (None, 443) or parsed.username
+            or parsed.password or parsed.fragment or not parsed.path or parsed.path == '/'):
+        return None, None, 'url_malformada'
+    if len(host) > 253 or host.endswith('.'):
+        return None, None, 'url_malformada'
+    etiquetas = host.split('.')
+    if len(etiquetas) < 2 or not _SPA_TLD.fullmatch(etiquetas[-1]):
+        return None, None, 'url_malformada'
+    if not all(_SPA_HOST_LABEL.fullmatch(etiqueta) for etiqueta in etiquetas):
+        return None, None, 'url_malformada'
+    if re.fullmatch(r'\d+\.\d+\.\d+\.\d+', host):
+        return None, None, 'url_malformada'
+    if host in SPA_DOC_HOSTS or any(host == doc or host.endswith('.' + doc) for doc in SPA_DOC_HOSTS):
+        return None, None, 'host_documentacion'
+    familia = _spa_host_pertenece(host, sitio)
+    if familia == 'documentacion':
+        return None, None, 'host_documentacion'
+    if familia is None:
+        return None, None, 'host_ajeno'
+    return familia, urlunsplit(('https', host, parsed.path, parsed.query, '')), None
+
+
+def _spa_candidato_prioridad(familia, url):
+    """Orden pedido: primero .json, luego subdominios del sitio, y solo despues el resto."""
+    camino = urlsplit(url).path.lower()
+    json_primero = 0 if camino.endswith('.json') else 1
+    rango_familia = {'subdominio': 0, 'propio': 1, 'marca': 2}.get(familia, 3)
+    return (json_primero, rango_familia, len(url), url)
+
+
 def _spa_host_derivado_ok(url):
     """E1.2: hostname exacto, HTTPS, puerto 443, sin userinfo, sin IP literal."""
     try:
@@ -380,6 +477,9 @@ def _spa_channels(root, root_html, fetch, robots, gap, deadline, # FIRMA_SPA2: e
     state = {'requests': 0, 'bytes': 0}
     doc = {'channel': None, 'js_rendered': False, 'mechanism': None, 'origin': origin,
            'attempts': [], 'payloads': [], 'bundles_read': [], 'cross_origin_candidates': [],
+           # Candidatos descartados ANTES de gastar presupuesto, por motivo. Se
+           # cuenta todo y se documentan los primeros de cada clase en `attempts`.
+           'candidates_rejected': {},
            'determinism': {'reads': 2, 'stable': None},
            'allow_derived_cross_origin': bool(allow_derived_cross_origin),
            'limits': {'payload_max_bytes': SPA_CAPS['payload_max_bytes'],
@@ -487,8 +587,16 @@ def _spa_channels(root, root_html, fetch, robots, gap, deadline, # FIRMA_SPA2: e
 
 
 def _spa_derived_endpoints(root, origin, bundles, read, note, aceptar, doc):
-    """Lee bundles same-origin y deriva de ellos endpoints JSON citados (X4)."""
+    """Lee bundles same-origin y deriva de ellos endpoints citados, por PRIORIDAD.
+
+    Antes de gastar presupuesto se descarta lo que no es del sitio (comentarios y
+    cabeceras citan github/npm/w3/schema/mozilla) y lo que no parsea, y se ordena:
+    primero los caminos .json, luego los subdominios del propio sitio y solo
+    despues el resto. El presupuesto se agota en ese orden, no en el de aparicion.
+    """
+    sitio = (urlsplit(origin).hostname or '').lower()
     vistos = set()
+    ya_probados = set()
     bundle_bytes = 0
     for src in bundles[:SPA_CAPS['max_bundles']]:
         try:
@@ -519,23 +627,36 @@ def _spa_derived_endpoints(root, origin, bundles, read, note, aceptar, doc):
         sha_bundle = hashlib.sha256(data).hexdigest()
         doc['bundles_read'].append({'url': bundle_url, 'sha256': sha_bundle, 'byte_count': len(data)})
         texto = data.decode('utf-8', errors='replace')
-        candidatos = []
+        elegibles = []
         for kind, value in _spa_derived_candidates(texto):
             try:
                 target = canonical_url(value, root) if kind == 'relativo' else value
             except (providers.ProviderError, ValueError, TypeError):
+                target, motivo = None, 'url_malformada'
+            else:
+                familia, target, motivo = _spa_candidato_ok(target, sitio)
+            if motivo:
+                doc['candidates_rejected'][motivo] = doc['candidates_rejected'].get(motivo, 0) + 1
+                # Se deja constancia de los primeros de cada clase (nunca silencio),
+                # sin inundar el registro con los cientos de URLs de un bundle.
+                if doc['candidates_rejected'][motivo] <= 3:
+                    note('derived_endpoints', str(value)[:300], motivo, derived_from=sha_bundle)
                 continue
-            if target not in candidatos:
-                candidatos.append(target)
-        for target in candidatos[:SPA_CAPS['max_derived']]:
+            elegibles.append((familia, target))
+        elegibles.sort(key=lambda item: _spa_candidato_prioridad(item[0], item[1]))
+        for familia, target in elegibles[:SPA_CAPS['max_derived']]:
             if len(doc['payloads']) >= SPA_CAPS['max_derived']:
                 note('derived_endpoints', target, 'derived_budget', derived_from=sha_bundle)
                 continue
-            cross = _origin(target) != origin
+            if target in ya_probados:
+                continue
+            ya_probados.add(target)
+            cross = familia != 'propio'
             if cross:
                 host = urlsplit(target).hostname or ''
-                doc['cross_origin_candidates'].append({'url': target, 'host': host,
-                                                       'derived_from': sha_bundle})
+                entrada = {'url': target, 'host': host, 'derived_from': sha_bundle}
+                if entrada not in doc['cross_origin_candidates']:
+                    doc['cross_origin_candidates'].append(entrada)
                 if not doc['allow_derived_cross_origin']:
                     note('derived_endpoints', target, 'cross_origin_sin_firma',
                          derived_from=sha_bundle, host=host)
@@ -699,6 +820,14 @@ def _prepare_spa_data(spa, root, text):
             raise providers.ProviderError('Candidato cross-origin sin procedencia.')
         salida['cross_origin_candidates'].append({'url': text(candidato.get('url', ''), 2048),
                                                   'host': text(host, 253), 'derived_from': derivado})
+    salida['candidates_rejected'] = {}
+    rechazados = spa.get('candidates_rejected') if isinstance(spa.get('candidates_rejected'), dict) else {}
+    if len(rechazados) > 8:
+        raise providers.ProviderError('Motivos de descarte de SPA fuera de límite.')
+    for motivo, cuenta in rechazados.items():
+        if motivo not in ('url_malformada', 'host_documentacion', 'host_ajeno'):
+            raise providers.ProviderError('Motivo de descarte de SPA inválido.')
+        salida['candidates_rejected'][motivo] = providers._bounded_int(cuenta, 0, 100000, motivo)
     limitaciones = spa.get('limitations') if isinstance(spa.get('limitations'), list) else []
     if len(limitaciones) > 20:
         raise providers.ProviderError('Limitaciones de SPA fuera de límite.')
