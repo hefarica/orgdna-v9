@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "6e0b815757cd63400864cf64709edba04275dcfdd976aa510c8b82ee66c9716b"
+      "sha256": "73302c13325a7663b55f15f5674656df7943e91ce2e50874a58c11418ba5d33f"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -403,6 +403,16 @@
       "path": "docs/dsh_native_connection_sdk_smoke.json",
       "bytes": 1037,
       "sha256": "83c49580d4e69ba99ba8e9786dc1f3977ca96dfb72ac19a961f021d9e26d22f7"
+    },
+    {
+      "path": "docs/evidence/ORG12_GENERADO_2026-10-23.json",
+      "bytes": 727422,
+      "sha256": "3fc84a6a29902d327384eb39b5c8ae2558452ccb0748d8fca375b801041efc4e"
+    },
+    {
+      "path": "docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json",
+      "bytes": 818005,
+      "sha256": "59918cb718684cb9e3c0c3d00535283a6934395f748544c699da6b1d8209470f"
     },
     {
       "path": "docs/evolution/propuesta-evo-20261021_192901.md",
@@ -696,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 88518,
-      "sha256": "43f08124c21a72f6e5315afed0d5f4972987f768f4728973bf55ae07e3943d5b"
+      "bytes": 88775,
+      "sha256": "eb31b4a8c79390f06c71ad69596cbf43abe958d64a2b2f913d1a7d15e8020d39"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -858,6 +868,11 @@
       "path": "engine/governance.py",
       "bytes": 28975,
       "sha256": "67ff1344227bedbc9ae842a4ff066d64b9ef99ff0ba6decaceeef417a8b0217f"
+    },
+    {
+      "path": "engine/harness_adapter.py",
+      "bytes": 3182,
+      "sha256": "5ccb5b258ee0add6d80e5d086582ef0d2d3949d6dbf8e10582d1d1d7f059f5dc"
     },
     {
       "path": "engine/improvement.py",
@@ -1788,6 +1803,11 @@
       "path": "tests_github_rescate.py",
       "bytes": 2979,
       "sha256": "ffce1ecd00895fc6365d52755be6f528c8131d364966c4779a91ad83923a3640"
+    },
+    {
+      "path": "tests_harness_adapter.py",
+      "bytes": 2417,
+      "sha256": "fa1866d71ab12843736dd514bdd929c3328256c9086cae2d17f2adc1c1db384e"
     },
     {
       "path": "tests_improvement.py",
