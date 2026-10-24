@@ -661,6 +661,13 @@ class BridgeState:
             self.persisted = bool(self.credentials)
         except Exception:
             self.receipt('credentials', 'warning', 'No se pudo abrir el almacén DPAPI; introduce la clave de nuevo.')
+        try:
+            reatadas = self._load_model_catalog()
+            if reatadas:
+                self.receipt('model-catalog', 'success',
+                             'Catálogo restaurado de disco: %d modelos re-atados a la clave cargada.' % reatadas)
+        except Exception:
+            self.receipt('model-catalog', 'warning', 'No se pudo restaurar el catálogo guardado.')
         if self.workbook:
             try:
                 snapshot = read_xlsx_snapshot(self.workbook)
@@ -1725,6 +1732,63 @@ class BridgeState:
                 models.append({'provider': provider, 'model': model, 'available': None, 'source': 'manual_not_verified', 'catalog_scope': 'dsh_runtime_reference'})
         return models or None
 
+    # --- CATALOGO PERSISTENTE (idempotente entre reinicios) -------------------
+    # DEFECTO: self.models vivia solo en memoria, asi que tras CADA reinicio el
+    # modelo elegido aparecia como "no verificado". La verificacion se ata a un
+    # stamp efimero hmac(csrf, key) y el csrf cambia en cada proceso, luego
+    # ninguna fila guardada pasaba el filtro _api_row_current. Se persiste el
+    # catalogo y, al cargarlo, se RE-ATA el stamp con la clave que SI esta cargada
+    # ahora: sin red al arrancar y sin auto-autorizarse nada, porque solo se
+    # re-atan filas de proveedores cuya credencial existe en el almacen.
+    def _model_catalog_path(self):
+        base = Path(os.environ.get("LOCALAPPDATA", str(ROOT / "data"))) / "OrgDNA" \
+            if os.name == "nt" else ROOT / "data"
+        return base / "model_catalog.json"
+
+    def _save_model_catalog(self):
+        try:
+            filas = [dict(m) for m in (self.models or [])
+                     if isinstance(m, dict) and m.get("catalog_scope") not in
+                     ("dsh_runtime", "dsh_runtime_reference")]
+            if not filas:
+                return
+            destino = self._model_catalog_path()
+            destino.parent.mkdir(parents=True, exist_ok=True)
+            tmp = destino.with_suffix(".tmp")
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump({"saved_at": datetime.now(timezone.utc).isoformat(),
+                           "models": filas}, fh, ensure_ascii=False)
+            os.replace(tmp, destino)
+        except (OSError, TypeError, ValueError) as exc:
+            self.receipt("model-catalog", "warning",
+                         "No se pudo persistir el catálogo: %s" % str(exc)[:160])
+
+    def _load_model_catalog(self):
+        try:
+            origen = self._model_catalog_path()
+            if not origen.is_file():
+                return 0
+            with open(origen, encoding="utf-8") as fh:
+                dados = json.load(fh)
+            filas = [m for m in (dados.get("models") or []) if isinstance(m, dict)]
+        except (OSError, ValueError):
+            return 0
+        cargadas = 0
+        for fila in filas:
+            proveedor = fila.get("provider")
+            modelo = fila.get("model", fila.get("id"))
+            if not proveedor or not modelo:
+                continue
+            if not self.credentials.get(proveedor):
+                continue
+            if fila.get("available") is True:
+                self._model_account_stamps[(proveedor, modelo)] = \
+                    self._api_account_stamp({"provider": proveedor})
+                cargadas += 1
+        if filas:
+            self.models = filas + [m for m in self.models if m not in filas]
+        return cargadas
+
     def _api_account_stamp(self, config):
         """Ephemeral account binding. Never exported, saved or used as a key."""
         key = self.credentials.get(config['provider'])
@@ -1904,6 +1968,7 @@ class BridgeState:
         self.has_manual_edits = bool(snapshot.get('has_manual_edits'))
         self.model_overrides = snapshot.get('model_overrides', {})
         self.models = models
+        self._save_model_catalog()
         self.verified_catalog_providers = set()
         self.analysis = snapshot.get('analysis')
         self.repo_inventory = snapshot.get('repo_inventory')
