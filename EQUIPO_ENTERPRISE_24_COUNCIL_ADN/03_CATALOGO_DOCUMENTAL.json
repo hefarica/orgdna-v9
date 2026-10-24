@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "639dd07b374a130bb7be09e8b52a958c6a9e1d61aa8cc85b429eb9f071fe7b27"
+      "sha256": "5fa1b0ad427f520d5a022c689afe5de23c90d04edde0760e28bcc33d89688219"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -696,8 +696,8 @@
     },
     {
       "path": "engine/bridge.py",
-      "bytes": 184883,
-      "sha256": "5966a8be849e9dcd16e13803205ab0f27f66ea485a91fbaa41d7b86fe453b158"
+      "bytes": 187947,
+      "sha256": "a7820a2a4195f23ff3dbfb4584d591cf8366ec90984b420fd808ff1a657ee263"
     },
     {
       "path": "engine/budget_governor.py",

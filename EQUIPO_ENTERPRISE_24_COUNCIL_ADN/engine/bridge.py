@@ -2039,6 +2039,53 @@ class BridgeState:
                 self.project = {'id': metadata['project_id'], 'name': metadata['name'], 'version_id': metadata['version_id'], 'dirty': False}
                 self.receipt(action, 'success', 'Nueva versión guardada localmente. Las versiones anteriores se conservan y no se han guardado claves.')
                 return self.public()
+            elif action in ('schedule-add', 'schedule-list', 'schedule-tick'):
+                # EL LLAMADOR DEL PROGRAMADOR. Se eligio endpoint y NO un thread
+                # daemon: el producto es inerte y fail-closed por diseno, y un hilo
+                # que arranca solo seria la primera accion sin humano, invisible y
+                # sin forma de pararla. Aqui el disparo lo pide el operador, con el
+                # mismo gate (cookie + Origin + CSRF) que el resto de acciones.
+                #
+                # Registro de acciones VACIO a proposito: el mecanismo esta cableado
+                # y no tiene nada habilitado. Cada job vencido devuelve ok=False con
+                # "accion no registrada". Habilitar acciones es una decision aparte.
+                if __package__:
+                    from .cap_schedule import ScheduleError, Scheduler
+                else:
+                    from cap_schedule import ScheduleError, Scheduler
+                store = os.path.join(self.data_dir, 'schedule.json') \
+                    if getattr(self, 'data_dir', None) else os.path.join(ROOT, 'data', 'schedule.json')
+                try:
+                    agenda = Scheduler(store)
+                except ScheduleError as exc:
+                    raise BridgeError('Agenda ilegible: %s' % exc)
+                if action == 'schedule-add':
+                    jid = body.get('job_id')
+                    intervalo = body.get('interval_seconds')
+                    accion = body.get('action_name')
+                    if not isinstance(jid, str) or not isinstance(accion, str):
+                        raise BridgeError('job_id y action_name son obligatorios.')
+                    if type(intervalo) is not int:
+                        raise BridgeError('interval_seconds debe ser entero.')
+                    try:
+                        out = agenda.add(jid, intervalo, accion)
+                    except ScheduleError as exc:
+                        raise BridgeError(str(exc))
+                    self.receipt(action, 'success',
+                                 'Job %s cada %ds (accion %s). No se ejecuto nada.' % (jid, intervalo, accion))
+                    return self.public()
+                if action == 'schedule-list':
+                    self.receipt(action, 'success', 'Agenda leida: %d jobs.' % len(agenda.jobs()))
+                    return self.public()
+                # schedule-tick
+                if body.get('confirmed') is not True:
+                    raise BridgeError('schedule-tick exige confirmed=true: ejecuta acciones.')
+                recibos = agenda.tick({}, now=body.get('now') if type(body.get('now')) in (int, float) else None)
+                ejecutados = len([r for r in recibos if r.get('ok')])
+                self.receipt(action, 'success' if ejecutados or not recibos else 'warning',
+                             'Tick: %d vencidos, %d ejecutados, %d sin accion registrada.'
+                             % (len(recibos), ejecutados, len(recibos) - ejecutados))
+                return self.public()
             elif action == 'surface-load':
                 # T6: cualquier superficie observable -> el summary que el proveedor
                 # YA valida. No se inventa un source_kind: si la fuente no tiene uno
