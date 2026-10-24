@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "b5cb8aa7adf57c3c2791d9eabf5110234b2db94a72e64de4a54400370b7dc8b6"
+      "sha256": "7a9f9d97796068833cb2464ce6e35fe230dfc61b079e5290bb5745e6243ad632"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 89491,
-      "sha256": "429633bdb98ead3a94e802847fb267e7532ecab82574c35caa97602642fffbbd"
+      "bytes": 89625,
+      "sha256": "e550de5f0f086c3678fa82c433e04d1041ec28995d59e690a8b83b56ae0c4053"
     },
     {
       "path": "engine/cap_email.py",
@@ -978,6 +978,11 @@
       "path": "engine/org_design.py",
       "bytes": 86885,
       "sha256": "6c4bb2b0a69a37c771e0cf454487316bd42ca4b33d5922587cff1e82a24d7649"
+    },
+    {
+      "path": "engine/org_evidence.py",
+      "bytes": 4143,
+      "sha256": "861d86eab619be6bb7e843998ba7f2c020305000f2c80f83f9ba360132ec726f"
     },
     {
       "path": "engine/organization_design.py",
@@ -1938,6 +1943,11 @@
       "path": "tests_org_design_website.py",
       "bytes": 9727,
       "sha256": "036a6847a187286ba4954e06fb3f00496e070e4c9ee939816d93ed94b3b3cc5e"
+    },
+    {
+      "path": "tests_org_evidence.py",
+      "bytes": 2665,
+      "sha256": "40d1d10432fb4cdad53d7510c59d866e6b935eeaaac6dd9e7fad01ce3d14f62b"
     },
     {
       "path": "tests_platform_approval_receipt.py",
