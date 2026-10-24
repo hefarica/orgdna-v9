@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "73302c13325a7663b55f15f5674656df7943e91ce2e50874a58c11418ba5d33f"
+      "sha256": "16ed12c34d8ebf2b779cbce2934394c00989632054bce6ea851b70ebba976ed0"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 88775,
-      "sha256": "eb31b4a8c79390f06c71ad69596cbf43abe958d64a2b2f913d1a7d15e8020d39"
+      "bytes": 88976,
+      "sha256": "356b7f4e3ae2597fa1568090be91af0ad5de5366277cd04b5424c44bee9e33bb"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -763,6 +763,11 @@
       "path": "engine/dna.py",
       "bytes": 23821,
       "sha256": "b1a2cbdfb8647392f69d0e0e39ebcc0432db75dcffa107f7c5e1791dae923b0a"
+    },
+    {
+      "path": "engine/dna_extractor.py",
+      "bytes": 6410,
+      "sha256": "229933fe3176bd408bce8d449ba46694496c5b60ce32238f881fda874b8db0d6"
     },
     {
       "path": "engine/dsh_connection.py",
@@ -828,6 +833,11 @@
       "path": "engine/forge_loop.py",
       "bytes": 5402,
       "sha256": "6bd2f81164aecd2cab68e95c88bb69f2b1974325cb006598f5fa3093fb1982ae"
+    },
+    {
+      "path": "engine/fusion_engine.py",
+      "bytes": 5080,
+      "sha256": "801fe6ad6bfa240b7d8e04fdccc9a53d895b5a8ad12b45ca05f79495141cda61"
     },
     {
       "path": "engine/gang_assembly.py",
@@ -1063,6 +1073,11 @@
       "path": "engine/sources/web_driver.py",
       "bytes": 5632,
       "sha256": "0f89d36dc4f5fa02a0b2210ddcb8cf9fbbd4bb50ec8b389870af6e0f16892df6"
+    },
+    {
+      "path": "engine/specialist_generator.py",
+      "bytes": 5746,
+      "sha256": "711ed216b6db92792aa1750c55dc3d1bef0b0cc0f9d52e071da3d8887288d43c"
     },
     {
       "path": "engine/surface_summary.py",
@@ -1723,6 +1738,11 @@
       "path": "tests_cover_gates.py",
       "bytes": 4032,
       "sha256": "d287b84b710cbc7abc69db03a8f8da5ae01a509fecd4bcb1ee2afd9aa3d59e38"
+    },
+    {
+      "path": "tests_dna_fusion.py",
+      "bytes": 4438,
+      "sha256": "d72c890d4cd77f9d5c5d1ce5e943c5040c4d1217dcf3b607ef038b236fb73269"
     },
     {
       "path": "tests_dsh_launcher.py",

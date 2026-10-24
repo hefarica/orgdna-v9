@@ -82,6 +82,11 @@ RUNTIME_ALLOWLIST = (
     # 2026-10-23 · criterio 4 medido con comprobaciones falsificables + evidencia
     'engine/harness_adapter.py',
     'tests_harness_adapter.py',
+    # 2026-10-23 · ADN, especialistas y fusion con evidencia obligatoria
+    'engine/dna_extractor.py',
+    'engine/specialist_generator.py',
+    'engine/fusion_engine.py',
+    'tests_dna_fusion.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',
