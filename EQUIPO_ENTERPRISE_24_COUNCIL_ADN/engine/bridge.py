@@ -35,6 +35,7 @@ import sys
 import tempfile
 import threading
 import time
+from datetime import datetime, timezone
 import traceback
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -1968,7 +1969,6 @@ class BridgeState:
         self.has_manual_edits = bool(snapshot.get('has_manual_edits'))
         self.model_overrides = snapshot.get('model_overrides', {})
         self.models = models
-        self._save_model_catalog()
         self.verified_catalog_providers = set()
         self.analysis = snapshot.get('analysis')
         self.repo_inventory = snapshot.get('repo_inventory')
@@ -2550,6 +2550,7 @@ class BridgeState:
                     for row in normalized:
                         if row.get('available') is True:
                             self._record_model_account(dict(self.config, model=row['model']))
+                self._save_model_catalog()
                 self.receipt(action, 'success' if live else 'warning',
                     f'Catálogo {"de cuenta consultado" if live else "de referencia, sin verificar cuenta"}: {len(models)} modelos. No demuestra precio ni calidad.'
                     + (' Consulta AUTOMÁTICA al guardar la clave: solo lista modelos, no llama a diseño.' if auto else ''),
