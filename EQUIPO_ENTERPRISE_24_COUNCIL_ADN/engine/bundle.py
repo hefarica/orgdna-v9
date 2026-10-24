@@ -87,6 +87,9 @@ RUNTIME_ALLOWLIST = (
     'engine/specialist_generator.py',
     'engine/fusion_engine.py',
     'tests_dna_fusion.py',
+    # 2026-10-23 · fabrica de agentes con registro honesto de capacidades
+    'universal_agent_factory.py',
+    'tests_agent_factory.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',

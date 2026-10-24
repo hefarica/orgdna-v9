@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "16ed12c34d8ebf2b779cbce2934394c00989632054bce6ea851b70ebba976ed0"
+      "sha256": "fba1e3977fa5330e987e0533b70a18b9ab2edb0510cdeaa58afb7a17fbad542f"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 88976,
-      "sha256": "356b7f4e3ae2597fa1568090be91af0ad5de5366277cd04b5424c44bee9e33bb"
+      "bytes": 89115,
+      "sha256": "67b7aca8804902ff40994a628b139c3bfba670248b2be8034708b34a185fbe74"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1695,6 +1695,11 @@
       "sha256": "339979a43be3358c8376d0ec45fe32aaa372f6005fb6763b39d75e15defc09b9"
     },
     {
+      "path": "tests_agent_factory.py",
+      "bytes": 3688,
+      "sha256": "93989f448a5b1a6cb8e469675bf1bf45535aa060019f4ff3aa7cb3bc79815690"
+    },
+    {
       "path": "tests_agent_layer_contracts.py",
       "bytes": 11918,
       "sha256": "cc61feb9a5f102ef5b0659b7e74f56364df47363de6110da8067d5bb813680ff"
@@ -2063,6 +2068,11 @@
       "path": "tests_verification_limits.py",
       "bytes": 12053,
       "sha256": "fccb4d9bcb8f8ec5479fcc428386a0195652900fad5c4b90251b004e4be16a5e"
+    },
+    {
+      "path": "universal_agent_factory.py",
+      "bytes": 7761,
+      "sha256": "8fb631ad0e08b2a8b447c987003ad772e7a63d35363fe5dcc3675a69f8d8d0ff"
     },
     {
       "path": "validaciones/ESTADO_DEL_LIBRO.json",
