@@ -20,6 +20,7 @@ import heapq
 import http.client
 import ipaddress
 import json
+import os
 import math
 import re
 import socket
@@ -167,6 +168,25 @@ def _text(value, max_length=2000, allow_empty=False):
     return value
 
 
+def insecure_source(url):
+    """True si la fuente NO es https publico: texto claro o destino interno.
+
+    Se usa para AVISAR en recibo y consentimiento. El fetch se permite igual.
+    """
+    try:
+        parsed = _url(url)
+    except ProviderError:
+        return False
+    host = parsed.hostname or ""
+    interno = (host == "localhost" or host.endswith((".localhost", ".local", ".internal", ".test", ".invalid")))
+    try:
+        ipaddress.ip_address(host)
+        interno = True
+    except ValueError:
+        pass
+    return parsed.scheme != "https" or (parsed.port not in (None, 443)) or interno
+
+
 def _url(url):
     if not isinstance(url, str) or len(url) > 2048 or not url.isascii() or any(ord(c) < 33 for c in url):
         raise ProviderError("URL inválida.")
@@ -176,19 +196,33 @@ def _url(url):
     except ValueError:
         raise ProviderError("URL inválida.") from None
     host = parsed.hostname or ""
-    if (parsed.scheme != "https" or parsed.username or parsed.password or parsed.fragment
+    # POLITICA DE FUENTES. ORDEN DEL OPERADOR 2026-10-23: aceptar TODO, incluido
+    # http y puertos no estandar. Por defecto se acepta (ALLOW_INSECURE_SOURCES=1);
+    # ORGDNA_STRICT_SOURCE_URL=1 restaura el blindaje anterior.
+    #
+    # LO QUE ESTO CAMBIA, y no se calla:
+    #  - se permite texto claro (http) para la evidencia;
+    #  - se permiten localhost, IP literales y puertos internos: el contenido
+    #    obtenido se envia al proveedor externo en la solicitud de analisis.
+    # Por eso todo fetch marcado asi debe avisarse en el recibo y en la vista
+    # previa del consentimiento; nunca en silencio.
+    estricto = os.environ.get("ORGDNA_STRICT_SOURCE_URL", "0").strip() == "1"
+    if estricto and (parsed.scheme != "https" or parsed.username or parsed.password or parsed.fragment
             or port not in (None, 443) or not host or host.endswith(".")
             or not re.fullmatch(r"[a-zA-Z0-9.-]+", host)
             or "." not in host or not re.search(r"[A-Za-z]", host.rsplit(".", 1)[-1]) or "%" in parsed.netloc or "\\" in url):
         raise ProviderError("Solo endpoints HTTPS públicos, sin credenciales, fragmentos o puertos especiales.")
-    try:
-        ipaddress.ip_address(host)
-    except ValueError:
-        pass
-    else:
-        raise ProviderError("No se permiten endpoints por dirección IP.")
-    if host == "localhost" or host.endswith((".localhost", ".local", ".internal", ".test", ".invalid")):
-        raise ProviderError("El endpoint no es público.")
+    if estricto:
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ProviderError("No se permiten endpoints por dirección IP.")
+        if host == "localhost" or host.endswith((".localhost", ".local", ".internal", ".test", ".invalid")):
+            raise ProviderError("El endpoint no es público.")
+    if parsed.username or parsed.password or parsed.fragment or not host:
+        raise ProviderError("URL con credenciales, fragmento o host vacío.")
     if any(part in (".", "..") for part in unquote(parsed.path).split("/")) or "\\" in unquote(parsed.path):
         raise ProviderError("Ruta de endpoint inválida.")
     return parsed
