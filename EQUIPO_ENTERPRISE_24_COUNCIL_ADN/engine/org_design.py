@@ -1139,6 +1139,51 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
             progress("repairing_duplicate")
             return True
 
+        def _count_repair(request, receipt, diagnostic):
+            """SEGUNDA PASADA ACOTADA para conteo/forma: reemite UNA vez la solicitud.
+
+            DEFECTO MEDIDO: un solo campo con el numero de elementos equivocado
+            (p.ej. education != 2, o responsibilities fuera de 3..8) tumbaba el lote
+            entero con "Un campo no contiene el numero de elementos requerido", y los
+            perfiles ya pagados se perdian. Aqui se reemite la MISMA solicitud con una
+            instruccion que nombra SOLO el campo y los slots afectados, para que el
+            modelo lo complete. Acotada por REPAIRS_PER_REQUEST y por el techo de
+            solicitudes aprobado: no gasta nada que el operador no haya autorizado.
+            """
+            if request.get("_raw") or request.get("_repairs", 0) >= REPAIRS_PER_REQUEST:
+                return False
+            if audit["requests"] + 1 > expected["request_limit"]:
+                return False
+            details = diagnostic if isinstance(diagnostic, dict) else {}
+            campo = str(details.get("field") or "profile_specs")[:160]
+            slots = [slot for slot in (details.get("slots") or request.get("slots") or [])
+                     if type(slot) is int]
+            payload = copy.deepcopy(request["payload"])
+            payload["messages"].append({"role": "user", "content": (
+                "Repara SOLO el campo '%s' de los slots %s. Ese campo no contiene el "
+                "numero de elementos que exige el contrato: ajustalo a la CANTIDAD "
+                "exacta (por ejemplo education exactamente 2, experience 2..4, "
+                "responsibilities 3..8, skills 3..12, languages 1..4, "
+                "working_style 2..6, certifications 1..3, evidence_paths 1..12). "
+                "NO recortes ni rellenes ningun otro campo, no uses placeholders, "
+                "no repitas el mismo texto para llegar al minimo, y no anadas texto "
+                "fuera del JSON. Devuelve el MISMO objeto JSON completo del lote con "
+                "ese campo corregido." % (campo, slots))})
+            request2 = dict(request)
+            nonlocal next_index
+            next_index += 1
+            request2["index"] = next_index
+            request2["payload"] = payload
+            request2["payload_sha256"] = _digest(payload)
+            request2["payload_bytes"] = len(p._dump(payload).encode("utf-8"))
+            request2["_repairs"] = request.get("_repairs", 0) + 1
+            audit["repairs"] = audit.get("repairs", 0) + 1
+            audit["max_requests"] = expected["request_limit"]
+            receipt["status"] = "repaired_count"
+            queue.insert(0, request2)
+            progress("repairing_count")
+            return True
+
         def procesar(request, receipt, response):
             """Parsea UNA respuesta. True = validada; False = se encalo la continuacion."""
             nonlocal next_index
@@ -1156,6 +1201,12 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
             except DesignValidationError as exc:
                 diagnostic = getattr(exc, "diagnostic", None)
                 code = diagnostic.get("code") if isinstance(diagnostic, dict) else None
+                # SEGUNDA PASADA: los fallos de conteo/forma los completa el modelo
+                # antes de dar el lote por perdido. Va antes del split porque el
+                # conteo se arregla nombrando el campo, no partiendo el lote.
+                if code in ("invalid_count", "schema_fields", "missing_field", "invalid_text"):
+                    if _count_repair(request, receipt, diagnostic):
+                        return False
                 # AUTO-SPLIT: un lote de varios perfiles que trunca se parte en dos
                 # y se reemite dentro del techo aprobado (split_policy).
                 if code == "output_truncated" and len(request["slots"]) >= 2 and isinstance(split_ctx, dict) \
