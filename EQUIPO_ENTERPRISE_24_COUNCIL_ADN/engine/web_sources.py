@@ -6,6 +6,8 @@ transports are trusted fixtures only. Coverage never claims a whole website.
 from __future__ import annotations
 import copy
 import hashlib
+import os
+import subprocess
 import json
 import re
 import threading
@@ -129,12 +131,81 @@ def _embedded_text(html):
     return " ".join(partes)[:12000]
 
 
+# --- RENDER DE JAVASCRIPT (orden del operador 2026-10-23) ---------------------
+# Se ROMPE a proposito la promesa "solo HTML estatico": un SPA solo se entiende
+# ejecutando su JS. Se usa un NAVEGADOR YA INSTALADO en modo headless --dump-dom,
+# que devuelve el DOM ya poblado. No se instala nada de Python: el paquete sigue
+# siendo stdlib-only; el navegador es una dependencia de SISTEMA, declarada.
+#
+# Si no hay navegador, NO se finge: se devuelve el motivo y se mantiene el camino
+# estatico anterior.
+RENDER_JS = os.environ.get("ORGDNA_RENDER_JS", "1").strip() != "0"
+RENDER_TIMEOUT = 90
+RENDER_BUDGET_MS = 8000
+RENDER_MAX_BYTES = 4_000_000
+_NAVEGADORES = (
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    "/usr/bin/chromium", "/usr/bin/chromium-browser", "/usr/bin/google-chrome",
+)
+
+
+def navegador_disponible():
+    for ruta in _NAVEGADORES:
+        if os.path.isfile(ruta) and os.access(ruta, os.X_OK):
+            return ruta
+    return None
+
+
+def _render_dom(url, timeout=RENDER_TIMEOUT):
+    """Devuelve (html_bytes, nombre_navegador) o (None, motivo). Nunca silencioso."""
+    if not RENDER_JS:
+        return None, "render_desactivado_por_configuracion"
+    binario = navegador_disponible()
+    if binario is None:
+        return None, "sin_navegador_instalado"
+    orden = [binario, "--headless=new", "--disable-gpu", "--no-sandbox",
+             "--disable-dev-shm-usage", "--hide-scrollbars", "--disable-extensions",
+             "--virtual-time-budget=%d" % RENDER_BUDGET_MS, "--dump-dom", url]
+    try:
+        salida = subprocess.run(orden, capture_output=True, timeout=timeout, check=False)
+    except subprocess.TimeoutExpired:
+        return None, "render_timeout"
+    except OSError as exc:
+        return None, "render_no_ejecutable:%s" % type(exc).__name__
+    if salida.returncode != 0:
+        return None, "render_exit_%d" % salida.returncode
+    if not salida.stdout or len(salida.stdout) > RENDER_MAX_BYTES:
+        return None, "render_sin_salida" if not salida.stdout else "render_demasiado_grande"
+    nombre = os.path.basename(binario).lower().replace(".exe", "")
+    return salida.stdout, nombre
+
+
 def _extract(url, data):
     parser = _HTML()
     parser.feed(data.decode('utf-8', errors='replace'))
     text = ' '.join(parser.text)[:12000]
     usable = bool(len(text) >= 40 or parser.headings or parser.forms or parser.buttons or parser.inputs)
     embedded_only = False
+    rendered_js = False
+    render_nota = None
+    if not usable:
+        # 1) primero el render real: es lo que da contenido de verdad en un SPA
+        html_render, nota = _render_dom(url)
+        if html_render:
+            p2 = _HTML()
+            p2.feed(html_render.decode('utf-8', errors='replace'))
+            texto_render = ' '.join(p2.text)[:12000]
+            if len(texto_render) >= 40 or p2.headings or p2.forms or p2.buttons or p2.inputs:
+                parser = p2
+                text = texto_render
+                usable = True
+                rendered_js = True
+                render_nota = nota
+        else:
+            render_nota = nota
     if not usable:
         # Cascaron JS: antes de rendirse, la metadata y los datos embebidos.
         embebido = _embedded_text(data.decode('utf-8', errors='replace'))
@@ -148,7 +219,8 @@ def _extract(url, data):
             'links': parser.links, 'forms': parser.forms, 'buttons': parser.buttons[:100],
             'inputs': parser.inputs, 'roles': sorted(set(parser.roles)), 'text_excerpt': text,
             'content_status': 'usable_static_html' if usable else ('javascript_shell' if parser.scripts else 'no_usable_evidence'),
-            'javascript_rendered': False, 'embedded_only': embedded_only}
+            'javascript_rendered': rendered_js, 'embedded_only': embedded_only,
+            'render_engine': render_nota}
 
 
 def clear_cache():

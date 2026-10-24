@@ -103,6 +103,8 @@ RUNTIME_ALLOWLIST = (
     # 2026-10-23 · mide que se puede recuperar de una evidencia, y que no
     'engine/org_evidence.py',
     'tests_org_evidence.py',
+    # 2026-10-23 · render headless declarado
+    'tests_spa_render.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',
