@@ -854,6 +854,39 @@ def _validate_profile_shape(value, allowed_paths, slot):
     return copy.deepcopy(value)
 
 
+def _persist_partial(batch, request, normalization):
+    """Escribe a disco los perfiles VALIDOS de un lote parcial, antes de devolver.
+
+    Red de seguridad: si el lote es parcial (algun slot fallo), lo ya pagado no
+    puede evaporarse cuando el pipeline decida no continuar. Se guarda en data/,
+    que esta fuera del sello, y el fallo de escritura NO se traga: vuelve en el
+    propio resultado.
+    """
+    import datetime
+    import json as _json
+    import pathlib as _pathlib
+    destino = _pathlib.Path(__file__).resolve().parent.parent / "data" / "partial_profiles.json"
+    registro = {
+        "saved_at": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat(),
+        "slots": list(request.get("slots") or []),
+        "failed_slots": normalization.get("failed_slots") or [],
+        "valid_count": len(batch),
+        "profiles": batch,
+    }
+    try:
+        destino.parent.mkdir(parents=True, exist_ok=True)
+        previo = []
+        if destino.exists():
+            cargado = _json.loads(destino.read_text(encoding="utf-8"))
+            if isinstance(cargado, list):
+                previo = cargado
+        previo.append(registro)
+        destino.write_text(_json.dumps(previo, ensure_ascii=False, indent=1), encoding="utf-8")
+        return {"ok": True, "path": str(destino), "profiles": len(batch)}
+    except (OSError, ValueError) as exc:
+        return {"ok": False, "error": "%s: %s" % (type(exc).__name__, exc)}
+
+
 def _response(response, request, data):
     choices = response.get("choices")
     if not isinstance(choices, list) or len(choices) != 1 or not isinstance(choices[0], dict):
@@ -900,13 +933,25 @@ def _response(response, request, data):
     if not isinstance(specs, list) or len(specs) != len(request["slots"]):
         _invalid("invalid_count", "profile_specs")
     allowed = set(request.get("evidence_paths", _evidence_refs(data)))
+    # DEFECTO MEDIDO 2026-10-23: 11 perfiles validos se TIRARON porque el slot 12
+    # traia campos mal formados: el lote entero se descartaba y 306311 tokens
+    # quedaban sin artefacto. Ahora cada perfil se valida AISLADO: los validos se
+    # conservan, los huecos se declaran con slot/codigo/campo, y solo se aborta si
+    # NO paso ninguno.
     profiles = []
+    failed_slots = []
     for spec, slot in zip(specs, request["slots"]):
         try:
             profiles.append(_validate_profile_shape(spec, allowed, slot))
         except DesignValidationError as exc:
-            exc.diagnostic["profile_slot"] = slot
-            raise
+            failed_slots.append({
+                "slot": slot,
+                "code": str(exc.diagnostic.get("code") or "invalid_profile"),
+                "field": str(exc.diagnostic.get("field") or "")[:120],
+            })
+    if failed_slots and not profiles:
+        _invalid("all_profiles_invalid", "profile_specs",
+                 failed_slots=failed_slots[:8], failed_count=len(failed_slots))
     selection = value["model_selection"]
     _keys(selection, {"provider", "model", "rationale"}, {"provider", "model", "rationale"}, field="model_selection")
     if selection["provider"] != request["provider"] or selection["model"] != request["model"]:
@@ -914,7 +959,13 @@ def _response(response, request, data):
     _text(selection["rationale"], 1000, "model_selection.rationale")
     warnings = _list(value["warnings"], 0, 20, 1000, "warnings")
     usage = _usage(response)
-    return profiles, warnings, usage, {"outer_json_fence_removed": bool(fenced)}
+    audit = {"outer_json_fence_removed": bool(fenced)}
+    if failed_slots:
+        # El lote es PARCIAL: se devuelve lo valido y se declara exactamente que
+        # falta, para que el llamador repare solo esos slots y no repague todo.
+        audit["partial"] = True
+        audit["failed_slots"] = failed_slots
+    return profiles, warnings, usage, audit
 
 def _usage(response):
     raw = response.get("usage", {})
@@ -1099,6 +1150,9 @@ def design_with_llm(summary, provider, model, config, api_key, consent,
                     parse_response = copy.deepcopy(response)
                     parse_response["choices"][0]["message"]["content"] = request["_raw"] + parse_response["choices"][0]["message"]["content"]
                 batch, notes, usage, normalization = _response(parse_response, request, data)
+                if normalization.get("partial"):
+                    # No se pierde lo pagado: los validos van a disco YA.
+                    normalization["persist"] = _persist_partial(batch, request, normalization)
             except DesignValidationError as exc:
                 diagnostic = getattr(exc, "diagnostic", None)
                 code = diagnostic.get("code") if isinstance(diagnostic, dict) else None
