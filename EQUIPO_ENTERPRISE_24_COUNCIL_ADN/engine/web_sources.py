@@ -102,18 +102,53 @@ class _HTML(HTMLParser):
             if len(parts) < 30: parts.append(text)
 
 
+def _embedded_text(html):
+    """Texto REAL que un SPA deja escrito en el HTML: meta, og:*, JSON-LD, __NEXT_DATA__.
+
+    DEFECTO MEDIDO 2026-10-23 con https://pancakeswap.finance/: el HTML trae 36965
+    bytes y 28066 caracteres visibles, pero casi todo es CSS inline. El parser
+    ignora <style>, asi que quedaba "Home | PancakeSwap" (19 chars) ->
+    javascript_shell -> CERO evidencia, y el analisis se negaba. Un sitio moderno
+    entero quedaba fuera de la app.
+
+    NO renderiza JavaScript: extrae lo que ya esta escrito en el HTML. Es estatico
+    y citable, y su escasez se declara en coverage.limitations.
+    """
+    partes = []
+    for patron in (
+            r'<meta[^>]+name="description"[^>]+content="([^"]{20,})"',
+            r'<meta[^>]+property="og:(?:title|description)"[^>]+content="([^"]{10,})"',
+            r'<meta[^>]+name="keywords"[^>]+content="([^"]{10,})"',
+            r'<script[^>]+type="application/ld\+json"[^>]*>(.{40,}?)</script>',
+            r'<script[^>]+id="__NEXT_DATA__"[^>]*>(.{80,}?)</script>',
+            r'window\.__NUXT__\s*=\s*(.{80,}?);\s*</script>'):
+        for m in re.finditer(patron, html, re.S | re.I):
+            trozo = re.sub(r"\s+", " ", m.group(1)).strip()
+            if trozo:
+                partes.append(trozo[:4000])
+    return " ".join(partes)[:12000]
+
+
 def _extract(url, data):
     parser = _HTML()
     parser.feed(data.decode('utf-8', errors='replace'))
     text = ' '.join(parser.text)[:12000]
     usable = bool(len(text) >= 40 or parser.headings or parser.forms or parser.buttons or parser.inputs)
+    embedded_only = False
+    if not usable:
+        # Cascaron JS: antes de rendirse, la metadata y los datos embebidos.
+        embebido = _embedded_text(data.decode('utf-8', errors='replace'))
+        if len(embebido) >= 40:
+            text = embebido
+            usable = True
+            embedded_only = True
     return {'url': url, 'fetched_at': datetime.now(timezone.utc).isoformat(),
             'sha256': hashlib.sha256(data).hexdigest(), 'byte_count': len(data),
             'title': ' '.join(parser.title)[:500], 'headings': parser.headings[:100],
             'links': parser.links, 'forms': parser.forms, 'buttons': parser.buttons[:100],
             'inputs': parser.inputs, 'roles': sorted(set(parser.roles)), 'text_excerpt': text,
             'content_status': 'usable_static_html' if usable else ('javascript_shell' if parser.scripts else 'no_usable_evidence'),
-            'javascript_rendered': False}
+            'javascript_rendered': False, 'embedded_only': embedded_only}
 
 
 def clear_cache():
