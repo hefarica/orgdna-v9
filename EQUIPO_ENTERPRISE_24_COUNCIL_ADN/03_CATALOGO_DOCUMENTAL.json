@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "fba1e3977fa5330e987e0533b70a18b9ab2edb0510cdeaa58afb7a17fbad542f"
+      "sha256": "96dda3fd324f1d2ecf4064044394ae86e50d813e43e2bc2f8a6040f6407dacb8"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -1696,8 +1696,8 @@
     },
     {
       "path": "tests_agent_factory.py",
-      "bytes": 3688,
-      "sha256": "93989f448a5b1a6cb8e469675bf1bf45535aa060019f4ff3aa7cb3bc79815690"
+      "bytes": 5341,
+      "sha256": "a564c192fec6cad66ae28b99e7b1dff002585194aa3b76ece3d8d78d85c733bb"
     },
     {
       "path": "tests_agent_layer_contracts.py",
@@ -2071,8 +2071,8 @@
     },
     {
       "path": "universal_agent_factory.py",
-      "bytes": 7761,
-      "sha256": "8fb631ad0e08b2a8b447c987003ad772e7a63d35363fe5dcc3675a69f8d8d0ff"
+      "bytes": 10933,
+      "sha256": "ad8ecada557487c470f3338c4ea541ec17133fc5ff8e64bac93c4f705ebed823"
     },
     {
       "path": "validaciones/ESTADO_DEL_LIBRO.json",

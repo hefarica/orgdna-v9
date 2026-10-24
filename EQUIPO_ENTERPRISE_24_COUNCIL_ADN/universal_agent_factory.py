@@ -88,14 +88,76 @@ class OperatorParams:
             raise FactoryError("max_agents debe ser 1..%d (MAX_AGENTS)" % MAX_AGENTS)
 
 
+# --- Fuentes REALES anadidas: HuggingFace (metadata publica) y archivo local ---
+# Ambas devuelven (source_id, tipo, rutas_citables, texto). Las rutas son lo que se
+# FETCHEO de verdad: son las unicas que el ADN puede citar.
+
+HF_API = "https://huggingface.co/api/models/%s"
+HF_RAW = "https://huggingface.co/%s/raw/main/%s"
+
+
+def fetch_huggingface(model_id: str, timeout: int = 20):
+    """Metadata publica + README. Sin token: solo superficie publica."""
+    import urllib.error
+    import urllib.request
+
+    mid = model_id.strip().strip("/").replace("https://huggingface.co/", "")
+    if not mid:
+        raise FactoryError("model_id vacio")
+    rutas, textos = [], []
+    api = HF_API % mid
+    try:
+        req = urllib.request.Request(api, headers={"User-Agent": "OrgDNA-REA/1.0",
+                                                  "Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            meta = json.loads(r.read().decode("utf-8", "replace"))
+        rutas.append(api)
+        textos.append(json.dumps(meta, ensure_ascii=False)[:20000])
+    except (urllib.error.URLError, OSError, ValueError) as exc:
+        raise FactoryError("no se pudo leer la metadata de %s: %s" % (mid, exc))
+
+    for archivo in ("README.md", "config.json"):
+        url = HF_RAW % (mid, archivo)
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "OrgDNA-REA/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                textos.append("=== %s ===\n%s" % (archivo, r.read().decode("utf-8", "replace")[:20000]))
+            rutas.append(url)
+        except (urllib.error.URLError, OSError, ValueError):
+            continue
+    return "hf:" + mid, "huggingface", tuple(rutas), "\n\n".join(textos)
+
+
+def fetch_file(path: str, limite: int = 200000):
+    """Archivo local de texto. La ruta citada es la ruta real en disco."""
+    import os
+    if not os.path.isfile(path):
+        raise FactoryError("no es un archivo: %s" % path)
+    try:
+        with open(path, "rb") as fh:
+            datos = fh.read(limite)
+    except OSError as exc:
+        raise FactoryError("no se pudo leer %s: %s" % (path, exc))
+    texto = datos.decode("utf-8", "replace")
+    if not texto.strip():
+        raise FactoryError("%s no tiene texto utilizable" % path)
+    return "file:" + os.path.abspath(path), "file", (os.path.abspath(path),), texto
+
+
 def driver_para(target: str):
     t = target.strip()
+    # ORDEN importa: HF y archivo se resuelven ANTES que las ramas genericas http,
+    # o huggingface.co caeria en 'web' y se scrappearia la pagina en vez de usar su API.
+    if t.startswith("hf:") or "huggingface.co/" in t:
+        return None, "huggingface"
     if t.startswith(("http://", "https://")) and ("github.com" in t or "gitlab.com" in t or t.endswith(".git")):
         return GitDriver(), "git"
-    if t.startswith(("http://", "https://")):
-        return WebDriver(), "web"
     if os.path.isdir(t):
         return GitDriver(), "git"
+    if os.path.isfile(t):
+        return None, "file"
+    if t.startswith(("http://", "https://")):
+        return WebDriver(), "web"
     raise FactoryError(
         "fuente no soportada: %s. Hoy hay evidencia real para git y web estatica; "
         "blockchain/binario/API no tienen source_kind en la allowlist del proveedor." % t)
@@ -127,12 +189,25 @@ def build(params: OperatorParams, llm: Callable[[str], str],
     adns, especialistas = [], []
     for d in params.domains:
         driver, tipo = driver_para(d)
-        superficie = driver.scan_surface(d)
-        rutas = set(superficie.raw.get("paths") or [])
+        if tipo == "huggingface":
+            sid, stipo, rutas, texto = fetch_huggingface(d)
+        elif tipo == "file":
+            sid, stipo, rutas, texto = fetch_file(d)
+        else:
+            superficie = driver.scan_surface(d)
+            rutas = tuple(superficie.raw.get("paths") or ())
+            sid, stipo, texto = superficie.source_id, superficie.source_type.value, \
+                " ".join(sorted(rutas)[:200])
         if not rutas:
             raise FactoryError(
                 "%s: la superficie no expone rutas citables; no se puede exigir evidencia" % d)
-        adn = extract(superficie, rutas, llm, surface_text=" ".join(sorted(rutas)[:200]))
+
+        class _S:
+            pass
+        sup = _S()
+        sup.source_id = sid
+        sup.source_type = type("T", (), {"value": stipo})
+        adn = extract(sup, rutas, llm, surface_text=texto)
         adns.append(adn)
         for _ in range(max(1, per_specialist)):
             especialistas.append(generate(adn, llm))

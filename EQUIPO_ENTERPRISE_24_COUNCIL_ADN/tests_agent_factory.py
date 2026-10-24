@@ -4,7 +4,8 @@ import os
 import unittest
 
 from universal_agent_factory import (CAPABILITIES, FactoryError, OperatorParams,
-                                     absent, available, build, driver_para, plan)
+                                     absent, available, build, driver_para,
+                                     fetch_file, fetch_huggingface, plan)
 from engine.limits import MAX_AGENTS
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -89,6 +90,40 @@ class BuildTests(unittest.TestCase):
     def test_no_excede_max_agents(self):
         r = build(OperatorParams(domains=(AQUI,), max_agents=3), llm_que_cita)
         self.assertLessEqual(r["especialistas_usados"], 3)
+
+
+class FuentesRealesTests(unittest.TestCase):
+    def test_hf_se_detecta_ANTES_que_web(self):
+        # si el orden se invierte, huggingface.co cae en 'web' y se scrappea la
+        # pagina en vez de usar su API. Este test fija ese orden.
+        self.assertEqual(driver_para("https://huggingface.co/microsoft/DialoGPT-medium")[1],
+                         "huggingface")
+        self.assertEqual(driver_para("hf:microsoft/DialoGPT-medium")[1], "huggingface")
+        self.assertEqual(driver_para("https://example.com")[1], "web")
+
+    def test_archivo_se_detecta_antes_que_git(self):
+        self.assertEqual(driver_para(os.path.join(AQUI, "universal_agent_factory.py"))[1], "file")
+
+    def test_fetch_file_devuelve_ruta_real(self):
+        ruta = os.path.join(AQUI, "universal_agent_factory.py")
+        sid, tipo, rutas, texto = fetch_file(ruta)
+        self.assertEqual(tipo, "file")
+        self.assertEqual(rutas, (os.path.abspath(ruta),))
+        self.assertIn("CAPABILITIES", texto)
+
+    def test_fetch_file_rechaza_inexistente(self):
+        with self.assertRaises(FactoryError):
+            fetch_file(os.path.join(AQUI, "no_existe_jamas.txt"))
+
+    def test_fetch_hf_rechaza_vacio(self):
+        with self.assertRaises(FactoryError):
+            fetch_huggingface("")
+
+    def test_build_desde_archivo_local(self):
+        r = build(OperatorParams(domains=(os.path.join(AQUI, "universal_agent_factory.py"),),
+                                 max_agents=4), llm_que_cita)
+        self.assertEqual(r["adns"], 1)
+        self.assertGreaterEqual(r["cobertura_verificada"], 1)
 
 
 if __name__ == "__main__":
