@@ -5,7 +5,8 @@ import unittest
 
 from universal_agent_factory import (CAPABILITIES, FactoryError, OperatorParams,
                                      absent, available, build, driver_para,
-                                     fetch_file, fetch_huggingface, plan)
+                                     fetch_file, fetch_huggingface,
+                                     needs_credentials, plan)
 from engine.limits import MAX_AGENTS
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
@@ -28,17 +29,28 @@ class RegistroTests(unittest.TestCase):
     def test_catorce_declaradas(self):
         self.assertEqual(len(CAPABILITIES), 14)
 
-    def test_solo_cuatro_implementadas(self):
-        self.assertEqual(set(available()), {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE"})
+    def test_cinco_implementadas(self):
+        self.assertEqual(set(available()),
+                         {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE"})
 
-    def test_nueve_ausentes_con_bloqueo(self):
-        self.assertEqual(len(absent()), 9)
+    def test_seis_ausentes_con_bloqueo(self):
+        self.assertEqual(len(absent()), 6)
         for n in absent():
             self.assertTrue(CAPABILITIES[n]["blocker"], n)
 
-    def test_schedule_declarado_ausente_no_vendido(self):
-        # el producto ya declara "el llamador no existe": no se puede vender activo
-        self.assertEqual(CAPABILITIES["SCHEDULE"]["status"], "declared_absent")
+    def test_schedule_implementado_pero_sin_llamador(self):
+        # el modulo existe (stdlib), pero NO corre solo: el bloqueo se declara
+        self.assertEqual(CAPABILITIES["SCHEDULE"]["status"], "implemented")
+        self.assertIn("SIN llamador", CAPABILITIES["SCHEDULE"]["blocker"])
+
+    def test_email_y_web_login_exigen_credencial(self):
+        self.assertEqual(set(needs_credentials()), {"EMAIL", "WEB_LOGIN"})
+        for n in needs_credentials():
+            self.assertTrue(CAPABILITIES[n]["module"].startswith("engine.cap_"))
+
+    def test_ocr_sigue_ausente_por_falta_de_motor(self):
+        self.assertEqual(CAPABILITIES["OCR"]["status"], "declared_absent")
+        self.assertIn("OCR", CAPABILITIES["OCR"]["blocker"])
 
     def test_excel_parcial_por_com_no_ejercitado(self):
         self.assertEqual(CAPABILITIES["EXCEL"]["status"], "partial")

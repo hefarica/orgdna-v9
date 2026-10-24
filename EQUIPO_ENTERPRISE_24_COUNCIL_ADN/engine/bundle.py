@@ -90,6 +90,11 @@ RUNTIME_ALLOWLIST = (
     # 2026-10-23 · fabrica de agentes con registro honesto de capacidades
     'universal_agent_factory.py',
     'tests_agent_factory.py',
+    # 2026-10-23 · capacidades stdlib reales: schedule, email, web login
+    'engine/cap_schedule.py',
+    'engine/cap_email.py',
+    'engine/cap_web_login.py',
+    'tests_capabilities_real.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',

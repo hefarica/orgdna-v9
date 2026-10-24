@@ -44,12 +44,15 @@ CAPABILITIES: Dict[str, Mapping[str, str]] = {
     "MICROSERVICE":{"status": "implemented", "module": "engine.bridge (HTTP loopback, CSRF)"},
     "EXCEL":       {"status": "partial", "module": "engine.bridge excel_call",
                     "blocker": "adaptador COM real NO ejercitado; solo doble de prueba"},
-    "WEB_LOGIN":   {"status": "declared_absent", "module": "-",
-                    "blocker": "no hay paso de credenciales; no se autentica"},
+    "WEB_LOGIN":   {"status": "implemented_requires_credentials",
+                    "module": "engine.cap_web_login (stdlib urllib + cookies)",
+                    "blocker": "requiere login_url, username_field, password_field; "
+                               "solo formularios HTML sin JS"},
     "OCR":         {"status": "declared_absent", "module": "-",
                     "blocker": "no hay motor OCR en dependencias (stdlib-only)"},
-    "EMAIL":       {"status": "declared_absent", "module": "-",
-                    "blocker": "sin IMAP/SMTP configurado ni credencial"},
+    "EMAIL":       {"status": "implemented_requires_credentials",
+                    "module": "engine.cap_email (stdlib imaplib, solo lectura)",
+                    "blocker": "requiere imap_server, username, password; no envia correo"},
     "WHATSAPP":    {"status": "declared_absent", "module": "-",
                     "blocker": "requiere WhatsApp Business API y token"},
     "TELEGRAM":    {"status": "declared_absent", "module": "-",
@@ -60,13 +63,19 @@ CAPABILITIES: Dict[str, Mapping[str, str]] = {
                     "blocker": "sin libreria de documentos"},
     "OBSIDIAN":    {"status": "declared_absent", "module": "-",
                     "blocker": "no hay ruta de vault configurada"},
-    "SCHEDULE":    {"status": "declared_absent", "module": "engine.scheduler (existe, sin cablear)",
-                    "blocker": "nada lo invoca: no hay disparador en produccion"},
+    "SCHEDULE":    {"status": "implemented",
+                    "module": "engine.cap_schedule (stdlib threading + JSON)",
+                    "blocker": "expone tick(now); SIN llamador en produccion, no corre solo"},
 }
 
 
 def available() -> Tuple[str, ...]:
     return tuple(n for n, v in CAPABILITIES.items() if v["status"] == "implemented")
+
+
+def needs_credentials() -> Tuple[str, ...]:
+    return tuple(n for n, v in CAPABILITIES.items()
+                 if v["status"] == "implemented_requires_credentials")
 
 
 def absent() -> Tuple[str, ...]:
@@ -228,8 +237,9 @@ def build(params: OperatorParams, llm: Callable[[str], str],
 
 if __name__ == "__main__":
     assert len(CAPABILITIES) == 14
-    assert set(available()) == {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE"}
-    assert "SCHEDULE" in absent()
+    assert set(available()) == {"REA", "FUSILAR", "SCRAPE", "MICROSERVICE", "SCHEDULE"}
+    assert set(needs_credentials()) == {"EMAIL", "WEB_LOGIN"}
+    assert "OCR" in absent()
     assert CAPABILITIES["EXCEL"]["status"] == "partial"
 
     p = plan(OperatorParams(domains=("https://github.com/hefarica/arbitragex-v2",), max_agents=12))
@@ -245,4 +255,4 @@ if __name__ == "__main__":
         raise SystemExit("FALLO: blockchain debio declararse no soportado")
     except FactoryError as e:
         assert "allowlist" in str(e)
-    print("OK agent_factory: 4 implementadas / 1 parcial / 9 ausentes declaradas, plan sin gasto")
+    print("OK agent_factory: 5 implementadas / 2 con credencial / 1 parcial / 6 ausentes")

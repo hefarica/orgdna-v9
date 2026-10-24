@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "96dda3fd324f1d2ecf4064044394ae86e50d813e43e2bc2f8a6040f6407dacb8"
+      "sha256": "639dd07b374a130bb7be09e8b52a958c6a9e1d61aa8cc85b429eb9f071fe7b27"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,23 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 89115,
-      "sha256": "67b7aca8804902ff40994a628b139c3bfba670248b2be8034708b34a185fbe74"
+      "bytes": 89311,
+      "sha256": "2de090cdba1d988c5e88ad9ae444b685f735acadae9557c65f5179af10df33f2"
+    },
+    {
+      "path": "engine/cap_email.py",
+      "bytes": 3353,
+      "sha256": "5a103e68b59009ab1eef54c4704cf65fa0160fb58a0eae7e85c86323de226c8f"
+    },
+    {
+      "path": "engine/cap_schedule.py",
+      "bytes": 5322,
+      "sha256": "bd5153d805e1ead194eda346b0ab6f2d75424ccad2a90adc97035e1185758769"
+    },
+    {
+      "path": "engine/cap_web_login.py",
+      "bytes": 4157,
+      "sha256": "ce4be7964020aad8356bfd6f1b477cad9c82e5b568e5070439e1867f97280abe"
     },
     {
       "path": "engine/capability_deployment.py",
@@ -1696,8 +1711,8 @@
     },
     {
       "path": "tests_agent_factory.py",
-      "bytes": 5341,
-      "sha256": "a564c192fec6cad66ae28b99e7b1dff002585194aa3b76ece3d8d78d85c733bb"
+      "bytes": 5940,
+      "sha256": "e97aeb1e009d774824875b6e45193c6af42d3ebfca1c0a0ddeacbd6299151d80"
     },
     {
       "path": "tests_agent_layer_contracts.py",
@@ -1713,6 +1728,11 @@
       "path": "tests_bridge.py",
       "bytes": 17481,
       "sha256": "4563e0483cdd2fa81ad1b47221c110808f73a96185ade37363bbcf2d7024d8bd"
+    },
+    {
+      "path": "tests_capabilities_real.py",
+      "bytes": 4305,
+      "sha256": "4981f304bf4706f72cf2309446628b2b3387f7c48b2204abe5331173e26b334b"
     },
     {
       "path": "tests_capability_deployment.py",
@@ -2071,8 +2091,8 @@
     },
     {
       "path": "universal_agent_factory.py",
-      "bytes": 10933,
-      "sha256": "ad8ecada557487c470f3338c4ea541ec17133fc5ff8e64bac93c4f705ebed823"
+      "bytes": 11451,
+      "sha256": "105c1d80f748ab5ded3dbc998de4fb76f372f15e6c3125da701baecad63be0c5"
     },
     {
       "path": "validaciones/ESTADO_DEL_LIBRO.json",
