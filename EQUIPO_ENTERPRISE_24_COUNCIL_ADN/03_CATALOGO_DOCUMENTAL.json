@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "8a744fde8b4931b023a20e3602370a654cb7d7cf28166b91bb1bb6890b8e1924"
+      "sha256": "712fab3bb09f23e4ab184094e23f6ec5b60f38fed63f6ee5680c10f6e85d3238"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -1191,8 +1191,8 @@
     },
     {
       "path": "engine/web_sources.py",
-      "bytes": 56491,
-      "sha256": "89ea96ad52a4bbb8a811283b8930aee5c967b4e3ed1a084e42df8b219d9f81b8"
+      "bytes": 63059,
+      "sha256": "5450243d9e91e0bf342e3672164d1c27ede69b7afa9955a75250aa2fac79e6ae"
     },
     {
       "path": "extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json",
@@ -2051,8 +2051,8 @@
     },
     {
       "path": "tests_spa_data.py",
-      "bytes": 15187,
-      "sha256": "1e515f99830f4663ab8bb042fe1df1c295227f6abe3c13f54c126e585441b338"
+      "bytes": 20344,
+      "sha256": "bec5d16a88d66d3fad86fc486502da10393e4353949ce97dcd82f439619e8029"
     },
     {
       "path": "tests_spa_render.py",
@@ -2161,13 +2161,13 @@
     },
     {
       "path": "web/index.html",
-      "bytes": 107888,
-      "sha256": "3e068785725c2c8cab667a2de5f16b9fd555c7b24dfb99a86d1f2ee2e7428938"
+      "bytes": 107519,
+      "sha256": "d1da94c91f2eb332d61f92c20fdca0ddb583069d7e99c640d5ab2d51c3fe828e"
     },
     {
       "path": "web/style.css",
-      "bytes": 44801,
-      "sha256": "2aeea36e7647cec444ae2fcdd3920b17fa3155438f68fdde59f2904fc59bcd4e"
+      "bytes": 45420,
+      "sha256": "c608cbad92354e02983094cff487f061fef1b769746de3b745708d43e53ad885"
     },
     {
       "path": "workbook/sheet_ranges.json",

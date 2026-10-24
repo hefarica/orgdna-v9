@@ -48,3 +48,14 @@
 #council .sandbox-code, #council .sandbox-output { max-height: 220px; overflow: auto; font-size: 12px; line-height: 1.45; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #f7f8f5; }
 #council .sandbox-run { border-left: 3px solid #2e9e5b; }
 #council .sandbox-run[data-status="failed"], #council .sandbox-run[data-status="timeout"] { border-left-color: #d33; }
+
+/* movido desde <style> inline de index.html: style-src 'self' lo bloqueaba */
+.gang-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-top:6px}
+.gang-chip{border:1px solid var(--border,#c9ccd4);border-radius:8px;padding:6px 8px;font-size:11px;line-height:1.35}
+.gang-chip .gang-id{font-weight:600}
+.gang-chip .gang-st{font-size:10px}
+.gang-cola{opacity:.55}
+.gang-construyendo{border-color:var(--accent,#3b82f6)}
+.gang-continuando{border-color:#f59e0b}
+.gang-listo{border-color:#2e9e5b}
+.gang-fallo{border-color:#d33}
