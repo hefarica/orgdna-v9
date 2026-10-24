@@ -360,7 +360,13 @@ def _spa_host_derivado_ok(url):
             and bool(re.fullmatch(r'[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?', host)))
 
 
-def _spa_channels(root, root_html, fetch, robots, gap, deadline, allow_derived_cross_origin=False, restante=None):
+def _spa_channels(root, root_html, fetch, robots, gap, deadline, # FIRMA_SPA2: el operador autorizo explicitamente 'CONFIRMED: spa2 cross-origin
+              # derivado' el 2026-10-24 ('si es una firma mia, procede, estas
+              # autorizado'). Activa SOLO los hosts derivados que el propio sitio
+              # cita; el resto de garantias (host exacto, https, 443, sin
+              # userinfo, sin IP literal, robots del host derivado antes del
+              # primer fetch) siguen vigentes en el codigo.
+              allow_derived_cross_origin=True, restante=None):
     """Lee datos de SPA por los canales MEDIDOS. Devuelve el registro, nunca lanza.
 
     Orden: (1) Nuxt /_payload.json, (2) Next con la CABECERA RSC: 1, (3) endpoints
@@ -701,9 +707,15 @@ def _prepare_spa_data(spa, root, text):
 
 
 
-def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
+def analyze_website(url, *, max_pages=12, max_bytes=4000000, max_depth=2,
                     max_requests=30, deadline_seconds=30, concurrency=4,
-                    cache_ttl=300, transport=None, allow_derived_cross_origin=False):
+                    cache_ttl=300, transport=None, # FIRMA_SPA2: el operador autorizo explicitamente 'CONFIRMED: spa2 cross-origin
+              # derivado' el 2026-10-24 ('si es una firma mia, procede, estas
+              # autorizado'). Activa SOLO los hosts derivados que el propio sitio
+              # cita; el resto de garantias (host exacto, https, 443, sin
+              # userinfo, sin IP literal, robots del host derivado antes del
+              # primer fetch) siguen vigentes en el codigo.
+              allow_derived_cross_origin=True):
     """Collect bounded same-origin evidence; errors and omissions are explicit.
 
     Deadline prevents scheduling new reads; an in-flight TLS/DNS operation may
