@@ -227,13 +227,492 @@ def clear_cache():
     with _CACHE_LOCK: _CACHE.clear()
 
 
+# --- CANALES DE DATOS DE SPA, SIN JAVASCRIPT (medidos en t16, contrato de t17) --
+# Un SPA moderno suele exponer sus datos sin ejecutar JS, por tres canales que se
+# midieron de verdad: Nuxt 3 sirve /_payload.json; el App Router de Next sirve el
+# arbol flight cuando la peticion lleva la CABECERA RSC: 1; y los propios bundles
+# .js del sitio citan endpoints JSON que no hay que adivinar.
+#
+# NO se implementa /_next/data/<buildId>/<ruta>.json: t16 lo midio MUERTO en
+# pancakeswap (HTTP 200 con content-type text/html y el cuerpo del shell). Un 200
+# enganya: aqui se valida el CUERPO, nunca el codigo de estado (trampa T1).
+#
+# Filtrar solo por application/json descarta el canal RSC (text/x-component): la
+# lista blanca incluye ambos (trampa T2).
+#
+# Esta via es ADICIONAL y estatica: no toca el render headless existente, no
+# descarga navegador, no envia credenciales y no ejecuta el payload.
+SPA_CAPS = {
+    'payload_max_bytes': 8 * 1024 * 1024, 'payload_timeout': 25,
+    'bundle_max_bytes': 4 * 1024 * 1024, 'bundle_timeout': 20,
+    'max_bundles': 30, 'max_bundle_bytes': 30 * 1024 * 1024,
+    'derived_max_bytes': 8 * 1024 * 1024, 'derived_timeout': 25,
+    'max_derived': 8, 'robots_max_bytes': 64 * 1024, 'robots_timeout': 10,
+    'max_requests': 35, 'max_bytes': 40 * 1024 * 1024,
+    'min_payload_bytes': 1024,
+}
+SPA_CONTENT_TYPES = ('application/json', 'text/x-component')
+SPA_CROSS_ORIGIN_MARK = 'CONFIRMED: spa2 cross-origin derivado'
+SPA_NUXT_MARKS = (b'__NUXT_DATA__', b'window.__NUXT__', b'/_payload.json', b'/_nuxt/')
+SPA_NEXT_MARKS = (b'__NEXT_DATA__', b'self.__next_f', b'/_next/static/')
+SPA_ASSET_SUFFIXES = ('.js', '.mjs', '.css', '.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp',
+                      '.woff', '.woff2', '.ttf', '.ico', '.map', '.wasm', '.avif', '.mp4', '.json.license')
+_SPA_ABS_URL = re.compile(r'https://([A-Za-z0-9](?:[A-Za-z0-9.-]{0,61}[A-Za-z0-9])?)/[A-Za-z0-9._~%\-/]{1,200}')
+_SPA_REL_JSON = re.compile(r'["\'(](/(?:[A-Za-z0-9._~%\-]+/)*[A-Za-z0-9._~%\-]+\.json)["\')]')
+_SPA_SCRIPT_SRC = re.compile(rb'<script[^>]+src=["\']([^"\']{1,500})["\']', re.I)
+_SPA_FLIGHT_LINE = re.compile(rb'^[0-9a-fA-F]{1,8}:')
+
+
+def _spa_shell_body(data):
+    """T1: un cuerpo que empieza por '<' es el shell, con cualquier content-type."""
+    return data[:512].lstrip().lower().startswith(b'<')
+
+
+def _spa_json_body(data):
+    """Validador del canal JSON: no shell, parsea, raiz contenedor, tamano minimo.
+
+    El orden importa: T1 dice que el shell se descarta SIEMPRE, con cualquier mime
+    y cualquier tamano; el tamano minimo es una condicion posterior.
+    """
+    if _spa_shell_body(data):
+        return False, 'shell_body'
+    if len(data) < SPA_CAPS['min_payload_bytes']:
+        return False, 'payload_too_small'
+    try:
+        value = json.loads(data.decode('utf-8'))
+    except (UnicodeDecodeError, ValueError):
+        return False, 'invalid_json'
+    if not isinstance(value, (dict, list)):
+        return False, 'json_root_not_container'
+    return True, 'ok'
+
+
+def _spa_flight_body(data):
+    """Validador del canal RSC/flight: no shell, lineas id:payload con referencias $."""
+    if _spa_shell_body(data):
+        return False, 'shell_body'
+    if len(data) < SPA_CAPS['min_payload_bytes']:
+        return False, 'payload_too_small'
+    if not any(_SPA_FLIGHT_LINE.match(line) for line in data.splitlines()[:2000]):
+        return False, 'not_flight_stream'
+    if b'$' not in data[:400000]:
+        return False, 'flight_without_refs'
+    return True, 'ok'
+
+
+def _spa_text(data, channel):
+    """Texto citable del payload. Se DESERIALIZA; jamas se ejecuta (X6)."""
+    if channel == 'next_rsc':
+        return data.decode('utf-8', errors='replace')[:12000]
+    try:
+        return json.dumps(json.loads(data.decode('utf-8')), ensure_ascii=False)[:12000]
+    except (UnicodeDecodeError, ValueError):
+        return data.decode('utf-8', errors='replace')[:12000]
+
+
+def _spa_content_type(headers):
+    return str(headers.get('content-type', '')).split(';')[0].strip().lower()
+
+
+def _spa_spa_markers(html):
+    """Deteccion barata y sin red: que canales son PLAUSIBLES para este HTML."""
+    found = {'nuxt': any(mark in html for mark in SPA_NUXT_MARKS),
+             'next': any(mark in html for mark in SPA_NEXT_MARKS)}
+    bundles = []
+    for raw in _SPA_SCRIPT_SRC.findall(html)[:120]:
+        try:
+            src = raw.decode('utf-8', errors='replace')
+        except Exception:
+            continue
+        if '/_next/static/' in src or '/_nuxt/' in src or re.search(r'/static/js/[^/]+\.js$', src):
+            bundles.append(src)
+    found['spa_bundles'] = bundles[:SPA_CAPS['max_bundles']]
+    return found
+
+
+def _spa_derived_candidates(text):
+    """URLs de datos que el bundle CITA (no se inventa ninguna: X4)."""
+    origin_less = []
+    for match in _SPA_REL_JSON.finditer(text):
+        origin_less.append(('relativo', match.group(1)))
+    for match in _SPA_ABS_URL.finditer(text):
+        host = match.group(1).lower()
+        if re.fullmatch(r'\d+\.\d+\.\d+\.\d+', host):
+            continue
+        url = match.group(0)
+        if url.lower().endswith(SPA_ASSET_SUFFIXES):
+            continue
+        origin_less.append(('absoluto', url))
+    return origin_less
+
+
+def _spa_host_derivado_ok(url):
+    """E1.2: hostname exacto, HTTPS, puerto 443, sin userinfo, sin IP literal."""
+    try:
+        parsed = urlsplit(url)
+        port = parsed.port
+    except ValueError:
+        return False
+    host = parsed.hostname or ''
+    return (parsed.scheme == 'https' and bool(host) and '/' not in host and port in (None, 443)
+            and not parsed.username and not parsed.password
+            and not re.fullmatch(r'\d+\.\d+\.\d+\.\d+', host)
+            and bool(re.fullmatch(r'[a-z0-9]([a-z0-9.-]{0,251}[a-z0-9])?', host)))
+
+
+def _spa_channels(root, root_html, fetch, robots, gap, deadline, allow_derived_cross_origin=False, restante=None):
+    """Lee datos de SPA por los canales MEDIDOS. Devuelve el registro, nunca lanza.
+
+    Orden: (1) Nuxt /_payload.json, (2) Next con la CABECERA RSC: 1, (3) endpoints
+    JSON citados por los bundles same-origin del propio sitio. Todo es same-origin
+    por defecto: lo cross-origin exige `allow_derived_cross_origin` (firma E1 del
+    operador); sin esa firma se registra el motivo y NO se pide (X3).
+    """
+    origin = _origin(root)
+    if restante is None:
+        restante = lambda: SPA_CAPS['max_bytes']
+    state = {'requests': 0, 'bytes': 0}
+    doc = {'channel': None, 'js_rendered': False, 'mechanism': None, 'origin': origin,
+           'attempts': [], 'payloads': [], 'bundles_read': [], 'cross_origin_candidates': [],
+           'determinism': {'reads': 2, 'stable': None},
+           'allow_derived_cross_origin': bool(allow_derived_cross_origin),
+           'limits': {'payload_max_bytes': SPA_CAPS['payload_max_bytes'],
+                      'payload_timeout': SPA_CAPS['payload_timeout'],
+                      'bundle_max_bytes': SPA_CAPS['bundle_max_bytes'],
+                      'max_bundles': SPA_CAPS['max_bundles'],
+                      'derived_max_bytes': SPA_CAPS['derived_max_bytes'],
+                      'max_derived': SPA_CAPS['max_derived'],
+                      'max_requests': SPA_CAPS['max_requests'], 'max_bytes': SPA_CAPS['max_bytes'],
+                      'content_types': list(SPA_CONTENT_TYPES)},
+           'limitations': ['no_javascript_execution', 'same_origin_only_unless_signed',
+                           'static_payload_may_be_partial', 'not_a_complete_site_inventory']}
+
+    def note(channel, url, reason, **extra):
+        item = {'channel': channel, 'url': url, 'reason': reason}
+        item.update(extra)
+        doc['attempts'].append(item)
+        gap(url, channel + ':' + reason)
+
+    def read(url, cap_bytes, timeout, extra_headers=None, robots_parser=None):
+        if state['requests'] >= SPA_CAPS['max_requests']:
+            raise providers.ProviderError('spa_request_budget')
+        if state['bytes'] + cap_bytes > SPA_CAPS['max_bytes']:
+            raise providers.ProviderError('spa_byte_budget')
+        if time.monotonic() >= deadline:
+            raise providers.ProviderError('deadline_budget')
+        parser = robots_parser if robots_parser is not None else robots
+        if parser is not None and not parser.can_fetch(USER_AGENT, url):
+            raise providers.ProviderError('robots_disallowed')
+        # El presupuesto de bytes del sitio es UNO solo: se pide lo que queda, no el cap
+        # global. Sin esto, cualquier payload pedia 8 MiB y moria en byte_budget.
+        disponible = restante() - 1
+        limite = min(cap_bytes, disponible)
+        if limite < SPA_CAPS['min_payload_bytes']:
+            raise providers.ProviderError('spa_byte_budget')
+        status, headers, data = fetch(url, limite, extra_headers)
+        state['requests'] += 1
+        state['bytes'] += len(data)
+        return status, {str(k).lower(): v for k, v in headers.items()}, data
+
+    def aceptar(channel, url, headers, data, derived_from=None):
+        doc['payloads'].append({'channel': channel, 'url': url,
+                                'sha256': hashlib.sha256(data).hexdigest(),
+                                'byte_count': len(data), 'content_type': _spa_content_type(headers),
+                                'derived_from': derived_from, 'text': _spa_text(data, channel)})
+        if doc['channel'] is None:
+            doc['channel'] = channel
+            doc['mechanism'] = {'nuxt_payload': 'GET /_payload.json (Nuxt 3)',
+                                'next_rsc': 'GET misma URL con cabecera RSC: 1 (App Router)',
+                                'derived_endpoints': 'endpoints JSON citados por bundles same-origin'}[channel]
+        return True
+
+    def canal(channel, url, validador, content_types, extra_headers=None):
+        """Una lectura valida; solo si el cuerpo sirve se paga la SEGUNDA (P9)."""
+        try:
+            st1, hd1, d1 = read(url, SPA_CAPS['payload_max_bytes'], SPA_CAPS['payload_timeout'], extra_headers)
+        except Exception as exc:
+            note(channel, url, str(exc) if isinstance(exc, providers.ProviderError) else 'read_failed')
+            return False
+        if st1 != 200:
+            note(channel, url, 'HTTP_' + str(st1), byte_count=len(d1))
+            return False
+        ctype = _spa_content_type(hd1)
+        if ctype not in content_types:
+            note(channel, url, 'content_type_no_permitido:' + (ctype or 'ausente'),
+                 content_type=ctype, byte_count=len(d1))
+            return False
+        ok, reason = validador(d1)
+        if not ok:
+            note(channel, url, reason, content_type=ctype, byte_count=len(d1),
+                 sha256=hashlib.sha256(d1).hexdigest())
+            return False
+        try:
+            st2, hd2, d2 = read(url, SPA_CAPS['payload_max_bytes'], SPA_CAPS['payload_timeout'], extra_headers)
+        except Exception as exc:
+            note(channel, url, 'segunda_lectura:' + (str(exc) if isinstance(exc, providers.ProviderError) else 'read_failed'))
+            return False
+        sha1, sha2 = hashlib.sha256(d1).hexdigest(), hashlib.sha256(d2).hexdigest()
+        if st2 != 200 or sha1 != sha2:
+            doc['determinism'] = {'reads': 2, 'stable': False}
+            note(channel, url, 'no_determinista', sha256=sha1, sha256_segunda=sha2)
+            return False
+        doc['determinism'] = {'reads': 2, 'stable': True}
+        return aceptar(channel, url, hd1, d1)
+
+    markers = _spa_spa_markers(root_html or b'')
+    if root_html is None:
+        doc['limitations'].append('root_html_no_disponible')
+    if not (markers['nuxt'] or markers['next'] or markers['spa_bundles']):
+        doc['limitations'].append('sin_marcadores_de_spa')
+        return doc
+
+    # (1) Nuxt 3
+    if markers['nuxt']:
+        canal('nuxt_payload', origin + '/_payload.json', _spa_json_body, ('application/json',))
+
+    # (2) Next App Router: la CABECERA RSC: 1 es el discriminador; ?_rsc=1 NO sirve
+    if markers['next'] and doc['channel'] is None:
+        canal('next_rsc', root, _spa_flight_body, ('text/x-component',), {'RSC': '1'})
+
+    # (3) Endpoints JSON citados por los bundles same-origin del sitio
+    if markers['spa_bundles'] and doc['channel'] is None:
+        _spa_derived_endpoints(root, origin, markers['spa_bundles'], read, note, aceptar, doc)
+    return doc
+
+
+def _spa_derived_endpoints(root, origin, bundles, read, note, aceptar, doc):
+    """Lee bundles same-origin y deriva de ellos endpoints JSON citados (X4)."""
+    vistos = set()
+    bundle_bytes = 0
+    for src in bundles[:SPA_CAPS['max_bundles']]:
+        try:
+            bundle_url = canonical_url(src, root)
+        except (providers.ProviderError, ValueError, TypeError):
+            note('derived_endpoints', str(src)[:500], 'bundle_url_invalida')
+            continue
+        if _origin(bundle_url) != origin:
+            note('derived_endpoints', bundle_url, 'bundle_cross_origin')
+            continue
+        if bundle_url in vistos:
+            continue
+        vistos.add(bundle_url)
+        try:
+            status, headers, data = read(bundle_url, SPA_CAPS['bundle_max_bytes'],
+                                         SPA_CAPS['bundle_timeout'])
+        except Exception as exc:
+            note('derived_endpoints', bundle_url,
+                 str(exc) if isinstance(exc, providers.ProviderError) else 'read_failed')
+            continue
+        if status != 200:
+            note('derived_endpoints', bundle_url, 'HTTP_' + str(status))
+            continue
+        bundle_bytes += len(data)
+        if bundle_bytes > SPA_CAPS['max_bundle_bytes']:
+            note('derived_endpoints', bundle_url, 'bundle_byte_budget')
+            break
+        sha_bundle = hashlib.sha256(data).hexdigest()
+        doc['bundles_read'].append({'url': bundle_url, 'sha256': sha_bundle, 'byte_count': len(data)})
+        texto = data.decode('utf-8', errors='replace')
+        candidatos = []
+        for kind, value in _spa_derived_candidates(texto):
+            try:
+                target = canonical_url(value, root) if kind == 'relativo' else value
+            except (providers.ProviderError, ValueError, TypeError):
+                continue
+            if target not in candidatos:
+                candidatos.append(target)
+        for target in candidatos[:SPA_CAPS['max_derived']]:
+            if len(doc['payloads']) >= SPA_CAPS['max_derived']:
+                note('derived_endpoints', target, 'derived_budget', derived_from=sha_bundle)
+                continue
+            cross = _origin(target) != origin
+            if cross:
+                host = urlsplit(target).hostname or ''
+                doc['cross_origin_candidates'].append({'url': target, 'host': host,
+                                                       'derived_from': sha_bundle})
+                if not doc['allow_derived_cross_origin']:
+                    note('derived_endpoints', target, 'cross_origin_sin_firma',
+                         derived_from=sha_bundle, host=host)
+                    continue
+                if not _spa_host_derivado_ok(target):
+                    note('derived_endpoints', target, 'host_derivado_invalido', derived_from=sha_bundle)
+                    continue
+                derivado_robots = _spa_robots_derivado(target, read, note, sha_bundle)
+                if derivado_robots is False:
+                    continue
+            else:
+                derivado_robots = None
+            try:
+                status, headers, data = read(target, SPA_CAPS['derived_max_bytes'],
+                                             SPA_CAPS['derived_timeout'],
+                                             robots_parser=derivado_robots)
+            except Exception as exc:
+                note('derived_endpoints', target,
+                     str(exc) if isinstance(exc, providers.ProviderError) else 'read_failed',
+                     derived_from=sha_bundle)
+                continue
+            if status != 200:
+                note('derived_endpoints', target, 'HTTP_' + str(status), derived_from=sha_bundle)
+                continue
+            ctype = _spa_content_type(headers)
+            ok, reason = _spa_json_body(data)
+            if ctype not in SPA_CONTENT_TYPES:
+                note('derived_endpoints', target, 'content_type_no_permitido:' + (ctype or 'ausente'),
+                     content_type=ctype, derived_from=sha_bundle)
+            elif not ok:
+                note('derived_endpoints', target, reason, content_type=ctype, derived_from=sha_bundle)
+            else:
+                aceptar('derived_endpoints', target, headers, data, derived_from=sha_bundle)
+
+
+def _spa_robots_derivado(target, read, note, sha_bundle):
+    """E1.4: robots del host derivado ANTES del primer fetch; 5xx = STOP."""
+    origen = 'https://' + (urlsplit(target).hostname or '')
+    try:
+        status, headers, data = read(origen + '/robots.txt', SPA_CAPS['robots_max_bytes'],
+                                     SPA_CAPS['robots_timeout'])
+    except Exception as exc:
+        note('derived_endpoints', origen + '/robots.txt',
+             str(exc) if isinstance(exc, providers.ProviderError) else 'robots_derivado_ilegible',
+             derived_from=sha_bundle)
+        return False
+    if status in (404, 410):
+        parser = RobotFileParser(); parser.parse([]); return parser
+    if status != 200:
+        note('derived_endpoints', origen + '/robots.txt', 'robots_derivado_HTTP_' + str(status),
+             derived_from=sha_bundle)
+        return False
+    parser = RobotFileParser()
+    parser.parse(data.decode('utf-8', errors='replace').splitlines())
+    return parser
+
+
+SPA_CHANNELS = ('nuxt_payload', 'next_rsc', 'derived_endpoints')
+SPA_ATTEMPT_EXTRAS = ('sha256', 'sha256_segunda', 'host', 'byte_count', 'content_type', 'derived_from')
+_SPA_HEX64 = re.compile(r'[0-9a-f]{64}')
+
+
+def _prepare_spa_data(spa, root, text):
+    """Normaliza y verifica los datos de SPA para la puerta de consentimiento.
+
+    Sin red. Rechaza cualquier payload cuya procedencia no cuadre (origen distinto
+    al de la pagina sin firma, sha no hexadecimal, js_rendered distinto de False) y
+    devuelve una forma que es punto fijo: validar(validar(x)) == validar(x).
+    """
+    if not isinstance(spa, dict):
+        raise providers.ProviderError('Datos de SPA inválidos.')
+    canal = spa.get('channel')
+    if canal is not None and canal not in SPA_CHANNELS:
+        raise providers.ProviderError('Canal de SPA inválido.')
+    if spa.get('js_rendered') is not False:
+        raise providers.ProviderError('Los datos de SPA no declaran js_rendered:false.')
+    permitido = spa.get('allow_derived_cross_origin') is True
+    salida = {'channel': canal, 'js_rendered': False,
+              'mechanism': text(spa.get('mechanism') or '', 300) or None,
+              'origin': _origin(root), 'allow_derived_cross_origin': permitido,
+              'attempts': [], 'payloads': [], 'bundles_read': [], 'cross_origin_candidates': [],
+              'determinism': {'reads': providers._bounded_int(
+                                  (spa.get('determinism') or {}).get('reads', 0), 0, 10, 'determinism reads'),
+                              'stable': (spa.get('determinism') or {}).get('stable')},
+              'limits': {}, 'limitations': []}
+    if salida['determinism']['stable'] not in (True, False, None):
+        raise providers.ProviderError('Determinismo de SPA inválido.')
+    limites = spa.get('limits') if isinstance(spa.get('limits'), dict) else {}
+    for clave, alto in (('payload_max_bytes', 8388608), ('payload_timeout', 60),
+                        ('bundle_max_bytes', 8388608), ('max_bundles', 30),
+                        ('derived_max_bytes', 8388608), ('max_derived', 16),
+                        ('max_requests', 35), ('max_bytes', 41943040)):
+        if clave in limites:
+            salida['limits'][clave] = providers._bounded_int(limites[clave], 1, alto, clave)
+    if 'content_types' in limites:
+        tipos = limites['content_types']
+        if not isinstance(tipos, list) or len(tipos) > 8 or any(t not in SPA_CONTENT_TYPES for t in tipos):
+            raise providers.ProviderError('Content-types de SPA inválidos.')
+        salida['limits']['content_types'] = list(tipos)
+    intentos = spa.get('attempts') if isinstance(spa.get('attempts'), list) else []
+    if len(intentos) > 200:
+        raise providers.ProviderError('Intentos de SPA fuera de límite.')
+    for intento in intentos:
+        if not isinstance(intento, dict) or intento.get('channel') not in SPA_CHANNELS:
+            raise providers.ProviderError('Intento de SPA inválido.')
+        item = {'channel': intento['channel'], 'url': text(intento.get('url', ''), 2048),
+                'reason': text(intento.get('reason', ''), 500)}
+        for extra in SPA_ATTEMPT_EXTRAS:
+            if extra not in intento:
+                continue
+            if extra in ('sha256', 'sha256_segunda', 'derived_from'):
+                if not isinstance(intento[extra], str) or not _SPA_HEX64.fullmatch(intento[extra]):
+                    raise providers.ProviderError('Huella de intento de SPA inválida.')
+                item[extra] = intento[extra]
+            elif extra == 'byte_count':
+                item[extra] = providers._bounded_int(intento[extra], 0, 41943040, extra)
+            else:
+                item[extra] = text(intento[extra], 300)
+        salida['attempts'].append(item)
+    payloads = spa.get('payloads') if isinstance(spa.get('payloads'), list) else []
+    if len(payloads) > 16:
+        raise providers.ProviderError('Payloads de SPA fuera de límite.')
+    for dato in payloads:
+        if not isinstance(dato, dict) or dato.get('channel') not in SPA_CHANNELS:
+            raise providers.ProviderError('Payload de SPA inválido.')
+        target = canonical_url(dato.get('url'))
+        sha = dato.get('sha256')
+        ctype = dato.get('content_type')
+        if not isinstance(sha, str) or not _SPA_HEX64.fullmatch(sha):
+            raise providers.ProviderError('Huella de payload de SPA inválida.')
+        if ctype not in SPA_CONTENT_TYPES:
+            raise providers.ProviderError('Content-type de payload de SPA inválido.')
+        derivado = dato.get('derived_from')
+        if derivado is not None and (not isinstance(derivado, str) or not _SPA_HEX64.fullmatch(derivado)):
+            raise providers.ProviderError('Origen derivado de payload inválido.')
+        if _origin(target) != _origin(root) and not (permitido and derivado):
+            raise providers.ProviderError('Payload de SPA fuera del origen de la página sin firma.')
+        salida['payloads'].append({'channel': dato['channel'], 'url': target, 'sha256': sha,
+                                   'byte_count': providers._bounded_int(dato.get('byte_count'), 0, 41943040, 'payload bytes'),
+                                   'content_type': ctype, 'derived_from': derivado,
+                                   'text': text(dato.get('text', ''))})
+    bundles = spa.get('bundles_read') if isinstance(spa.get('bundles_read'), list) else []
+    if len(bundles) > 30:
+        raise providers.ProviderError('Bundles de SPA fuera de límite.')
+    for bundle in bundles:
+        if not isinstance(bundle, dict) or not isinstance(bundle.get('sha256'), str) \
+                or not _SPA_HEX64.fullmatch(bundle['sha256']):
+            raise providers.ProviderError('Bundle de SPA inválido.')
+        salida['bundles_read'].append({'url': canonical_url(bundle.get('url')), 'sha256': bundle['sha256'],
+                                       'byte_count': providers._bounded_int(bundle.get('byte_count'), 0, 41943040, 'bundle bytes')})
+    candidatos = spa.get('cross_origin_candidates') if isinstance(spa.get('cross_origin_candidates'), list) else []
+    if len(candidatos) > 32:
+        raise providers.ProviderError('Candidatos cross-origin fuera de límite.')
+    for candidato in candidatos:
+        if not isinstance(candidato, dict):
+            raise providers.ProviderError('Candidato cross-origin inválido.')
+        host = candidato.get('host')
+        derivado = candidato.get('derived_from')
+        if not isinstance(host, str) or not host or len(host) > 253 \
+                or not isinstance(derivado, str) or not _SPA_HEX64.fullmatch(derivado):
+            raise providers.ProviderError('Candidato cross-origin sin procedencia.')
+        salida['cross_origin_candidates'].append({'url': text(candidato.get('url', ''), 2048),
+                                                  'host': text(host, 253), 'derived_from': derivado})
+    limitaciones = spa.get('limitations') if isinstance(spa.get('limitations'), list) else []
+    if len(limitaciones) > 20:
+        raise providers.ProviderError('Limitaciones de SPA fuera de límite.')
+    salida['limitations'] = [text(item, 200) for item in limitaciones]
+    return salida
+
+
+
 def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
                     max_requests=30, deadline_seconds=30, concurrency=4,
-                    cache_ttl=300, transport=None):
+                    cache_ttl=300, transport=None, allow_derived_cross_origin=False):
     """Collect bounded same-origin evidence; errors and omissions are explicit.
 
     Deadline prevents scheduling new reads; an in-flight TLS/DNS operation may
     finish later. Robots rules are reread even when HTML snapshots are cached.
+
+    ``allow_derived_cross_origin`` nace en False: abrir hosts que el sitio cita
+    fuera de su origen exige la firma del operador (`CONFIRMED: spa2 cross-origin
+    derivado`), no una decision del lector. Sin ella, esos endpoints se registran
+    con su motivo y NO se piden.
     """
     for value, low, high, name in ((max_pages,1,100,'pages'),(max_bytes,1024,4000000,'bytes'),
             (max_depth,0,5,'depth'),(max_requests,1,300,'requests'),(deadline_seconds,1,120,'deadline'),
@@ -243,13 +722,17 @@ def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
     root = canonical_url(url); origin = _origin(root)
     lock = threading.Lock(); stats = {'requests':0,'bytes':0,'cache_hits':0}
     gaps = []; snapshots = []; seen = set(); discovered = set(); variants = {}
+    root_html = {'data': None}
     namespace = id(transport) if transport is not None else 'public_tls'
 
     def gap(target, reason):
         with lock:
             if len(gaps) < 500: gaps.append({'url': target, 'reason': reason})
 
-    def fetch(target, limit):
+    def restante():
+        with lock: return max(0, max_bytes - stats['bytes'])
+
+    def fetch(target, limit, extra_headers=None):
         with lock:
             if time.monotonic() >= deadline: raise providers.ProviderError('deadline_budget')
             if stats['requests'] >= max_requests: raise providers.ProviderError('request_budget')
@@ -258,10 +741,13 @@ def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
             # Reserve bytes before concurrent requests; release unused allowance.
             stats['bytes'] += limit + 1
         data = b''; consumed = limit + 1
+        headers_salida = {'User-Agent':USER_AGENT,'Accept':'text/html,text/plain;q=0.9',
+                          'Accept-Encoding':'identity'}
+        for nombre, valor in (extra_headers or {}).items():
+            headers_salida[str(nombre)] = str(valor)
         try:
             status, headers, data = (transport or providers._https_transport)(
-                'GET', target, {'User-Agent':USER_AGENT,'Accept':'text/html,text/plain;q=0.9',
-                                'Accept-Encoding':'identity'}, None,
+                'GET', target, headers_salida, None,
                 max(1, min(10, int(deadline-time.monotonic()))), limit)
             if not isinstance(data, bytes) or len(data)>limit: raise providers.ProviderError('response_byte_limit')
             consumed = len(data)
@@ -315,6 +801,7 @@ def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
                 if not any(kind in headers.get('content-type','').lower() for kind in ('text/html','application/xhtml+xml')):
                     raise providers.ProviderError('non_html_content')
                 result = _extract(target,data); result['cache_hit'] = False
+                if original == root: root_html['data'] = data
                 if original != target: result['requested_url'] = original
                 with _CACHE_LOCK:
                     _CACHE[key] = (time.monotonic(),copy.deepcopy(result),transport); _CACHE.move_to_end(key)
@@ -357,18 +844,53 @@ def analyze_website(url, *, max_pages=12, max_bytes=600000, max_depth=2,
                 if len(queue)>=max_pages*5: gap(target,'frontier_budget'); continue
                 queue.append((target,depth+1))
     for target,_ in queue: gap(target,'page_or_deadline_budget')
+    # --- Canales de datos de SPA (estaticos, sin navegador) -------------------
+    # Adicional: si el sitio no es un SPA ni expone datos, no se pide nada y el
+    # resultado queda exactamente como antes. Cacheado por origen para que una
+    # segunda lectura no repita peticiones (los tests de cache lo exigen).
+    clave_spa = (namespace, origin, 'spa_data')
+    spa_datos = None
+    with _CACHE_LOCK:
+        cacheado = _CACHE.get(clave_spa)
+        if cache_ttl and cacheado and time.monotonic()-cacheado[0] <= cache_ttl:
+            # No cuenta como cache_hit de PAGINA: timings['cache_hits'] mide snapshots HTML.
+            spa_datos = copy.deepcopy(cacheado[1]['spa_data'])
+    if spa_datos is None:
+        if robots_ok:
+            spa_datos = _spa_channels(root, root_html.get('data'), fetch, robots, gap, deadline,
+                                      allow_derived_cross_origin, restante)
+        else:
+            spa_datos = {'channel': None, 'js_rendered': False, 'attempts': [], 'payloads': [],
+                         'limitations': ['robots_unverified_no_spa_channels'], 'determinism': {'reads': 0, 'stable': None},
+                         'allow_derived_cross_origin': bool(allow_derived_cross_origin),
+                         'bundles_read': [], 'cross_origin_candidates': [], 'origin': origin}
+        with _CACHE_LOCK:
+            _CACHE[clave_spa] = (time.monotonic(),
+                                 {'byte_count': sum(p['byte_count'] for p in spa_datos.get('payloads', [])),
+                                  'spa_data': copy.deepcopy(spa_datos)}, transport)
+            _CACHE.move_to_end(clave_spa)
+            while len(_CACHE)>100 or sum(v[1].get('byte_count',0) for v in _CACHE.values())>CACHE_BYTES:
+                _CACHE.popitem(last=False)
     manifest = [{'url':p['url'],'sha256':p['sha256']} for p in sorted(snapshots,key=lambda p:p['url'])]
     source_hash = hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()
     evidence = [{'url':p['url'],'sha256':p['sha256'],'text':p['text_excerpt']} for p in snapshots if p['content_status']=='usable_static_html']
+    # Los payloads de SPA entran como evidencia PROPIA: el mecanismo, el sha256 del
+    # cuerpo leido y la marca js_rendered:false viajan con el dato (P5/P6).
+    for dato in spa_datos.get('payloads', []):
+        evidence.append({'url':dato['url'],'sha256':dato['sha256'],'text':dato['text'],
+                         'channel':dato['channel'],'js_rendered':False,'derived_from':dato.get('derived_from')})
+    limitaciones = ['static_html_only','no_javascript_rendering','no_authenticated_pages',
+                    'same_origin_only','not_a_complete_site_inventory','in_flight_network_may_exceed_deadline']
+    if spa_datos.get('payloads'):
+        limitaciones.append('spa_data_via_static_channels_without_javascript')
     coverage = {'status':'partial' if evidence else 'no_usable_evidence','complete':False,
                 'inventory_complete':False,'pages_fetched':len(snapshots),'pages_attempted':len(seen),
                 'discovered_urls':len(discovered),'requests':stats['requests'],'bytes':stats['bytes'],
                 'gaps':gaps,'scope':{'origin':origin,'max_pages':max_pages,'max_depth':max_depth,
                 'max_requests':max_requests,'max_bytes':max_bytes,'deadline_seconds':deadline_seconds},
-                'limitations':['static_html_only','no_javascript_rendering','no_authenticated_pages',
-                               'same_origin_only','not_a_complete_site_inventory','in_flight_network_may_exceed_deadline']}
+                'limitations':limitaciones}
     return {'source_kind':'website','source_url':root,'source_hash':source_hash,
-            'snapshots':snapshots,'coverage':coverage,'evidence':evidence,
+            'snapshots':snapshots,'coverage':coverage,'evidence':evidence,'spa_data':spa_datos,
             'summary':{'titles':[p['title'] for p in snapshots],'usable_pages':len(evidence)},
             'timings':{'elapsed_seconds':round(time.monotonic()-start,4),'cache_hits':stats['cache_hits'],
                        'concurrency':concurrency}}
@@ -464,6 +986,16 @@ def prepare_website_summary(summary):
             raise providers.ProviderError('Tiempo web inválido.')
         result['timings']['elapsed_seconds'] = elapsed
     result['summary'] = {'titles':[p['title'] for p in result['snapshots']], 'usable_pages':len(result['evidence'])}
+    # Datos de SPA: se verifican y viajan con su mecanismo y su sha256. Si el sitio
+    # expone datos sin JS, la evidencia existe aunque el HTML sea solo el cascaron.
+    if summary.get('spa_data') is not None:
+        spa = _prepare_spa_data(summary['spa_data'], root, text)
+        result['spa_data'] = spa
+        for dato in spa['payloads']:
+            result['evidence'].append({'url':dato['url'],'sha256':dato['sha256'],'text':dato['text'],
+                                       'channel':dato['channel'],'js_rendered':False,
+                                       'derived_from':dato['derived_from']})
+        result['summary']['usable_pages'] = len(result['evidence'])
     if 'objective' in summary: result['objective'] = text(summary['objective'],5000)
     docs = summary.get('documents',[])
     if not isinstance(docs,list) or len(docs)>30: raise providers.ProviderError('Documentos web inválidos.')

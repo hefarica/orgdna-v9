@@ -327,7 +327,7 @@
     {
       "path": "docs/PLATAFORMA_ENTREGA_V9.md",
       "bytes": 70732,
-      "sha256": "10d5f4f1c07db54eb89de0b0f6a05852e078e445f90d0983c00432a88242c64d"
+      "sha256": "9a37cfc18e24a5a6ab3f07c7efb99d8484e783a9e3e51895c49374444f2daefc"
     },
     {
       "path": "docs/PLATAFORMA_REVISION_RV1.md",
@@ -706,8 +706,8 @@
     },
     {
       "path": "engine/bundle.py",
-      "bytes": 89698,
-      "sha256": "1adbf93ad35c913946ca5a0d39144423bef97144319f0246c0a3becffb77de7f"
+      "bytes": 89723,
+      "sha256": "81ce1085ba4501ee49c7f25d90baa1c0abc778db0bd5973e726fee584edfc5a4"
     },
     {
       "path": "engine/cap_email.py",
@@ -1191,8 +1191,8 @@
     },
     {
       "path": "engine/web_sources.py",
-      "bytes": 26978,
-      "sha256": "02afe3f11c74812041ac9ba765dad1335a5e3c2d0f0b9f783f2fed049bc95f08"
+      "bytes": 55562,
+      "sha256": "8d166a8d1ad0b36a2ac109025cbbd0e19a9ba2713b5bf62a54fe6d3f0c524d3b"
     },
     {
       "path": "extras/agent-team-recipe-6c1d8f62-2671-5131-ae8e-a97e996c4c26.json",
@@ -2048,6 +2048,11 @@
       "path": "tests_site_rea.py",
       "bytes": 4503,
       "sha256": "4d2acc1e64bddd6ff28e978250d193bc9f47ee6b43079af1e4a802031906bd3b"
+    },
+    {
+      "path": "tests_spa_data.py",
+      "bytes": 15187,
+      "sha256": "1e515f99830f4663ab8bb042fe1df1c295227f6abe3c13f54c126e585441b338"
     },
     {
       "path": "tests_spa_render.py",

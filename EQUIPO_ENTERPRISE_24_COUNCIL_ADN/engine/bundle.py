@@ -105,6 +105,7 @@ RUNTIME_ALLOWLIST = (
     'tests_org_evidence.py',
     # 2026-10-23 · render headless declarado
     'tests_spa_render.py',
+    'tests_spa_data.py',
     'docs/evidence/ORG12_GENERADO_2026-10-23.json',
     'docs/evidence/REPO_PATHS_arbitragex_697f1b5f.json',
     'tests_forge_loop.py',
